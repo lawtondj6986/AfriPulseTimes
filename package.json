@@ -5,7 +5,10 @@
   "type": "module",
   "description": "AfriPulse Times — pan-African news site backend (Supabase + Vercel + Vite)",
   "scripts": {
+    "gen:config": "node scripts/gen-supabase-config.mjs",
+    "predev": "npm run gen:config",
     "dev": "vite",
+    "prebuild": "npm run gen:config",
     "build": "vite build",
     "preview": "vite preview"
   },
