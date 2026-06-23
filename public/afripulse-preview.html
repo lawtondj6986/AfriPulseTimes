@@ -2356,144 +2356,14 @@ function deleteArticle(){
 }
 
 // ── LIVE WIRE ─────────────────────────────────────────────────
-// Multiple CORS proxies tried in rotation; first success wins per feed.
-const PROXIES=[
-  function(u){ return 'https://api.allorigins.win/raw?url='+encodeURIComponent(u); },
-  function(u){ return 'https://corsproxy.io/?url='+encodeURIComponent(u); },
-  function(u){ return 'https://api.codetabs.com/v1/proxy/?quest='+encodeURIComponent(u); },
-  function(u){ return 'https://thingproxy.freeboard.io/fetch/'+u; },
-  function(u){ return 'https://api.allorigins.win/get?url='+encodeURIComponent(u); }
-];
-const FEEDS=[
-  {url:'https://feeds.bbci.co.uk/news/world/africa/rss.xml',label:'BBC Africa',hint:'front'},
-  {url:'https://www.aljazeera.com/xml/rss/all.xml',label:'Al Jazeera',hint:'front'},
-  {url:'https://allafrica.com/tools/headlines/rdf/latest/headlines.rdf',label:'AllAfrica',hint:'front'},
-  {url:'https://www.premiumtimesng.com/feed',label:'Premium Times',hint:'politics'},
-  {url:'https://www.dailymaverick.co.za/feed/',label:'Daily Maverick',hint:'politics'},
-  {url:'https://techcabal.com/feed/',label:'TechCabal',hint:'tech'},
-  {url:'https://african.business/feed',label:'African Business',hint:'markets'},
-  {url:'https://guardian.ng/feed/',label:'The Guardian Nigeria',hint:'front'},
-  {url:'https://www.theeastafrican.co.ke/tea/rss',label:'The East African',hint:'politics'},
-  {url:'https://mg.co.za/feed/',label:'Mail & Guardian',hint:'politics'},
-  {url:'https://www.engineeringnews.co.za/rss/mining',label:'Mining Weekly',hint:'mining'},
-  {url:'https://disrupt-africa.com/feed/',label:'Disrupt Africa',hint:'tech'}
-];
-// Auto-refresh interval (ms). 0 disables. Default: 5 minutes.
-const AUTO_REFRESH_MS=5*60*1000;
+// RSS aggregation now runs server-side in /api/pull-wire (Vercel cron, every
+// 15 min). The browser no longer fetches feeds through CORS proxies: signed-in
+// admins can trigger a server pull, and everyone refreshes wires from the
+// database. Feed list + parsing live in the serverless function / rss_sources.
+const AUTO_REFRESH_MS=5*60*1000;   // how often the client re-reads the DB
 let AUTO_TIMER=null;
-const VKW={
-  mining:['cobalt','gold','copper','lithium','platinum','oil','gas','energy','mining','mine','solar','renewable','lng','crude','uranium','battery'],
-  markets:['rand','naira','bourse','stock','jse','ngx','imf','inflation','gdp','currency','market','trade','afcfta','tariff','bank','rate','exchange','listing','earnings'],
-  tech:['ai ','artificial intelligence','tech','startup','fintech','app ','platform','data','cloud','digital','m-pesa','safaricom','crypto','blockchain','software'],
-  culture:['music','film','art','festival','burna','nollywood','culture','tour','afrobeats','album','movie'],
-  sports:['football','afcon','soccer','match','goal','striker','player','caf','athletics','olympic','world cup','squad','tournament','marathon','athlete','runner','sport','medal'],
-  politics:['election','senate','parliament','president','minister','vote','government','reform','policy','bill','protest','au summit','peace']
-};
+// Vertical default emoji/colour, also used by the store's rowToArticle fallback.
 const VDEF={front:{emoji:'🌍',color:'#0e2818'},politics:{emoji:'🏛️',color:'#1a3a1a'},mining:{emoji:'⛏️',color:'#3a1a0a'},markets:{emoji:'📊',color:'#0a1a2a'},tech:{emoji:'🤖',color:'#2a2a0a'},culture:{emoji:'🎭',color:'#2a1a2a'},sports:{emoji:'⚽',color:'#1a1a3a'},opinions:{emoji:'✍️',color:'#241a2a'},podcasts:{emoji:'🎙️',color:'#1a1a3a'}};
-
-function guessVertical(title,desc,hint){
-  const text=((title||'')+' '+(desc||'')).toLowerCase();
-  const scores={};
-  for(const v in VKW){ scores[v]=VKW[v].reduce((s,w)=>s+(text.indexOf(w)>-1?1:0),0); }
-  if(hint && scores[hint]!==undefined) scores[hint]+=0.5;
-  const best=Object.keys(scores).sort((a,b)=>scores[b]-scores[a])[0];
-  return scores[best]>0?best:(hint||'front');
-}
-
-function parseRSS(xml,feed){
-  const items=[];
-  try{
-    const doc=new DOMParser().parseFromString(xml,'text/xml');
-    const entries=Array.from(doc.querySelectorAll('item')).concat(Array.from(doc.querySelectorAll('entry')));
-    entries.slice(0,6).forEach(e=>{
-      const title=((e.querySelector('title')||{}).textContent||'').replace(/<[^>]+>/g,'').trim();
-      let desc=((e.querySelector('description')||e.querySelector('summary')||{}).textContent||'').replace(/<[^>]+>/g,'').trim();
-      if(desc.length>500) desc=desc.slice(0,497)+'…';
-      const linkEl=e.querySelector('link');
-      const link=(linkEl && (linkEl.textContent || linkEl.getAttribute('href')) || '#').trim();
-      const pubEl=e.querySelector('pubDate')||e.querySelector('published')||e.querySelector('updated');
-      const pub=pubEl?pubEl.textContent:null;
-      if(title.length<10) return;
-      const vert=guessVertical(title,desc,feed.hint);
-      const def=VDEF[vert];
-      items.push({
-        slug:'live-'+slugify(title).slice(0,56)+'-'+Math.random().toString(36).slice(2,6),
-        vertical:vert,
-        kicker:(vlabel(vert))+' · '+feed.label,
-        headline:title,
-        standfirst:desc||title,
-        byline:feed.label,
-        dateline:'Wire',
-        readingMin:Math.max(2,Math.ceil((desc.length||200)/600)),
-        emoji:def.emoji,color:def.color,
-        status:'published',
-        publishedAt:pub?new Date(pub).toISOString():new Date().toISOString(),
-        tags:[feed.label,'Live wire',vlabel(vert)],
-        body:[desc||'Full story at source.'],
-        source:'rss',sourceUrl:link,sourceLabel:feed.label
-      });
-    });
-  }catch(e){ console.warn('parseRSS',feed.label,e); }
-  return items;
-}
-
-function fetchTimeout(url,ms){
-  if(typeof AbortSignal!=='undefined' && AbortSignal.timeout){
-    return fetch(url,{signal:AbortSignal.timeout(ms)});
-  }
-  const c=new AbortController();
-  setTimeout(()=>c.abort(),ms);
-  return fetch(url,{signal:c.signal});
-}
-
-async function fetchFeed(feed){
-  for(const wrap of PROXIES){
-    try{
-      const res=await fetchTimeout(wrap(feed.url),8000);
-      if(!res||!res.ok) continue;
-      let txt=await res.text();
-      if(!txt||txt.length<80) continue;
-      // allorigins /get returns JSON {contents:"..."}; unwrap it
-      if(txt.charAt(0)==='{' && txt.indexOf('"contents"')>-1){
-        try{ const j=JSON.parse(txt); if(j && j.contents) txt=j.contents; }catch(e){}
-      }
-      const items=parseRSS(txt,feed);
-      if(items.length) return items;
-    }catch(e){}
-  }
-  return [];
-}
-
-// Try the AfriPulse backend API first (reliable, server-side, no CORS).
-// Returns an array of normalized articles, or null if no backend is present.
-async function pullFromAPI(){
-  try{
-    const res=await fetchTimeout('/api/news?limit=120',8000);
-    if(!res || !res.ok) return null;
-    const data=await res.json();
-    if(!data || !data.ok || !Array.isArray(data.articles)) return null;
-    return data.articles.map(a=>{
-      const vert=a.vertical||'front';
-      const def=VDEF[vert]||VDEF.front;
-      return {
-        slug:'live-'+slugify(a.headline).slice(0,56)+'-'+Math.random().toString(36).slice(2,6),
-        vertical:vert,
-        kicker:a.kicker||((vlabel(vert))+' · '+(a.source||'Wire')),
-        headline:a.headline,
-        standfirst:a.standfirst||a.headline,
-        byline:a.byline||a.source||'Wire',
-        dateline:'Wire',
-        readingMin:a.readingMin||3,
-        emoji:def.emoji,color:def.color,
-        status:'published',
-        publishedAt:a.publishedAt||new Date().toISOString(),
-        tags:[a.source||'Wire','Live wire',vlabel(vert)],
-        body:[a.standfirst||'Full story at source.'],
-        source:'rss',sourceUrl:a.sourceUrl||'#',sourceLabel:a.source||'Wire'
-      };
-    });
-  }catch(e){ return null; }
-}
 
 async function pullLiveWire(opts){
   opts=opts||{};
@@ -2502,54 +2372,35 @@ async function pullLiveWire(opts){
   if(btn && !silent){ btn.disabled=true; btn.textContent='⏳…'; }
   if(btn && silent){ btn.textContent='⟳ syncing…'; }
 
-  // Primary path: backend API. Fallback: public CORS proxies.
-  let unique=[]; let okFeeds=0; let viaAPI=false;
-  const apiArticles=await pullFromAPI();
-  if(apiArticles && apiArticles.length){
-    viaAPI=true; okFeeds=FEEDS.length;
-    const seen=new Set();
-    unique=apiArticles.filter(a=>{
-      const k=a.headline.slice(0,50).toLowerCase();
-      if(seen.has(k)) return false;
-      seen.add(k); return true;
-    });
-  } else {
-    const batches=await Promise.allSettled(FEEDS.map(fetchFeed));
-    const incoming=[];
-    batches.forEach(b=>{ if(b.status==='fulfilled' && b.value.length){ okFeeds++; incoming.push(...b.value); }});
-    const seen=new Set();
-    unique=incoming.filter(a=>{
-      const k=a.headline.slice(0,50).toLowerCase();
-      if(seen.has(k)) return false;
-      seen.add(k); return true;
-    });
+  // Signed-in admins trigger a server-side pull; the cron does this on a
+  // schedule regardless. Anonymous visitors simply refresh from the database.
+  let inserted=0; let triggered=false;
+  if(isAuthed() && SESSION && SESSION.access_token){
+    try{
+      const res=await fetch('/api/pull-wire',{ method:'POST', headers:{ 'Authorization':'Bearer '+SESSION.access_token } });
+      if(res.ok){ triggered=true; const j=await res.json().catch(()=>null); if(j && typeof j.inserted==='number') inserted=j.inserted; }
+    }catch(e){ /* endpoint absent (e.g. vite-only dev) → just refresh below */ }
   }
-  if(unique.length){
-    ARTICLES=ARTICLES.filter(a=>a.source!=='rss').concat(unique);
-    if(ARTICLES.length>120){
-      ARTICLES.sort((a,b)=>new Date(b.publishedAt)-new Date(a.publishedAt));
-      ARTICLES=ARTICLES.slice(0,120);
-    }
-    // RSS articles go through the same store (cache + Supabase upsert).
-    await saveStore(ARTICLES);
-    localStorage.setItem('afripulse_mvp_v2_synced',Date.now().toString());
-  }
+
+  // Pull the canonical set (incl. fresh wires) from Supabase.
+  const remote=await loadStore();
+  if(remote){ ARTICLES=remote; saveCache(ARTICLES); }
+  localStorage.setItem('afripulse_mvp_v2_synced',Date.now().toString());
+
   if(btn){
     btn.disabled=false;
     btn.textContent='Pull live wire ↻';
-    if(unique.length) btn.classList.add('live');
+    if(ARTICLES.some(a=>a.source==='rss')) btn.classList.add('live');
   }
   updateSyncStatus();
   if(!silent){
-    if(unique.length) toast('Pulled '+unique.length+' wires'+(viaAPI?' from live backend.':' from '+okFeeds+'/'+FEEDS.length+' feeds.'));
-    else toast('No wires returned · retry shortly.');
+    if(triggered) toast(inserted>0?('Pulled '+inserted+' new wire'+(inserted===1?'':'s')+'.'):'Wire up to date.');
+    else toast('Refreshed from database.');
   }
-  // Re-render only if the user is on a feed-driven view
+  // Re-render feed-driven views.
   const h=location.hash||'#/';
-  if(unique.length && (h==='#/'||h==='#'||h===''||h.indexOf('#/v/')===0||h.indexOf('#/newsletter')===0)){
-    route();
-  }
-  return unique.length;
+  if(h==='#/'||h==='#'||h===''||h.indexOf('#/v/')===0||h.indexOf('#/newsletter')===0){ route(); }
+  return inserted;
 }
 
 function updateSyncStatus(){
@@ -2647,7 +2498,6 @@ if(document.readyState==='loading'){
 window.__APT={
   get articles(){ return ARTICLES; },
   pullLiveWire:pullLiveWire,
-  guessVertical:guessVertical,
   route:route,
   setLang:setLang,
   get lang(){ return CURRENT_LANG; }
