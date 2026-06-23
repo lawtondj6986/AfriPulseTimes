@@ -2171,11 +2171,11 @@ function bindView(){
     });
   }
 
-  // Subscribe (toast only)
+  // Subscribe → /api/subscribe (Supabase + Buttondown)
   const sub=document.getElementById('subscribe-link');
   if(sub) sub.addEventListener('click',function(e){
     e.preventDefault();
-    toast(CURRENT_LANG==='fr'?'Inscrit à la newsletter quotidienne.':CURRENT_LANG==='ar'?'تم الاشتراك في النشرة اليومية.':'Subscribed to the Daily Briefing.');
+    subscribeNewsletter();
   });
 
   // Search
@@ -2353,6 +2353,39 @@ function deleteArticle(){
   setTimeout(route,30);
   // Remove from Supabase.
   dbDelete(slug).then(function(ok){ if(!ok) toast('Removed locally · sign in to sync the deletion.'); });
+}
+
+// ── NEWSLETTER SIGNUP ─────────────────────────────────────────
+// Collects an email (without altering the page design) and POSTs it to
+// /api/subscribe, which records it in Supabase and registers it with Buttondown.
+function subToast(kind){
+  const L=CURRENT_LANG;
+  const M={
+    invalid:{en:'Enter a valid email address.',fr:'Saisissez une adresse e-mail valide.',ar:'أدخل بريدًا إلكترونيًا صالحًا.'},
+    sending:{en:'Subscribing…',fr:'Inscription…',ar:'جارٍ الاشتراك…'},
+    ok:{en:'Subscribed to the Daily Briefing.',fr:'Inscrit à la newsletter quotidienne.',ar:'تم الاشتراك في النشرة اليومية.'},
+    err:{en:'Could not subscribe · try again.',fr:'Échec de l\'inscription · réessayez.',ar:'تعذّر الاشتراك · حاول مجددًا.'}
+  };
+  return (M[kind]&&(M[kind][L]||M[kind].en))||'';
+}
+async function subscribeNewsletter(){
+  const ask=CURRENT_LANG==='fr'?'Votre adresse e-mail :':CURRENT_LANG==='ar'?'بريدك الإلكتروني:':'Your email address:';
+  let email;
+  try{ email=window.prompt(ask,''); }catch(e){ email=null; }
+  if(email==null) return;                 // user cancelled
+  email=String(email).trim();
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ toast(subToast('invalid')); return; }
+  toast(subToast('sending'));
+  try{
+    const res=await fetch('/api/subscribe',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ email:email, language:CURRENT_LANG })
+    });
+    const data=await res.json().catch(function(){ return null; });
+    if(res.ok && data && data.ok) toast(subToast('ok'));
+    else toast(subToast('err'));
+  }catch(e){ toast(subToast('err')); }
 }
 
 // ── LIVE WIRE ─────────────────────────────────────────────────
