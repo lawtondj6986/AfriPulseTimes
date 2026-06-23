@@ -1,0 +1,2410 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AfriPulse Times — MVP</title>
+<meta name="description" content="AfriPulse Times integrated MVP — home, articles, admin, newsletter, EN/FR/AR.">
+<meta name="theme-color" content="#0D0D0D">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%230D0D0D'/%3E%3Ctext x='32' y='47' font-family='Georgia,serif' font-size='44' font-weight='bold' fill='%23C8401A' text-anchor='middle'%3EA%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Noto+Naskh+Arabic:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#0D0D0D; --bg:#F7F4EE; --bg-2:#EDE8DF; --accent:#C8401A; --accent-2:#A8330F;
+  --gold:#C9A227; --muted:#6B6660; --border:#DDD8CE; --card:#fff; --green:#1E6B3A;
+}
+html{scroll-behavior:smooth}
+html[dir="rtl"] body,html[lang="ar"] body{font-family:'Noto Naskh Arabic','DM Sans',system-ui,sans-serif}
+html[dir="rtl"] .logo,html[lang="ar"] .hero-title,html[lang="ar"] .art-h1,html[lang="ar"] .sub-title,html[lang="ar"] .card-title,html[lang="ar"] .vc-title,html[lang="ar"] .rel-t,html[lang="ar"] .nl-brand,html[lang="ar"] .nl-story-t,html[lang="ar"] .vert-h,html[lang="ar"] .footer-brand{font-family:'Noto Naskh Arabic',Fraunces,serif}
+body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;-webkit-font-smoothing:antialiased;line-height:1.5}
+a{color:inherit;text-decoration:none}
+button,input,textarea,select{font-family:inherit;font-size:inherit}
+::selection{background:var(--accent);color:#fff}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* DEV BAR (always LTR for engineering clarity) */
+.devbar{background:#0a0a0a;color:#9A938B;padding:8px 18px;display:flex;align-items:center;gap:10px;font-family:'JetBrains Mono',monospace;font-size:11px;flex-wrap:wrap;position:sticky;top:0;z-index:100;direction:ltr;text-align:left}
+.devbar-tag{background:var(--accent);color:#fff;padding:2px 8px;letter-spacing:.1em;font-weight:600}
+.devbar a{color:#A09890;padding:4px 10px;border:0.5px solid #2A2520;transition:all .15s}
+.devbar a:hover,.devbar a.active{background:#1A1A1A;color:#F7F4EE;border-color:#3A3530}
+.devbar-spacer{flex:1}
+.devbar-btn{background:none;border:0.5px solid #2A2520;color:#A09890;padding:4px 10px;cursor:pointer;font-family:inherit;font-size:11px}
+.devbar-btn:hover:not(:disabled){color:#F7F4EE;border-color:#6B6660}
+.devbar-btn:disabled{opacity:.4;cursor:wait}
+.devbar-btn.live{color:#5BC97F;border-color:#0F6E56;background:rgba(15,110,86,.1)}
+.devbar-status{color:#6B6660;font-size:10px}
+
+/* HEADER */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:0 22px;height:40px;background:var(--ink);color:#F7F4EE;font-size:11px;letter-spacing:.06em;font-family:'JetBrains Mono',monospace;gap:14px;flex-wrap:wrap}
+.topbar-date{color:#A09890}
+.topbar-live{display:flex;align-items:center;gap:8px;color:#FF5A3C;font-weight:500}
+.topbar-live .dot{width:7px;height:7px;border-radius:50%;background:#FF5A3C;animation:blink 1.4s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.topbar-right{display:flex;gap:12px;align-items:center;margin-left:auto}
+html[dir="rtl"] .topbar-right{margin-left:0;margin-right:auto}
+.topbar-right .lang-link{color:#7A7470;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:.04em;padding:4px 8px;border:0.5px solid transparent;transition:all .15s;font-weight:500}
+.topbar-right .lang-link:hover{color:#fff;border-color:#3A3530}
+.topbar-right .lang-link.active{color:#fff;background:var(--accent);border-color:var(--accent)}
+.topbar-right a{color:#A09890;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:.04em}
+.topbar-right a:hover{color:#fff}
+.topbar-right .btn-sub{background:var(--accent);color:#fff !important;padding:5px 13px;font-weight:500}
+.topbar-right .btn-sub:hover{background:var(--accent-2)}
+.masthead{padding:24px 22px 14px;border-bottom:3px solid var(--ink);background:var(--bg);display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap}
+.logo{font-family:'Fraunces',serif;font-size:50px;font-weight:900;letter-spacing:-2px;line-height:.95;cursor:pointer}
+.logo .pulse{color:var(--accent);font-style:italic}
+.logo .times{color:var(--muted);font-style:italic;font-weight:400}
+.tagline{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-top:6px;font-weight:500}
+html[lang="ar"] .tagline{letter-spacing:0;font-size:12px;text-transform:none}
+.masthead-right{display:flex;flex-direction:column;align-items:flex-end;gap:10px}
+html[dir="rtl"] .masthead-right{align-items:flex-start}
+.social-links{display:flex;gap:6px;align-items:center}
+.social-links a{width:32px;height:32px;display:flex;align-items:center;justify-content:center;color:var(--muted);background:transparent;border:0.5px solid var(--border);border-radius:50%;transition:all .18s ease;text-decoration:none}
+.social-links a:hover,.social-links a:focus-visible{color:#fff;background:var(--accent);border-color:var(--accent);transform:translateY(-1px)}
+.social-links a svg{width:14px;height:14px;fill:currentColor;display:block}
+.social-links a .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.search-bar{display:flex;align-items:center;gap:10px;border:0.5px solid var(--border);padding:9px 14px;background:var(--card)}
+.search-bar input{border:none;outline:none;font-size:13px;width:200px;background:transparent}
+.nav{display:flex;padding:0 22px;border-bottom:0.5px solid var(--border);background:var(--bg);overflow-x:auto;scrollbar-width:none}
+.nav::-webkit-scrollbar{display:none}
+.nav a{padding:13px 16px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:500;cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap;color:var(--muted)}
+html[lang="ar"] .nav a{letter-spacing:0;font-size:13px;text-transform:none}
+.nav a.active{color:var(--accent);border-bottom-color:var(--accent)}
+.nav a:hover{color:var(--ink)}
+.nav a.nav-journalists{margin-left:auto;font-style:italic;color:var(--ink);font-weight:600;border-left:0.5px solid var(--border);padding-left:24px}
+html[dir="rtl"] .nav a.nav-journalists{margin-left:0;margin-right:auto;border-left:none;border-right:0.5px solid var(--border);padding-left:16px;padding-right:24px}
+.nav a.nav-journalists::before{content:'✦';color:var(--accent);margin-right:6px;font-style:normal;font-size:13px;vertical-align:1px}
+html[dir="rtl"] .nav a.nav-journalists::before{margin-right:0;margin-left:6px}
+
+/* JOURNALISTS — index + profile */
+.jr-head{padding:28px 22px;background:var(--bg);border-bottom:0.5px solid var(--border)}
+.jr-head .label{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);font-weight:700;margin-bottom:8px}
+.jr-head h2{font-family:'Fraunces',serif;font-size:36px;font-weight:900;letter-spacing:-1px;margin-bottom:6px}
+.jr-head .sub{font-size:12px;color:var(--muted);font-family:'JetBrains Mono',monospace}
+.jr-grid{padding:22px;display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:18px;background:var(--bg)}
+.jr-card{background:var(--card);border:0.5px solid var(--border);padding:20px;cursor:pointer;display:flex;flex-direction:column;gap:10px;transition:transform .2s}
+.jr-card:hover{transform:translateY(-2px);border-color:var(--accent)}
+.jr-avatar{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-family:'Fraunces',serif;font-weight:900;font-size:24px;letter-spacing:-1px;flex-shrink:0}
+.jr-card-top{display:flex;align-items:center;gap:14px}
+.jr-name{font-family:'Fraunces',serif;font-size:18px;font-weight:900;line-height:1.1;letter-spacing:-.5px;color:var(--ink)}
+.jr-beat{font-size:11px;color:var(--accent);letter-spacing:.12em;text-transform:uppercase;font-weight:700;margin-top:4px}
+.jr-meta{font-size:11px;color:var(--muted);font-family:'JetBrains Mono',monospace;display:flex;gap:10px;flex-wrap:wrap}
+.jr-bio{font-size:13px;color:var(--ink);line-height:1.55}
+.jr-stat{font-size:10px;color:var(--muted);font-family:'JetBrains Mono',monospace;letter-spacing:.08em;text-transform:uppercase;border-top:0.5px solid var(--border);padding-top:8px;margin-top:auto;display:flex;justify-content:space-between}
+.jr-stat .count{color:var(--accent);font-weight:700;font-family:'Fraunces',serif;font-size:14px;font-style:italic}
+
+/* JOURNALIST PROFILE */
+.jr-profile{background:var(--bg);padding:32px 22px 24px}
+.jr-profile-grid{display:grid;grid-template-columns:240px 1fr;gap:32px;max-width:1100px;margin:0 auto;align-items:start}
+.jr-profile-left{text-align:center}
+.jr-profile-avatar{width:160px;height:160px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-family:'Fraunces',serif;font-weight:900;font-size:56px;letter-spacing:-2px;margin:0 auto 16px}
+.jr-profile-meta{font-size:11px;color:var(--muted);font-family:'JetBrains Mono',monospace;line-height:1.7}
+.jr-profile-meta .label{color:var(--ink);font-weight:500;font-family:'DM Sans',sans-serif}
+.jr-profile-right h2{font-family:'Fraunces',serif;font-size:42px;font-weight:900;letter-spacing:-1.5px;margin-bottom:6px;line-height:1}
+.jr-profile-right .beat{font-size:12px;color:var(--accent);letter-spacing:.14em;text-transform:uppercase;font-weight:700;margin-bottom:18px}
+.jr-profile-right .bio{font-family:'Fraunces',serif;font-size:18px;line-height:1.6;color:var(--ink);margin-bottom:18px;font-style:italic}
+.jr-stories-head{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);font-weight:700;padding:18px 22px 10px;border-top:1px solid var(--border);background:var(--bg)}
+.jr-stories{padding:0 22px 32px;background:var(--bg);display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:18px}
+
+/* ARTICLE MEDIA (hero image / video) */
+.art-media{margin:18px 22px 0;background:var(--ink);overflow:hidden;border:0.5px solid var(--border);position:relative}
+.art-media img{display:block;width:100%;height:auto;max-height:440px;object-fit:cover}
+.art-media .video-wrap{position:relative;padding-bottom:56.25%;height:0;overflow:hidden}
+.art-media .video-wrap iframe{position:absolute;top:0;left:0;width:100%;height:100%;border:none}
+.art-media .placeholder{height:280px;display:flex;align-items:center;justify-content:center;font-size:140px;opacity:.45;position:relative;overflow:hidden}
+.art-media .placeholder::after{content:attr(data-emoji);text-shadow:0 10px 30px rgba(0,0,0,.5)}
+.art-media-caption{padding:10px 16px;background:var(--bg-2);font-size:12px;color:var(--ink);line-height:1.5;border-top:0.5px solid var(--border);display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.art-media-caption .credit{color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:11px;flex-shrink:0}
+
+/* SCROLLING TICKER (under verticals) */
+.ticker{background:var(--ink);color:#C0BBB4;display:flex;align-items:center;height:42px;overflow:hidden;border-bottom:2px solid var(--accent);direction:ltr}
+.ticker-badge{background:var(--accent);color:#fff;padding:0 18px;font-size:10px;letter-spacing:.16em;text-transform:uppercase;font-weight:600;display:flex;align-items:center;gap:8px;height:100%;flex-shrink:0;white-space:nowrap}
+.ticker-badge .d{width:7px;height:7px;border-radius:50%;background:#fff;animation:blink 1.4s infinite;flex-shrink:0}
+.ticker-wrap{flex:1;overflow:hidden;position:relative}
+.ticker-wrap::before,.ticker-wrap::after{content:'';position:absolute;top:0;bottom:0;width:48px;z-index:3;pointer-events:none}
+.ticker-wrap::before{left:0;background:linear-gradient(to right,var(--ink),transparent)}
+.ticker-wrap::after{right:0;background:linear-gradient(to left,var(--ink),transparent)}
+.ticker-track{display:flex;align-items:center;height:100%;animation:tickerScroll 60s linear infinite;white-space:nowrap}
+.ticker-track:hover{animation-play-state:paused}
+@keyframes tickerScroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+.ti{display:inline-flex;align-items:center;gap:10px;padding:0 22px;border-right:1px solid #1A1A1A;font-size:12px;height:100%;color:#C0BBB4;flex-shrink:0;text-decoration:none}
+.ti:hover{background:#161410}
+.ti-region{background:rgba(46,125,50,.25);color:#81C784;font-size:9px;letter-spacing:.12em;text-transform:uppercase;padding:2px 7px;font-weight:600}
+.ti-title{max-width:340px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ti-src{color:#6A645E;font-family:'JetBrains Mono',monospace;font-size:10px}
+
+/* COMMODITIES BAR */
+.com-bar{background:#1A1813;color:#E8E3DC;display:flex;align-items:center;height:36px;overflow:hidden;border-bottom:0.5px solid var(--border);direction:ltr}
+.com-label{background:var(--gold);color:var(--ink);padding:0 16px;font-size:10px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;display:flex;align-items:center;height:100%;flex-shrink:0;white-space:nowrap}
+.com-wrap{flex:1;overflow:hidden;position:relative}
+.com-wrap::before,.com-wrap::after{content:'';position:absolute;top:0;bottom:0;width:32px;z-index:3;pointer-events:none}
+.com-wrap::before{left:0;background:linear-gradient(to right,#1A1813,transparent)}
+.com-wrap::after{right:0;background:linear-gradient(to left,#1A1813,transparent)}
+.com-track{display:flex;align-items:center;height:100%;animation:tickerScroll 90s linear infinite;white-space:nowrap}
+.com-track:hover{animation-play-state:paused}
+.com-item{padding:0 22px;display:flex;align-items:center;gap:10px;border-right:1px solid #2A2620;font-family:'JetBrains Mono',monospace;font-size:12px;flex-shrink:0;height:100%}
+.com-name{color:#9A938B}
+.com-chg.up{color:#5BC97F}
+.com-chg.dn{color:#FF6B5C}
+
+/* HOME */
+.hero{padding:30px 22px 14px;background:var(--bg)}
+.hero-grid{display:grid;grid-template-columns:1.5fr 1fr;gap:1px;background:var(--border);border:0.5px solid var(--border);margin-bottom:24px}
+.hero-main{background:var(--card);cursor:pointer;display:flex;flex-direction:column}
+.hero-main:hover{background:#FBF8F2}
+.hero-img{height:260px;position:relative;overflow:hidden;display:flex;align-items:flex-end;padding:18px}
+.hero-img::after{content:attr(data-emoji);position:absolute;right:-30px;top:-60px;font-size:220px;opacity:.1;line-height:1;pointer-events:none}
+.hero-cat{background:var(--accent);color:#fff;font-size:10px;letter-spacing:.14em;text-transform:uppercase;padding:5px 12px;font-weight:700;position:relative;z-index:1}
+.hero-body{padding:20px 24px 22px}
+.hero-kicker{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);margin-bottom:10px;font-weight:600}
+.hero-title{font-family:'Fraunces',serif;font-size:28px;font-weight:900;line-height:1.1;letter-spacing:-1px;margin-bottom:12px}
+.hero-ex{font-size:14px;color:var(--muted);line-height:1.6;margin-bottom:10px}
+.hero-meta{font-size:11px;color:var(--muted);font-family:'JetBrains Mono',monospace;display:flex;gap:12px;flex-wrap:wrap}
+.hero-meta .by{color:var(--ink);font-weight:500;font-family:'DM Sans',sans-serif}
+.hero-subs{display:flex;flex-direction:column;background:var(--border)}
+.sub{background:var(--card);padding:14px 18px;flex:1;cursor:pointer;border-bottom:0.5px solid var(--border)}
+.sub:last-child{border-bottom:none}
+.sub:hover{background:#FBF8F2}
+.sub-cat{font-size:10px;color:var(--accent);text-transform:uppercase;letter-spacing:.12em;font-weight:700;margin-bottom:5px}
+.sub-title{font-family:'Fraunces',serif;font-size:14px;font-weight:700;line-height:1.3;margin-bottom:4px}
+.sub-meta{font-size:11px;color:var(--muted);font-family:'JetBrains Mono',monospace}
+.main{display:grid;grid-template-columns:230px 1fr 240px;gap:0;padding:0 22px 32px;background:var(--bg)}
+.feed{padding:0 24px}
+html[dir="rtl"] .feed{padding:0 24px}
+
+/* LEFT RAIL — by-vertical archive aggregator */
+.left-rail{padding-right:18px;border-right:0.5px solid var(--border)}
+html[dir="rtl"] .left-rail{padding-right:0;padding-left:18px;border-right:none;border-left:0.5px solid var(--border)}
+.lr-head{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);padding-bottom:10px;border-bottom:1px solid var(--border);margin-bottom:6px;font-weight:700;display:flex;justify-content:space-between;align-items:center}
+.lr-head .lr-total{color:var(--accent);font-family:'JetBrains Mono',monospace;font-weight:600}
+.lr-vert{padding:8px 0 6px}
+.lr-vert-head{display:flex;justify-content:space-between;align-items:center;font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;color:var(--accent);padding:6px 0;cursor:pointer;border-top:1px solid var(--border)}
+.lr-vert:first-child .lr-vert-head{border-top:none}
+.lr-vert-head:hover{color:var(--accent-2)}
+.lr-vert-head .arrow{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);font-weight:400;letter-spacing:0;transition:transform .2s}
+.lr-vert-head .arrow.open{transform:rotate(90deg)}
+.lr-vert-count{background:var(--bg-2);color:var(--ink);padding:1px 6px;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;border-radius:2px;margin-left:6px}
+html[dir="rtl"] .lr-vert-count{margin-left:0;margin-right:6px}
+.lr-list{display:none;padding:2px 0 4px}
+.lr-list.open{display:block}
+.lr-art{display:block;padding:7px 0;cursor:pointer;border-bottom:0.5px dotted var(--border)}
+.lr-art:last-child{border-bottom:none}
+.lr-art:hover .lr-art-title{color:var(--accent)}
+.lr-art-title{font-family:'Fraunces',serif;font-weight:700;font-size:12.5px;line-height:1.3;color:var(--ink);margin-bottom:3px}
+.lr-art-meta{font-size:10px;color:var(--muted);font-family:'JetBrains Mono',monospace;display:flex;justify-content:space-between;align-items:center;gap:6px}
+.lr-art-meta .live-badge{background:rgba(229,72,77,.15);color:#E5484D;padding:1px 4px;border-radius:2px;font-size:9px;letter-spacing:.04em}
+.lr-viewall{display:block;font-size:10px;color:var(--accent);font-family:'JetBrains Mono',monospace;letter-spacing:.06em;margin-top:8px;padding:6px 0;cursor:pointer;text-align:left;font-weight:600}
+.lr-viewall:hover{text-decoration:underline}
+.lr-empty{font-size:11px;color:var(--muted);font-style:italic;padding:8px 0;font-family:'Fraunces',serif}
+.lr-toggle-all{font-size:10px;color:var(--accent);font-family:'JetBrains Mono',monospace;letter-spacing:.06em;cursor:pointer;padding:4px 8px;border:0.5px solid var(--border);background:transparent;font-weight:500}
+.lr-toggle-all:hover{background:var(--bg-2);border-color:var(--accent)}
+.lr-section-divider{height:2px;background:var(--ink);margin:18px 0 14px;position:relative}
+.lr-section-divider::after{content:'❖';position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:var(--bg);padding:0 6px;color:var(--accent);font-size:11px}
+.lr-region-head{display:flex;justify-content:space-between;align-items:center;font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;color:var(--ink);padding:7px 0;cursor:pointer;border-top:1px solid var(--border)}
+.lr-region-head:first-of-type{border-top:none}
+.lr-region-head:hover{color:var(--accent)}
+.lr-region-head .flag{margin-right:6px;font-style:normal;font-size:13px}
+html[dir="rtl"] .lr-region-head .flag{margin-right:0;margin-left:6px}
+.lr-region-head .lr-vert-count{background:#0e2818;color:#fff}
+.feed-head{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);padding-bottom:10px;border-bottom:1px solid var(--border);margin-bottom:4px;font-weight:700;display:flex;justify-content:space-between}
+.card{display:grid;grid-template-columns:80px 1fr;gap:14px;padding:14px 0;border-bottom:0.5px solid var(--border);cursor:pointer}
+.card:hover{opacity:.72}
+.card-thumb{width:80px;height:64px;display:flex;align-items:center;justify-content:center;font-size:30px;opacity:.6}
+.card-cat{font-size:10px;color:var(--accent);text-transform:uppercase;letter-spacing:.12em;font-weight:700;margin-bottom:4px;display:flex;justify-content:space-between}
+.card-cat .r{color:var(--muted);font-weight:400;font-family:'JetBrains Mono',monospace}
+.card-title{font-family:'Fraunces',serif;font-size:14px;font-weight:700;line-height:1.3;margin-bottom:3px}
+.card-meta{font-size:11px;color:var(--muted);font-family:'JetBrains Mono',monospace}
+.card-url{font-size:10px;color:#0F6E56;font-family:'JetBrains Mono',monospace;margin-top:3px;direction:ltr}
+.empty{padding:40px 8px;text-align:center;color:var(--muted);font-family:'Fraunces',serif;font-style:italic}
+.rpanel{padding-left:22px;border-left:0.5px solid var(--border);padding-top:0}
+html[dir="rtl"] .rpanel{padding-left:0;padding-right:22px;border-left:none;border-right:0.5px solid var(--border)}
+.panel-head{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);padding-bottom:8px;border-bottom:0.5px solid var(--border);margin-bottom:8px;font-weight:700;margin-top:18px}
+.panel-head:first-child{margin-top:0}
+.mrow{display:flex;justify-content:space-between;padding:7px 0;border-bottom:0.5px solid var(--border);font-size:11px;font-family:'JetBrains Mono',monospace}
+.mrow .n{color:var(--muted)}
+.mrow .v{font-weight:600}
+.mrow.region-row{transition:background .15s;padding:7px 6px;margin:0 -6px;border-radius:2px}
+.mrow.region-row:hover{background:var(--bg-2)}
+.mrow.region-row:hover .n{color:var(--ink)}
+.mrow.region-row .n{font-family:'DM Sans',sans-serif;font-size:12px;letter-spacing:0;display:flex;align-items:center;gap:6px}
+.mrow.region-row .v{color:var(--accent);font-size:12px}
+.mrow.region-row .flag{font-size:13px;font-family:'DM Sans',sans-serif}
+.up{color:var(--green)}
+.dn{color:var(--accent)}
+
+/* ARTICLE */
+.art-back{display:inline-block;padding:14px 22px;font-size:11px;color:var(--accent);background:var(--bg);cursor:pointer}
+.article{display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:0;background:var(--bg);padding:0 22px 24px}
+.art-body{padding:8px 24px 24px 0;min-width:0}
+html[dir="rtl"] .art-body{padding:8px 0 24px 24px}
+.art-kicker{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);font-weight:600;margin-bottom:12px}
+.art-h1{font-family:'Fraunces',serif;font-size:34px;font-weight:900;line-height:1.1;letter-spacing:-1px;margin-bottom:16px;color:var(--ink)}
+.art-meta{font-size:11px;color:var(--muted);font-family:'JetBrains Mono',monospace;padding-bottom:16px;margin-bottom:20px;border-bottom:1px solid var(--border)}
+.art-meta .by{color:var(--ink);font-weight:500;font-family:'DM Sans',sans-serif}
+.art-lead{font-family:'Fraunces',serif;font-size:17px;line-height:1.5;color:var(--ink);font-weight:500;margin-bottom:16px}
+.art-body p{font-size:15px;line-height:1.75;color:var(--ink);margin-bottom:14px}
+.art-source{margin-top:18px;padding:14px 16px;background:rgba(229,72,77,.08);border-left:3px solid #E5484D;font-size:13px;line-height:1.5}
+.art-source a{color:var(--accent);font-weight:500}
+.art-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:20px;padding-top:16px;border-top:1px solid var(--border)}
+.art-tag{font-size:10px;letter-spacing:.1em;text-transform:uppercase;background:var(--bg-2);padding:5px 10px;font-weight:500}
+.art-note{margin-top:22px;padding:14px 16px;background:var(--bg-2);border-left:3px solid var(--gold);font-size:12px;color:var(--muted);line-height:1.5}
+.art-lang-note{margin-top:14px;padding:10px 14px;background:rgba(46,124,247,.08);border-left:3px solid #2E7CF7;font-size:12px;color:var(--muted);line-height:1.5}
+.art-side{padding:8px 0 0 22px;border-left:0.5px solid var(--border)}
+html[dir="rtl"] .art-side{padding:8px 22px 0 0;border-left:none;border-right:0.5px solid var(--border)}
+.data-row{margin-bottom:14px}
+.data-label{font-size:11px;color:var(--muted);font-family:'JetBrains Mono',monospace;margin-bottom:3px}
+.data-val{font-size:18px;font-weight:600;font-family:'JetBrains Mono',monospace}
+.data-chg{font-size:11px;font-family:'JetBrains Mono',monospace;margin-top:2px}
+.related{padding:24px 22px;background:var(--bg);border-top:1px solid var(--border)}
+.rel-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:10px}
+.rel{cursor:pointer}
+.rel:hover .rel-t{color:var(--accent)}
+.rel-cat{font-size:10px;color:var(--accent);text-transform:uppercase;letter-spacing:.1em;font-weight:700;margin-bottom:4px}
+.rel-t{font-family:'Fraunces',serif;font-size:14px;font-weight:700;line-height:1.3}
+.rel-url{font-size:10px;color:var(--muted);font-family:'JetBrains Mono',monospace;margin-top:3px;direction:ltr}
+
+/* VERTICAL */
+.vert-head{padding:24px 22px;background:var(--bg);border-bottom:0.5px solid var(--border)}
+.vert-h{font-family:'Fraunces',serif;font-size:36px;font-weight:900;letter-spacing:-1px}
+.vert-sub{font-size:12px;color:var(--muted);margin-top:6px;font-family:'JetBrains Mono',monospace}
+.vert-grid{padding:22px;display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:18px;background:var(--bg)}
+.vert-card{background:var(--card);border:0.5px solid var(--border);padding:0;cursor:pointer;display:flex;flex-direction:column}
+.vert-card:hover{transform:translateY(-2px);transition:transform .2s}
+.vc-thumb{height:110px;display:flex;align-items:flex-end;padding:12px;position:relative;overflow:hidden}
+.vc-thumb::after{content:attr(data-emoji);position:absolute;right:-15px;top:-25px;font-size:120px;opacity:.12}
+.vc-cat{background:var(--accent);color:#fff;font-size:9px;letter-spacing:.14em;text-transform:uppercase;padding:3px 8px;font-weight:700;position:relative;z-index:1}
+.vc-body{padding:14px 16px}
+.vc-title{font-family:'Fraunces',serif;font-size:15px;font-weight:700;line-height:1.25;margin-bottom:8px}
+.vc-meta{font-size:11px;color:var(--muted);font-family:'JetBrains Mono',monospace}
+
+/* ADMIN (always LTR — code/editorial workflow stays in source orientation) */
+.admin{display:grid;grid-template-columns:280px 1fr;min-height:calc(100vh - 38px);background:#101112;color:#E4E6E8;font-family:'Inter','DM Sans',sans-serif;direction:ltr;text-align:left}
+.adm-list{background:#191B1D;border-right:1px solid #2A2D31;overflow-y:auto}
+.adm-list-head{padding:14px 16px;border-bottom:1px solid #2A2D31;display:flex;justify-content:space-between;align-items:center}
+.adm-list-title{font-size:13px;font-weight:600}
+.adm-new-btn{background:var(--accent);color:#fff;border:none;width:28px;height:28px;border-radius:4px;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center}
+.adm-filter{padding:8px 16px;border-bottom:1px solid #2A2D31}
+.adm-filter input{width:100%;background:#222528;border:1px solid #2A2D31;color:#E4E6E8;padding:7px 10px;border-radius:4px;font-size:12px}
+.adm-doc{padding:12px 16px;border-bottom:1px solid #2A2D31;cursor:pointer;border-left:3px solid transparent}
+.adm-doc:hover{background:#222528}
+.adm-doc.active{background:#222528;border-left-color:var(--accent)}
+.adm-doc-title{font-size:13px;font-weight:500;line-height:1.4;margin-bottom:4px}
+.adm-doc-meta{font-size:11px;color:#5F6469;display:flex;gap:8px;flex-wrap:wrap}
+.adm-status{font-size:10px;padding:2px 6px;border-radius:3px;font-weight:500}
+.s-pub{background:rgba(34,160,107,.18);color:#22A06B}
+.s-draft{background:rgba(232,149,77,.18);color:#E8954D}
+.s-live{background:rgba(229,72,77,.18);color:#E5484D}
+.s-live::before{content:'\25CF\00A0';font-size:8px}
+.adm-pane{background:#101112;overflow-y:auto;padding:0}
+.adm-bar{padding:12px 24px;border-bottom:1px solid #2A2D31;display:flex;align-items:center;gap:12px;position:sticky;top:0;background:#101112;z-index:5}
+.adm-crumb{font-size:12px;color:#5F6469}
+.adm-crumb .cur{color:#E4E6E8}
+.adm-actions{margin-left:auto;display:flex;gap:8px}
+.adm-btn{padding:7px 14px;font-size:12px;font-weight:500;border-radius:4px;cursor:pointer;border:1px solid #2A2D31;background:#222528;color:#E4E6E8}
+.adm-btn:hover{background:#2A2D31}
+.adm-btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.adm-btn.primary:hover{background:var(--accent-2)}
+.adm-btn.danger{color:#E5484D;background:transparent}
+.adm-form{padding:24px 28px 36px;max-width:780px}
+.adm-field{margin-bottom:18px}
+.adm-label{font-size:12px;font-weight:500;color:#9AA0A6;margin-bottom:6px;display:flex;justify-content:space-between}
+.adm-label .help{font-size:11px;color:#5F6469;font-weight:400}
+.adm-input{width:100%;background:#1A1C1E;border:1px solid #2A2D31;color:#E4E6E8;padding:9px 12px;font-size:14px;border-radius:4px;font-family:inherit}
+.adm-input:focus{border-color:var(--accent);outline:none}
+.adm-input.title{font-family:'Fraunces',serif;font-size:22px;font-weight:700;line-height:1.2}
+.adm-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.adm-textarea{min-height:200px;resize:vertical;line-height:1.7}
+.adm-slug{background:#1A1C1E;border:1px solid #2A2D31;border-radius:4px;padding:8px 12px;font-size:12px;color:#9AA0A6;font-family:'JetBrains Mono',monospace;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.adm-slug .u{color:var(--accent);margin-left:auto}
+.adm-welcome{padding:32px}
+.adm-welcome h2{font-family:'Fraunces',serif;font-size:28px;font-weight:900;letter-spacing:-.5px;margin-bottom:8px}
+.adm-welcome p{color:#9AA0A6;font-size:14px;line-height:1.6;margin-bottom:18px;max-width:600px}
+.adm-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;max-width:600px;margin-bottom:22px}
+.adm-stat{background:#1A1C1E;border:1px solid #2A2D31;border-radius:6px;padding:14px 18px}
+.adm-stat-label{font-size:11px;color:#9AA0A6;letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px}
+.adm-stat-val{font-family:'Fraunces',serif;font-size:32px;font-weight:900}
+
+/* NEWSLETTER */
+.nl-stage{background:#D8D3C9;padding:24px;min-height:calc(100vh - 38px)}
+.nl-client{max-width:680px;margin:0 auto;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 8px 30px rgba(0,0,0,.08)}
+.nl-bar{background:#F3F1EC;padding:10px 18px;border-bottom:0.5px solid var(--border);display:flex;align-items:center;gap:10px;font-size:12px;color:var(--muted)}
+.nl-bar .f{color:var(--ink);font-weight:500}
+.nl-email{background:var(--bg);max-width:600px;margin:0 auto}
+.nl-head{padding:22px 28px 14px;border-bottom:3px solid var(--ink)}
+.nl-kicker{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);font-family:'JetBrains Mono',monospace;display:flex;justify-content:space-between;margin-bottom:8px}
+.nl-brand{font-family:'Fraunces',serif;font-size:32px;font-weight:900;letter-spacing:-1.5px}
+.nl-brand .pulse{color:var(--accent);font-style:italic}
+.nl-brand .times{color:var(--muted);font-style:italic;font-weight:400}
+.nl-sub{font-family:'Fraunces',serif;font-size:13px;color:var(--muted);font-style:italic;margin-top:4px}
+.nl-intro{padding:18px 28px;background:#fff;border-bottom:0.5px solid var(--border)}
+.nl-intro p{font-size:14px;line-height:1.7;margin-bottom:8px}
+.nl-greet{font-family:'Fraunces',serif;font-size:16px}
+.nl-greet em{color:var(--accent);font-style:italic}
+.nl-sect{padding:20px 28px;background:var(--bg)}
+.nl-sect-h{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);font-weight:700;padding-bottom:8px;border-bottom:1px solid var(--border);margin-bottom:10px}
+.nl-story{padding:12px 0;border-bottom:0.5px solid var(--border);cursor:pointer}
+.nl-story:last-child{border-bottom:none}
+.nl-story-cat{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:700;margin-bottom:6px}
+.nl-story-t{font-family:'Fraunces',serif;font-size:16px;font-weight:700;line-height:1.2;margin-bottom:6px}
+.nl-story-s{font-size:13px;line-height:1.55;color:var(--ink);margin-bottom:6px}
+.nl-numbers{background:var(--ink);color:#E8E3DC;padding:18px 28px}
+.nl-numbers .nl-sect-h{color:#7A7470;border-bottom-color:#1A1A1A}
+.num-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.num-cell{padding:4px 0}
+.num-label{font-size:11px;color:#7A7470;font-family:'JetBrains Mono',monospace;margin-bottom:3px}
+.num-val{font-size:16px;font-weight:600;font-family:'JetBrains Mono',monospace;color:#F7F4EE}
+.num-chg{font-size:11px;font-family:'JetBrains Mono',monospace}
+.num-chg.up{color:#5BC97F}
+.num-chg.dn{color:#FF6B5C}
+.nl-foot{padding:18px 28px;background:var(--ink);color:#A09890;font-size:11px;text-align:center;line-height:1.6}
+.nl-foot-b{font-family:'Fraunces',serif;font-size:18px;color:#F7F4EE;font-weight:900;margin-bottom:6px}
+.nl-foot-b .pulse{color:var(--accent);font-style:italic}
+
+/* INVESTOR / FUNDER CTA */
+.investor-cta{background:var(--accent);color:#fff;padding:60px 22px 56px;position:relative;overflow:hidden;margin-top:24px}
+.investor-cta::before{content:'';position:absolute;top:-120px;right:-120px;width:420px;height:420px;border:1px solid rgba(255,255,255,.10);border-radius:50%;pointer-events:none}
+.investor-cta::after{content:'';position:absolute;top:-70px;right:-70px;width:300px;height:300px;border:1px solid rgba(255,255,255,.08);border-radius:50%;pointer-events:none}
+.investor-inner{max-width:1100px;margin:0 auto;position:relative;z-index:1;display:grid;grid-template-columns:1.4fr 1fr;gap:48px;align-items:center}
+.investor-eyebrow{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:rgba(255,255,255,.72);font-weight:700;margin-bottom:14px;font-family:'JetBrains Mono',monospace}
+.investor-h{font-family:'Fraunces',serif;font-size:46px;font-weight:900;letter-spacing:-1.5px;line-height:1.05;margin-bottom:18px;color:#fff}
+.investor-h em{font-style:italic;font-weight:400;color:rgba(255,255,255,.85);display:block;font-size:38px;margin-top:2px}
+.investor-lead{font-size:15px;line-height:1.65;color:rgba(255,255,255,.92);max-width:540px;margin-bottom:22px}
+.investor-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;max-width:520px;margin-bottom:26px;border-top:1px solid rgba(255,255,255,.18);border-bottom:1px solid rgba(255,255,255,.18);padding:18px 0}
+.investor-stat .num{font-family:'Fraunces',serif;font-size:34px;font-weight:900;letter-spacing:-1px;line-height:1;font-style:italic}
+.investor-stat .label{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.7);margin-top:6px;font-weight:600}
+.investor-ctas{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px}
+.investor-btn{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.45);padding:13px 22px;font-size:12px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;text-decoration:none;transition:all .18s ease;cursor:pointer;font-family:inherit;display:inline-block}
+.investor-btn:hover{background:rgba(255,255,255,.12);border-color:#fff}
+.investor-btn.primary{background:#fff;color:var(--accent);border-color:#fff}
+.investor-btn.primary:hover{background:var(--ink);color:#fff;border-color:var(--ink)}
+.investor-note{font-size:11px;color:rgba(255,255,255,.6);font-family:'JetBrains Mono',monospace;letter-spacing:.04em;margin-top:14px}
+.investor-card{background:rgba(0,0,0,.20);padding:32px;border:1px solid rgba(255,255,255,.18)}
+.investor-card .pill{display:inline-block;font-size:10px;letter-spacing:.16em;text-transform:uppercase;background:rgba(255,255,255,.15);padding:5px 11px;font-weight:700;margin-bottom:14px;color:#fff}
+.investor-card .email-label{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.7);margin-bottom:6px;font-weight:600}
+.investor-card .email{font-family:'Fraunces',serif;font-size:22px;color:#fff;font-weight:700;text-decoration:none;letter-spacing:-.5px;display:block;margin-bottom:18px}
+.investor-card .email:hover{text-decoration:underline}
+.investor-card .meta{font-size:11px;color:rgba(255,255,255,.62);line-height:1.7;font-family:'JetBrains Mono',monospace;letter-spacing:.04em}
+@media (max-width:880px){.investor-inner{grid-template-columns:1fr;gap:24px}.investor-h{font-size:32px}.investor-h em{font-size:26px}}
+
+/* ADVERTISING SLOT PLACEHOLDERS */
+.ad-slot{position:relative;background:repeating-linear-gradient(45deg,var(--bg) 0,var(--bg) 10px,var(--bg-2) 10px,var(--bg-2) 20px);border:1px dashed var(--border);padding:18px 22px;display:flex;align-items:center;gap:18px;flex-wrap:wrap;margin:18px 22px 0}
+.ad-slot .ad-label{position:absolute;top:-9px;left:14px;background:var(--bg);color:var(--muted);padding:0 8px;font-size:9px;letter-spacing:.18em;text-transform:uppercase;font-weight:700;font-family:'JetBrains Mono',monospace}
+.ad-slot .ad-content{flex:1;min-width:200px}
+.ad-slot .ad-title{font-family:'Fraunces',serif;font-size:18px;font-weight:900;letter-spacing:-.5px;color:var(--ink);line-height:1.2;font-style:italic}
+.ad-slot .ad-sub{font-size:12px;color:var(--muted);line-height:1.55;margin-top:4px}
+.ad-slot .ad-cta{background:var(--ink);color:#fff;padding:10px 18px;font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;cursor:pointer;text-decoration:none;transition:background .15s;white-space:nowrap}
+.ad-slot .ad-cta:hover{background:var(--accent)}
+.ad-slot-mini{display:block;padding:14px 12px;margin:0 -6px;background:var(--bg-2);border:1px dashed var(--border)}
+.ad-slot-mini .ad-label{position:relative;top:auto;left:auto;background:transparent;display:block;padding:0;margin-bottom:6px;font-size:9px;color:var(--muted);letter-spacing:.18em;text-transform:uppercase;font-weight:700;font-family:'JetBrains Mono',monospace}
+.ad-slot-mini .ad-title{font-family:'Fraunces',serif;font-size:13px;font-weight:700;letter-spacing:0;color:var(--ink);line-height:1.3;font-style:italic;margin-bottom:4px}
+.ad-slot-mini .ad-sub{font-size:11px;color:var(--muted);line-height:1.5;margin-bottom:8px}
+.ad-slot-mini .ad-cta{display:inline-block;background:transparent;color:var(--accent);padding:0;font-size:10px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;cursor:pointer;text-decoration:none;border:none;font-family:'JetBrains Mono',monospace}
+.ad-slot-mini .ad-cta:hover{text-decoration:underline}
+
+/* FOOTER */
+.footer{background:var(--ink);color:#A09890;padding:38px 22px 18px;margin-top:0;border-top:1px solid #1A1A1A}
+.footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr;gap:32px;max-width:1100px;margin:0 auto 24px}
+.footer-brand{font-family:'Fraunces',serif;font-size:28px;color:#F7F4EE;font-weight:900;margin-bottom:8px}
+.footer-brand .pulse{color:var(--accent);font-style:italic}
+.footer-brand .times{color:#9A938B;font-style:italic;font-weight:400}
+.footer-desc{font-size:12px;line-height:1.6;color:#B0ABA5;max-width:260px}
+.footer h4{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:#9A938B;margin-bottom:10px;font-weight:700}
+.footer a{display:block;font-size:13px;color:#B0ABA5;margin-bottom:6px;cursor:pointer}
+.footer a:hover{color:#F7F4EE}
+.footer-bot{max-width:1100px;margin:0 auto;border-top:1px solid #1A1A1A;padding-top:14px;font-size:11px;color:#8B857C;font-family:'JetBrains Mono',monospace;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(160%);background:var(--ink);color:#F7F4EE;padding:13px 20px;font-size:13px;z-index:300;border-left:3px solid var(--accent);box-shadow:0 12px 40px rgba(0,0,0,.35);transition:transform .35s ease;max-width:90vw}
+.toast.show{transform:translateX(-50%) translateY(0)}
+
+@media (max-width:1080px){
+  .main{grid-template-columns:1fr 240px}
+  .left-rail{display:none}
+}
+@media (max-width:880px){
+  .hero-grid,.article,.main,.admin{grid-template-columns:1fr}
+  .adm-list{display:none}
+  .footer-grid{grid-template-columns:1fr}
+  .feed,html[dir="rtl"] .feed{padding:0}
+  .rpanel,.art-side,html[dir="rtl"] .rpanel,html[dir="rtl"] .art-side{padding:18px 0 0;border:none;border-top:0.5px solid var(--border);margin-top:18px}
+  .left-rail,html[dir="rtl"] .left-rail{display:block;padding:18px 0;border:none;border-top:0.5px solid var(--border);margin-top:18px}
+  .adm-grid{grid-template-columns:1fr}
+  .ti-title{max-width:240px}
+}
+@media (max-width:600px){
+  .logo{font-size:38px}
+  .hero-title,.art-h1,.vert-h{font-size:24px}
+}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.001ms !important;transition-duration:.001ms !important}
+  .ticker-track,.com-track{animation:none !important}
+}
+</style>
+</head>
+<body>
+
+<div class="devbar" role="navigation" aria-label="MVP routes">
+  <span class="devbar-tag">MVP</span>
+  <a href="#/" data-r="home">Home</a>
+  <a href="#/v/mining" data-r="vert">Mining</a>
+  <a href="#/admin" data-r="admin">Admin</a>
+  <a href="#/newsletter" data-r="nl">Newsletter</a>
+  <span class="devbar-spacer"></span>
+  <span class="devbar-status" id="dev-info">·</span>
+  <button class="devbar-btn" id="btn-live" type="button">Pull live wire ↻</button>
+  <button class="devbar-btn" id="btn-reset" type="button">⟲ Reset</button>
+</div>
+
+<div id="app"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+'use strict';
+
+// ──────────────────────────────────────────────────────────────
+// AFRIPULSE TIMES — MVP (EN/FR/AR · ticker + commodities · admin · newsletter)
+// ──────────────────────────────────────────────────────────────
+
+// ── i18n ──────────────────────────────────────────────────────
+const LANG = {
+  en: {
+    sign_in:'Sign In', subscribe:'Subscribe', stories_live:'stories live',
+    tagline:"The continent's voice · 54 nations · real-time coverage",
+    search_placeholder:'Search stories…',
+    latest_stories:'Latest Stories', manage:'Manage →',
+    browse_by_vertical:'Browse Archive', archive_total:'total', view_all:'View all',
+    expand_all:'Expand all', collapse_all:'Collapse all', no_articles:'No articles yet.',
+    invest_eyebrow:'Series Seed · 2026',
+    invest_h1:"Africa's story is being written now.",
+    invest_h2:'Help us write it together.',
+    invest_lead:"AfriPulse Times is raising to build the pan-African news network the continent has been waiting for. 54 nations. 9 verticals. One masthead, real-time. Join us as an investor, advertiser, or strategic partner.",
+    invest_stat1:'Nations covered', invest_stat2:'Bureaux launching', invest_stat3:'Languages live',
+    invest_btn_invest:'Investor enquiries →', invest_btn_partner:'Become a partner',
+    invest_note:'Holding company · AfriPulse Times Media Limited · Mauritius',
+    invest_card_pill:'Open round',
+    invest_card_label:'Investor relations',
+    invest_card_general:'General partnerships',
+    ad_label:'Advertising · Reserved',
+    ad_banner_title:'Premium banner placement',
+    ad_banner_sub:'Top-of-fold reach across home, vertical, and article pages. Burnt-sienna brand surround. ~250K weekly impressions at launch.',
+    ad_panel_title:'Sponsored panel',
+    ad_panel_sub:'Right-rail companion next to live markets and commodities. High-intent business reader.',
+    ad_cta:'Reserve this slot →',
+    browse_by_region:'Browse by Region', regions_count:'regions',
+    west_africa:'West Africa', east_africa:'East Africa',
+    southern_africa:'Southern Africa', north_africa:'North Africa', central_africa:'Central Africa',
+    back_to_regions:'← All regions',
+    featured_journalists:'Featured Journalists', our_journalists:'Our Journalists',
+    bureau_chief:'Bureau Chief', beat:'Beat', bureau:'Bureau', stories_published:'stories published',
+    recent_stories:'Recent Stories', view_profile:'View profile →', back_to_roster:'← All journalists',
+    journalist_profile:'Journalist Profile',
+    media_type:'Media type', media_url:'Media URL', media_caption:'Caption', media_credit:'Credit',
+    media_none:'None', media_image:'Image', media_video:'Video (YouTube embed URL)',
+    media_help:'Image URL or YouTube embed link. Leave blank to auto-generate a placeholder.',
+    live:'Live', live_markets:'Live Markets', commodities:'Commodities', newsroom:'Newsroom',
+    cms:'CMS', daily_briefing:'Daily Briefing', preview:'Preview →',
+    breaking:'Breaking', min_read:'min read', by:'By',
+    more_from:'More from', read:'Read →', back_all:'← All',
+    edit_in_cms:'Edit this story in the CMS →',
+    cms_link:'CMS →', save:'Save', delete_btn:'Delete',
+    new_article:'+ New article', back_to_site:'← Back to site',
+    not_found_title:'404',
+    not_found_msg:"This story isn't filed under this URL.",
+    not_found_sub:'It may have been retitled in the CMS, or it may not exist yet.',
+    back_front_page:'← Back to the front page', open_admin:'Open admin',
+    issue:'Issue', edition:'Edition: Lagos',
+    daily_byline:'The Daily Briefing · what moved Africa overnight',
+    good_morning:'Good morning',
+    todays_read:"Today's read",
+    minutes_total:'minutes total.',
+    top_front:'Top of the front page',
+    by_numbers:'By the numbers',
+    also_today:'Also today',
+    company:'Company', verticals:'Verticals',
+    not_localized:'Article content is published in its source language. UI chrome is localized.',
+    pick_story:'Pick a story from the left to edit, or compose a new one. Every save propagates to the home page, article URLs, and the daily briefing — all from the same content store.',
+    newsroom_dashboard:'Newsroom dashboard',
+    authored_pub:'Authored · published', live_wire:'Live wire', drafts:'Drafts',
+    vert: {front:'Front Page', politics:'Politics', mining:'Mining & Energy',
+           markets:'Business & Markets', tech:'Tech & Innovation',
+           culture:'Culture', sports:'Sports', opinions:'Opinions', podcasts:'Podcasts'},
+    vert_short:{front:'Front', politics:'Politics', mining:'Mining',
+                markets:'Markets', tech:'Tech', culture:'Culture',
+                sports:'Sports', opinions:'Opinions', podcasts:'Podcasts'}
+  },
+  fr: {
+    sign_in:'Connexion', subscribe:"S'abonner", stories_live:'articles en direct',
+    tagline:"La voix du continent · 54 nations · couverture en temps réel",
+    search_placeholder:'Rechercher des articles…',
+    latest_stories:'Dernières actualités', manage:'Gérer →',
+    browse_by_vertical:'Parcourir les archives', archive_total:'au total', view_all:'Tout voir',
+    expand_all:'Tout déplier', collapse_all:'Tout replier', no_articles:'Aucun article pour le moment.',
+    invest_eyebrow:'Série Seed · 2026',
+    invest_h1:"L'histoire de l'Afrique s'écrit maintenant.",
+    invest_h2:"Aidez-nous à l'écrire ensemble.",
+    invest_lead:"AfriPulse Times lève des fonds pour bâtir le réseau d'information panafricain que le continent attend. 54 nations. 9 rubriques. Une rédaction, en temps réel. Rejoignez-nous comme investisseur, annonceur ou partenaire stratégique.",
+    invest_stat1:'Nations couvertes', invest_stat2:'Bureaux en ouverture', invest_stat3:'Langues actives',
+    invest_btn_invest:'Investir →', invest_btn_partner:'Devenir partenaire',
+    invest_note:'Société holding · AfriPulse Times Media Limited · Maurice',
+    invest_card_pill:'Tour ouvert',
+    invest_card_label:'Relations investisseurs',
+    invest_card_general:'Partenariats',
+    ad_label:'Publicité · Réservé',
+    ad_banner_title:'Emplacement bannière premium',
+    ad_banner_sub:'Visibilité au-dessus de la ligne de flottaison sur la home, les rubriques et les articles. Environ 250 000 impressions hebdomadaires au lancement.',
+    ad_panel_title:'Panneau sponsorisé',
+    ad_panel_sub:'Compagnon de droite à côté des marchés et matières premières. Lecteur business à forte intention.',
+    ad_cta:'Réserver cet emplacement →',
+    browse_by_region:'Parcourir par région', regions_count:'régions',
+    west_africa:'Afrique de l\'Ouest', east_africa:'Afrique de l\'Est',
+    southern_africa:'Afrique australe', north_africa:'Afrique du Nord', central_africa:'Afrique centrale',
+    back_to_regions:'← Toutes les régions',
+    featured_journalists:'Journalistes', our_journalists:'Nos journalistes',
+    bureau_chief:'Chef de bureau', beat:'Spécialité', bureau:'Bureau', stories_published:'articles publiés',
+    recent_stories:'Articles récents', view_profile:'Voir le profil →', back_to_roster:'← Tous les journalistes',
+    journalist_profile:'Profil du journaliste',
+    media_type:'Type de média', media_url:'URL du média', media_caption:'Légende', media_credit:'Crédit',
+    media_none:'Aucun', media_image:'Image', media_video:'Vidéo (URL d\'intégration YouTube)',
+    media_help:'URL d\'image ou lien YouTube intégré. Laissez vide pour générer un placeholder.',
+    live:'Direct', live_markets:'Marchés en direct', commodities:'Matières premières', newsroom:'Rédaction',
+    cms:'CMS', daily_briefing:'Le brief quotidien', preview:'Aperçu →',
+    breaking:'Dernière minute', min_read:'min de lecture', by:'Par',
+    more_from:'Plus de', read:'Lire →', back_all:'← Tous les',
+    edit_in_cms:'Modifier cet article dans le CMS →',
+    cms_link:'CMS →', save:'Enregistrer', delete_btn:'Supprimer',
+    new_article:'+ Nouvel article', back_to_site:'← Retour au site',
+    not_found_title:'404',
+    not_found_msg:"Cet article n'est pas classé sous cette URL.",
+    not_found_sub:"Il a peut-être été renommé dans le CMS, ou il n'existe pas encore.",
+    back_front_page:'← Retour à la une', open_admin:"Ouvrir l'admin",
+    issue:'Numéro', edition:'Édition : Lagos',
+    daily_byline:'Le brief quotidien · ce qui a marqué l\'Afrique cette nuit',
+    good_morning:'Bonjour',
+    todays_read:'Lecture du jour',
+    minutes_total:'minutes au total.',
+    top_front:'À la une',
+    by_numbers:'En chiffres',
+    also_today:"Aussi à l'affiche",
+    company:'Société', verticals:'Rubriques',
+    not_localized:'Le contenu des articles est publié dans sa langue d\'origine. L\'interface est localisée.',
+    pick_story:'Choisissez un article à gauche pour le modifier, ou créez-en un nouveau. Chaque enregistrement se propage à la page d\'accueil, aux URL des articles et au brief quotidien — depuis le même contenu.',
+    newsroom_dashboard:'Tableau de bord de la rédaction',
+    authored_pub:'Rédigé · publié', live_wire:'Fil direct', drafts:'Brouillons',
+    vert: {front:'À la une', politics:'Politique', mining:'Mines & Énergie',
+           markets:'Économie & Marchés', tech:'Tech & Innovation',
+           culture:'Culture', sports:'Sport', opinions:'Opinions', podcasts:'Podcasts'},
+    vert_short:{front:'Une', politics:'Politique', mining:'Mines',
+                markets:'Marchés', tech:'Tech', culture:'Culture',
+                sports:'Sport', opinions:'Opinions', podcasts:'Podcasts'}
+  },
+  ar: {
+    sign_in:'تسجيل الدخول', subscribe:'اشترك', stories_live:'قصة مباشرة',
+    tagline:'صوت القارة · 54 دولة · تغطية فورية',
+    search_placeholder:'ابحث في القصص…',
+    latest_stories:'أحدث القصص', manage:'إدارة ←',
+    browse_by_vertical:'تصفّح الأرشيف', archive_total:'إجمالاً', view_all:'عرض الكل',
+    expand_all:'فتح الكل', collapse_all:'طيّ الكل', no_articles:'لا مقالات بعد.',
+    invest_eyebrow:'تمويل تأسيسي · 2026',
+    invest_h1:'قصة أفريقيا تُكتب الآن.',
+    invest_h2:'ساعدنا في كتابتها معاً.',
+    invest_lead:'تجمع AfriPulse Times التمويل لبناء شبكة الأخبار الأفروقارية التي تنتظرها القارة. 54 دولة. 9 أقسام. صوت واحد، في الوقت الفعلي. انضموا إلينا كمستثمرين أو معلنين أو شركاء استراتيجيين.',
+    invest_stat1:'دولة مغطاة', invest_stat2:'مكاتب قيد الافتتاح', invest_stat3:'لغات نشطة',
+    invest_btn_invest:'استفسارات المستثمرين ←', invest_btn_partner:'كن شريكاً',
+    invest_note:'الشركة القابضة · AfriPulse Times Media Limited · موريشيوس',
+    invest_card_pill:'جولة مفتوحة',
+    invest_card_label:'علاقات المستثمرين',
+    invest_card_general:'شراكات عامة',
+    ad_label:'إعلان · محجوز',
+    ad_banner_title:'إعلان بانر مميز',
+    ad_banner_sub:'وصول فوق الطية في الصفحة الرئيسية والأقسام والمقالات. حوالي 250 ألف ظهور أسبوعي عند الإطلاق.',
+    ad_panel_title:'لوحة برعاية',
+    ad_panel_sub:'مرافق الشريط الأيمن بجانب الأسواق والسلع.',
+    ad_cta:'احجز هذا المكان ←',
+    browse_by_region:'تصفّح حسب المنطقة', regions_count:'مناطق',
+    west_africa:'غرب أفريقيا', east_africa:'شرق أفريقيا',
+    southern_africa:'جنوب أفريقيا', north_africa:'شمال أفريقيا', central_africa:'وسط أفريقيا',
+    back_to_regions:'كل المناطق ←',
+    featured_journalists:'الصحفيون', our_journalists:'صحفيونا',
+    bureau_chief:'رئيس المكتب', beat:'التخصص', bureau:'المكتب', stories_published:'قصص منشورة',
+    recent_stories:'قصص حديثة', view_profile:'عرض الملف ←', back_to_roster:'كل الصحفيين ←',
+    journalist_profile:'الملف الصحفي',
+    media_type:'نوع الوسائط', media_url:'رابط الوسائط', media_caption:'التعليق', media_credit:'مصدر',
+    media_none:'بدون', media_image:'صورة', media_video:'فيديو (رابط YouTube مضمن)',
+    media_help:'رابط الصورة أو رابط YouTube. اتركه فارغاً لتوليد صورة افتراضية.',
+    live:'مباشر', live_markets:'الأسواق المباشرة', commodities:'السلع', newsroom:'غرفة الأخبار',
+    cms:'نظام المحتوى', daily_briefing:'الموجز اليومي', preview:'معاينة ←',
+    breaking:'عاجل', min_read:'دقيقة قراءة', by:'بقلم',
+    more_from:'المزيد من', read:'اقرأ ←', back_all:'كل ←',
+    edit_in_cms:'حرّر هذه القصة في نظام المحتوى ←',
+    cms_link:'نظام المحتوى ←', save:'حفظ', delete_btn:'حذف',
+    new_article:'+ مقال جديد', back_to_site:'العودة إلى الموقع ←',
+    not_found_title:'404',
+    not_found_msg:'هذه القصة غير موجودة في هذا الرابط.',
+    not_found_sub:'ربما أُعيدت تسميتها في نظام المحتوى أو لم تُنشر بعد.',
+    back_front_page:'العودة إلى الصفحة الأولى ←', open_admin:'فتح الإدارة',
+    issue:'العدد', edition:'النسخة: لاغوس',
+    daily_byline:'الموجز اليومي · ما حرّك أفريقيا الليلة',
+    good_morning:'صباح الخير',
+    todays_read:'قراءة اليوم',
+    minutes_total:'دقيقة في المجموع.',
+    top_front:'صدارة الصفحة الأولى',
+    by_numbers:'بالأرقام',
+    also_today:'كذلك اليوم',
+    company:'الشركة', verticals:'الأقسام',
+    not_localized:'يُنشر محتوى المقالات بلغته الأصلية. أما واجهة الموقع فمترجمة.',
+    pick_story:'اختر قصة من اليمين للتحرير، أو اكتب قصة جديدة. كل حفظ ينتقل فوراً إلى الصفحة الأولى وعناوين المقالات والموجز اليومي.',
+    newsroom_dashboard:'لوحة غرفة الأخبار',
+    authored_pub:'محرَّر · منشور', live_wire:'الفيد المباشر', drafts:'مسودات',
+    vert: {front:'الصفحة الأولى', politics:'السياسة', mining:'التعدين والطاقة',
+           markets:'الأعمال والأسواق', tech:'التكنولوجيا والابتكار',
+           culture:'الثقافة', sports:'الرياضة', opinions:'آراء', podcasts:'بودكاست'},
+    vert_short:{front:'الأولى', politics:'سياسة', mining:'تعدين',
+                markets:'أسواق', tech:'تكنولوجيا', culture:'ثقافة',
+                sports:'رياضة', opinions:'آراء', podcasts:'بودكاست'}
+  }
+};
+
+let CURRENT_LANG = 'en';
+function t(key){
+  const parts = key.split('.');
+  let v = LANG[CURRENT_LANG] || LANG.en;
+  for(const p of parts){
+    if(v && typeof v === 'object' && p in v) v = v[p];
+    else { v = null; break; }
+  }
+  if(v != null) return v;
+  // Fallback to English
+  v = LANG.en;
+  for(const p of parts){
+    if(v && typeof v === 'object' && p in v) v = v[p];
+    else return key;
+  }
+  return v;
+}
+function vlabel(v){ return t('vert.'+v) || v; }
+function vshort(v){ return t('vert_short.'+v) || v; }
+
+function applyLang(code){
+  if(!LANG[code]) return false;
+  CURRENT_LANG = code;
+  try{
+    document.documentElement.lang = code;
+    document.documentElement.dir = (code === 'ar') ? 'rtl' : 'ltr';
+  }catch(e){}
+  return true;
+}
+
+function setLang(code){
+  if(!applyLang(code)) return;
+  try{ localStorage.setItem('afripulse_lang', code); }catch(e){}
+  toast(code==='en'?'English':code==='fr'?'Français':'العربية');
+  route();
+}
+
+// ── VERTICALS (keys) ──────────────────────────────────────────
+const VERTICAL_KEYS = ['front','politics','mining','markets','tech','culture','sports','opinions','podcasts'];
+
+// ── JOURNALISTS ROSTER ────────────────────────────────────────
+const JOURNALISTS = [
+  {slug:'fatima-toure',name:'Fatima Touré',bureau:'Addis Ababa',beat:'AU & Continental Affairs',vertical:'front',role:'Bureau Chief',color:'#0e2818',
+   bio:'Bureau chief for AfriPulse Times in Addis Ababa. Covers the African Union, multilateral diplomacy, and continental policy. Previously at Reuters and Al Jazeera English.'},
+  {slug:'aime-kabasele',name:'Aimé Kabasele',bureau:'Kinshasa',beat:'Mining & Critical Minerals',vertical:'mining',role:'Senior Correspondent',color:'#3a1a0a',
+   bio:'Senior correspondent covering the DRC, cobalt and copper-belt economics, and battery-metals geopolitics. Twelve years on the mining beat across central Africa.'},
+  {slug:'chidi-okeke',name:'Chidi Okeke',bureau:'Abuja',beat:'Nigerian Politics & Governance',vertical:'politics',role:'Political Correspondent',color:'#1a3a1a',
+   bio:'Covers Nigerian federal politics, the National Assembly, and election cycles. Former NAN deputy editor and INEC accreditation correspondent.'},
+  {slug:'wanjiru-kamau',name:'Wanjiru Kamau',bureau:'Nairobi',beat:'East African Markets',vertical:'markets',role:'Markets Correspondent',color:'#1a2d3e',
+   bio:'Markets correspondent covering the Nairobi Securities Exchange, East African banking, and cross-border capital flows. CFA charterholder.'},
+  {slug:'brian-otieno',name:'Brian Otieno',bureau:'Nairobi',beat:'African Tech & Fintech',vertical:'tech',role:'Tech Editor',color:'#2a2a0a',
+   bio:'Tech editor focused on African fintech, mobile money, and AI. Founding editor of TechCabal\'s daily Africa briefing before joining AfriPulse Times.'},
+  {slug:'ade-williams',name:'Ade Williams',bureau:'Lagos',beat:'Music, Film & Culture',vertical:'culture',role:'Culture Correspondent',color:'#2a1a2a',
+   bio:'Culture correspondent covering Afrobeats, Nollywood, and the African creator economy. Bylines previously at Pulse, OkayAfrica, and The Guardian.'},
+  {slug:'kofi-mensah',name:'Kofi Mensah',bureau:'Accra',beat:'West African Trade & AfCFTA',vertical:'markets',role:'Trade Correspondent',color:'#0a1a2a',
+   bio:'Reports on the African Continental Free Trade Area, West African commerce, and Ghana\'s commodity economy. Embedded with the AfCFTA Secretariat during its first year of operations.'},
+  {slug:'salma-benali',name:'Salma Benali',bureau:'Rabat',beat:'North African Energy',vertical:'mining',role:'Energy Correspondent',color:'#3a2410',
+   bio:'Energy correspondent covering Morocco, Algeria and the Maghreb renewables transition. Previously at Reuters North Africa.'},
+  {slug:'emeka-balogun',name:'Emeka Balogun',bureau:'Lagos',beat:'Football & African Sport',vertical:'sports',role:'Sports Correspondent',color:'#1a1a3a',
+   bio:'Sports correspondent following the Super Eagles, AFCON, and African football across club competitions. Former SportingLife senior writer.'},
+  {slug:'dr-naledi-khumalo',name:'Dr. Naledi Khumalo',bureau:'Johannesburg',beat:'Policy & Opinion',vertical:'opinions',role:'Senior Editor, Opinions',color:'#241a2a',
+   bio:'Senior editor of the Opinions vertical. Former policy researcher at the South African Institute of International Affairs. Holds a doctorate in international political economy.'}
+];
+
+function findJournalistByName(name){
+  if(!name) return null;
+  const norm = (s)=>String(s).trim().toLowerCase();
+  return JOURNALISTS.find(j=>norm(j.name)===norm(name)) || null;
+}
+function getJournalist(slug){ return JOURNALISTS.find(j=>j.slug===slug) || null; }
+function journalistInitials(name){
+  return (name||'').split(/\s+/).filter(Boolean).map(p=>p.replace(/^Dr\.?$/i,'').charAt(0)).filter(Boolean).slice(0,2).join('').toUpperCase() || 'AP';
+}
+
+// ── REGIONS — sub-regional taxonomy + country mapping ────────
+const REGION_KEYS = ['west-africa','east-africa','southern-africa','north-africa','central-africa'];
+const REGIONS = {
+  'west-africa':    {label:'West Africa',     flag:'🌍', countries:['Nigeria','Ghana','Senegal','Côte d\'Ivoire','Mali','Burkina Faso','Niger','Sierra Leone','Liberia','Guinea','Togo','Benin','West Africa'], capitals:['Lagos','Abuja','Accra','Dakar']},
+  'east-africa':    {label:'East Africa',     flag:'🌍', countries:['Kenya','Ethiopia','Tanzania','Uganda','Rwanda','Burundi','South Sudan','Somalia','Djibouti','Eritrea','East Africa'], capitals:['Nairobi','Addis Ababa','Dar es Salaam','Kampala','Kigali']},
+  'southern-africa':{label:'Southern Africa', flag:'🌍', countries:['South Africa','Zimbabwe','Zambia','Botswana','Mozambique','Namibia','Malawi','Lesotho','Eswatini','Angola','Southern Africa'], capitals:['Johannesburg','Cape Town','Harare','Lusaka','Gaborone']},
+  'north-africa':   {label:'North Africa',    flag:'🌍', countries:['Egypt','Morocco','Algeria','Tunisia','Libya','Sudan','Mauritania','North Africa'], capitals:['Cairo','Rabat','Algiers','Tunis']},
+  'central-africa': {label:'Central Africa',  flag:'🌍', countries:['DRC','Democratic Republic of Congo','Cameroon','Chad','CAR','Central African Republic','Republic of Congo','Gabon','Equatorial Guinea','Central Africa'], capitals:['Kinshasa','Yaoundé','N\'Djamena','Bangui']}
+};
+
+function articleMatchesRegion(article, regionSlug){
+  const r=REGIONS[regionSlug];
+  if(!r) return false;
+  const tags=(article.tags||[]).map(s=>String(s).toLowerCase());
+  const dl=String(article.dateline||'').toLowerCase();
+  for(const c of r.countries){
+    const cl=c.toLowerCase();
+    if(tags.indexOf(cl)>-1) return true;
+    if(dl===cl || dl.indexOf(cl)>-1) return true;
+  }
+  for(const cap of (r.capitals||[])){
+    if(dl.indexOf(cap.toLowerCase())>-1) return true;
+  }
+  return false;
+}
+function byRegion(slug){
+  return published().filter(a=>articleMatchesRegion(a,slug));
+}
+function rlabel(slug){
+  const key = slug.replace(/-/g,'_');
+  const tr = t(key);
+  return tr !== key ? tr : (REGIONS[slug] ? REGIONS[slug].label : slug);
+}
+
+const MARKETS = [
+  {n:'JSE',v:'82,440',c:'▲ 1.2%',d:'up'},
+  {n:'NGX',v:'108,330',c:'▲ 0.8%',d:'up'},
+  {n:'NSE',v:'190.40',c:'▼ 0.3%',d:'dn'},
+  {n:'EGX30',v:'31,820',c:'▲ 2.1%',d:'up'},
+  {n:'USD/ZAR',v:'18.42',c:'▲ 0.4%',d:'up'},
+  {n:'USD/NGN',v:'1,540',c:'▼ 0.2%',d:'dn'}
+];
+
+const COMMODITIES = [
+  {n:'Gold',v:'$2,341',c:'▲ 0.5%',d:'up'},
+  {n:'Platinum',v:'$1,028',c:'▲ 1.2%',d:'up'},
+  {n:'Cobalt',v:'$32,450/t',c:'▼ 0.8%',d:'dn'},
+  {n:'Copper',v:'$9,420/t',c:'▲ 1.7%',d:'up'},
+  {n:'Lithium',v:'$14,200/t',c:'▲ 2.4%',d:'up'},
+  {n:'Brent',v:'$81.30',c:'▼ 0.9%',d:'dn'},
+  {n:'Nat Gas',v:'$3.18',c:'▲ 0.4%',d:'up'},
+  {n:'Manganese',v:'$4.85/dmtu',c:'▲ 0.6%',d:'up'},
+  {n:'Iron Ore',v:'$108.20/t',c:'▼ 0.3%',d:'dn'},
+  {n:'Uranium',v:'$92.50/lb',c:'▲ 1.1%',d:'up'}
+];
+
+const COMMODITY_PANEL = [
+  {n:'Cobalt /t',v:'$32,450',c:'▼ 0.8%',d:'dn'},
+  {n:'Gold',v:'$2,341',c:'▲ 0.5%',d:'up'},
+  {n:'Brent',v:'$81.30',c:'▼ 0.9%',d:'dn'}
+];
+
+const SEED = [
+  {slug:'au-food-fund-addis',vertical:'front',kicker:'AU Emergency Summit · Addis Ababa',
+   headline:'Heads of state pledge $2.4B continental food fund as drought grips Horn of Africa',
+   standfirst:'In an unscheduled session called overnight, AU heads of state announced an emergency $2.4 billion food security facility — the largest continental commitment of its kind.',
+   byline:'Fatima Touré',dateline:'Addis Ababa',readingMin:6,
+   emoji:'🌍',color:'#0e2818',status:'published',
+   publishedAt:'2026-05-27T13:10:00Z',
+   tags:['Ethiopia','East Africa','AfCFTA','Climate'],
+   media:{type:'image',src:'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=1200&q=80',caption:'Delegates gathered at the AU plenary in Addis Ababa.',credit:'Photo · Unsplash'},
+   body:[
+     'African Union heads of state convened an emergency plenary in Addis Ababa to address acute, climate-driven food shortfalls across six member states, agreeing to stand up a $2.4 billion continental food security facility administered through the AfCFTA Secretariat.',
+     'Officials said the facility would prioritise the cross-border movement of grain reserves within fourteen days, with longer-term financing tied to drought-resilience and continental storage infrastructure.',
+     'Analysts described the commitment as a test of whether continental institutions can move at the speed that climate shocks now demand.'
+   ]},
+  {slug:'drc-cobalt-export-rules',vertical:'mining',kicker:'Mining & Energy · Kinshasa',
+   headline:'DRC tightens cobalt export rules — Glencore, CMOC navigate new regime',
+   standfirst:'Kinshasa introduced new licensing and traceability requirements for cobalt exports, reshaping compliance for the world\'s dominant battery-metals supplier.',
+   byline:'Aimé Kabasele',dateline:'Kinshasa',readingMin:5,
+   emoji:'⛏️',color:'#3a1a0a',status:'published',
+   publishedAt:'2026-05-27T12:30:00Z',
+   tags:['DRC','Central Africa','Cobalt','Glencore','CMOC'],
+   media:{type:'image',src:'https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?w=1200&q=80',caption:'Cobalt processing facility in the DRC copper-belt.',credit:'Photo · Unsplash'},
+   body:[
+     'The Democratic Republic of Congo tightened export rules for cobalt, introducing new licensing checkpoints and traceability requirements that recalibrate compliance obligations for major operators including Glencore and CMOC.',
+     'Kinshasa has signalled that it wants more processing and value capture to occur domestically rather than exporting raw and semi-refined material.',
+     'Because the DRC accounts for roughly 70% of global cobalt supply, even incremental policy shifts ripple through international battery and EV supply chains.'
+   ]},
+  {slug:'nigeria-electoral-reform',vertical:'politics',kicker:'Politics · Abuja',
+   headline:'Nigeria\'s Senate passes landmark electoral reform ahead of 2027 cycle',
+   standfirst:'The upper chamber approved a sweeping electoral reform package introducing earlier timelines, expanded electronic transmission of results, and tighter campaign-finance disclosure.',
+   byline:'Chidi Okeke',dateline:'Abuja',readingMin:4,
+   emoji:'🏛️',color:'#1a3a1a',status:'published',
+   publishedAt:'2026-05-27T11:45:00Z',
+   tags:['Nigeria','West Africa','Elections'],
+   body:[
+     'Nigeria\'s Senate passed a landmark electoral reform bill establishing earlier candidate-nomination timelines, broader electronic transmission of results, and stricter campaign-finance disclosure requirements.',
+     'Reform advocates framed the legislation as a structural upgrade to the credibility of the vote.',
+     'The bill now proceeds toward harmonisation with the House and eventual presidential assent.'
+   ]},
+  {slug:'nairobi-bourse-5yr-high',vertical:'markets',kicker:'Business & Markets · Nairobi',
+   headline:'Nairobi bourse hits five-year high as foreign capital floods East Africa',
+   standfirst:'The Nairobi Securities Exchange reached its highest level in five years, lifted by renewed foreign inflows and strength in banking and telecom counters.',
+   byline:'Wanjiru Kamau',dateline:'Nairobi',readingMin:3,
+   emoji:'📈',color:'#1a2d3e',status:'published',
+   publishedAt:'2026-05-27T10:30:00Z',
+   tags:['Kenya','East Africa','Markets'],
+   body:[
+     'The Nairobi Securities Exchange climbed to a five-year high as foreign investors rotated back into East African equities.',
+     'Currency stability and improving macro signals catalysed the renewed inflows.',
+     'The move underscores East Africa\'s growing pull for cross-border capital.'
+   ]},
+  {slug:'safaricom-ai-lending',vertical:'tech',kicker:'Tech & Innovation · Nairobi',
+   headline:'M-Pesa parent Safaricom launches AI micro-lending for 4M rural Kenyan farmers',
+   standfirst:'Safaricom unveiled an AI-driven micro-lending product targeting millions of rural farmers, using alternative data to extend small, seasonal credit lines.',
+   byline:'Brian Otieno',dateline:'Nairobi',readingMin:4,
+   emoji:'🤖',color:'#2a2a0a',status:'published',
+   publishedAt:'2026-05-27T09:15:00Z',
+   tags:['Kenya','East Africa','AI','Fintech'],
+   body:[
+     'Safaricom launched an AI-driven micro-lending product aimed at up to four million rural farmers, using alternative data to underwrite small seasonal credit lines.',
+     'The product is pitched as a way to extend formal credit to historically underserved agricultural communities.',
+     'Financial-inclusion advocates welcomed the reach while urging transparency on pricing.'
+   ]},
+  {slug:'burna-boy-tour',vertical:'culture',kicker:'Culture · Lagos',
+   headline:'Burna Boy announces twelve-city Sons of Africa tour',
+   standfirst:'The Afrobeats star revealed a continent-spanning tour, with dates across major African cities before international legs.',
+   byline:'Ade Williams',dateline:'Lagos',readingMin:3,
+   emoji:'🎵',color:'#2a1a2a',status:'published',
+   publishedAt:'2026-05-27T08:30:00Z',
+   tags:['Nigeria','West Africa','Music'],
+   media:{type:'image',src:'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=1200&q=80',caption:'Stadium-scale Afrobeats production has come of age across the continent.',credit:'Photo · Unsplash'},
+   body:[
+     'One of Afrobeats\' biggest global stars announced a twelve-city continental tour, with marquee dates spanning Lagos, Accra, Nairobi and Johannesburg.',
+     'The announcement underscores the genre\'s commercial muscle.',
+     'Promoters expect strong demand with rapid sell-outs.'
+   ]},
+  {slug:'afcfta-trade-surge',vertical:'markets',kicker:'Business & Markets · Accra',
+   headline:'AfCFTA Secretariat reports 34% surge in intra-African trade',
+   standfirst:'New figures show intra-African trade up 34% year-on-year, with manufactured goods driving the increase under the continental free-trade area.',
+   byline:'Kofi Mensah',dateline:'Accra',readingMin:5,
+   emoji:'📊',color:'#0a1a2a',status:'published',
+   publishedAt:'2026-05-27T07:00:00Z',
+   tags:['Ghana','West Africa','AfCFTA'],
+   body:[
+     'The AfCFTA Secretariat reported a 34% year-on-year rise in intra-African trade, with manufactured goods leading the increase.',
+     'Officials cautioned that infrastructure, payments interoperability and non-tariff barriers remain binding constraints.',
+     'Still, the data offered encouragement to advocates of deeper continental economic ties.'
+   ]},
+  {slug:'morocco-solar-10gw',vertical:'mining',kicker:'Mining & Energy · Rabat',
+   headline:'Morocco fast-tracks solar megaproject toward 10GW capacity target',
+   standfirst:'Rabat accelerated a flagship solar build-out, advancing one of the continent\'s most ambitious renewable-energy programmes.',
+   byline:'Salma Benali',dateline:'Rabat',readingMin:4,
+   emoji:'☀️',color:'#3a2410',status:'published',
+   publishedAt:'2026-05-27T06:00:00Z',
+   tags:['Morocco','North Africa','Solar','Climate'],
+   media:{type:'image',src:'https://images.unsplash.com/photo-1509391366360-2e959784a276?w=1200&q=80',caption:'A heliostat field in southern Morocco — part of the Noor solar complex.',credit:'Photo · Unsplash'},
+   body:[
+     'Morocco moved to fast-track a flagship solar megaproject as part of a push toward a multi-gigawatt renewable-energy target.',
+     'The programme is increasingly tied to green hydrogen and electricity export potential.',
+     'Financing and grid integration remain central execution questions.'
+   ]},
+  {slug:'super-eagles-osimhen',vertical:'sports',kicker:'Sports · Lagos',
+   headline:'Super Eagles held in Cotonou as Osimhen returns from injury',
+   standfirst:'Nigeria were held to a draw in Cotonou, though the return of their talismanic striker offered encouragement.',
+   byline:'Emeka Balogun',dateline:'Lagos',readingMin:3,
+   emoji:'⚽',color:'#1a1a3a',status:'published',
+   publishedAt:'2026-05-27T05:00:00Z',
+   tags:['Nigeria','West Africa','Football'],
+   body:[
+     'Nigeria were held to a draw away in Cotonou, a result that leaves the group finely balanced.',
+     'The return of their first-choice striker from an injury layoff restored a focal point to the attack.',
+     'Coaching staff struck a measured tone, citing rhythm and fitness as priorities.'
+   ]},
+  {slug:'voices-continental-press',vertical:'opinions',kicker:'Opinions · Comment',
+   headline:'Opinion: AfCFTA needs a continental press as much as a customs union',
+   standfirst:'A single market for goods will struggle without a shared information layer. The case for continental journalism is also an economic one.',
+   byline:'Dr. Naledi Khumalo',dateline:'Comment',readingMin:6,
+   emoji:'✍️',color:'#241a2a',status:'published',
+   publishedAt:'2026-05-26T20:00:00Z',
+   tags:['AfCFTA','Opinion'],
+   body:[
+     'A continental free-trade area cannot function on tariff schedules alone. Businesses making cross-border decisions need a shared, trusted information layer.',
+     'The argument for a genuinely continental press is therefore not merely cultural; it is economic infrastructure.',
+     'Building that capacity is a generational task — and an overdue one.'
+   ]},
+  {slug:'podcast-lagos-report-ep01',vertical:'podcasts',kicker:'Podcast · The Lagos Report',
+   headline:'Episode 01: Nigeria\'s 2027 cycle — the electoral reform that just landed',
+   standfirst:'Abuja correspondent Chidi Okeke walks through the new electoral reform bill, INEC\'s expanded powers, and the early field of presidential aspirants.',
+   byline:'Chidi Okeke',dateline:'Lagos',readingMin:38,
+   emoji:'🎙️',color:'#1a1a3a',status:'published',
+   publishedAt:'2026-05-27T04:00:00Z',
+   tags:['Nigeria','Politics','Podcast','The Lagos Report','West Africa'],
+   media:{type:'image',src:'https://images.unsplash.com/photo-1590602847861-f357a9332bbc?w=1200&q=80',caption:'The Lagos Report · Episode 01',credit:'AfriPulse Audio'},
+   body:[
+     'On the first episode of The Lagos Report, we sit down with constitutional law scholars and field operatives to unpack what the new electoral reform bill actually changes — and what it does not.',
+     'We cover INEC\'s expanded powers around electronic transmission of results, the campaign-finance disclosure thresholds, and the early signals from the Northwest and Southeast on candidate recruitment for 2027.',
+     'Subscribe to The Lagos Report on Apple Podcasts, Spotify, and Google Podcasts. New episodes every Wednesday at 6am Lagos time.'
+   ]},
+  {slug:'podcast-mining-weekly-ep14',vertical:'podcasts',kicker:'Podcast · Mining Weekly',
+   headline:'Episode 14: Cobalt\'s new reality — DRC export rules and the battery supply chain',
+   standfirst:'Aimé Kabasele joins host Salma Benali from Kinshasa to dissect the new licensing framework and what it means for Glencore, CMOC, and EV makers globally.',
+   byline:'Salma Benali',dateline:'Rabat',readingMin:32,
+   emoji:'🎙️',color:'#3a1a0a',status:'published',
+   publishedAt:'2026-05-26T18:00:00Z',
+   tags:['DRC','Cobalt','Mining','Podcast','Mining Weekly','Central Africa'],
+   media:{type:'image',src:'https://images.unsplash.com/photo-1478737270239-2f02b77fc618?w=1200&q=80',caption:'Mining Weekly · Episode 14',credit:'Photo · Unsplash'},
+   body:[
+     'Aimé joins us from Kinshasa to walk through the precise mechanics of the DRC\'s new cobalt export licensing regime — shipment-level provenance, traceability, and the timeline operators face.',
+     'We also dig into the substitution question: how fast can LFP chemistry scale, and what does that mean for cobalt prices through the 2027-2029 window?',
+     'Mining Weekly publishes every Tuesday at 6am Lagos time. Subscribe wherever you get podcasts.'
+   ]}
+];
+
+// ── STORAGE ───────────────────────────────────────────────────
+const KEY='afripulse_mvp_v2';
+function loadStore(){
+  try{
+    const raw=localStorage.getItem(KEY);
+    if(!raw) return null;
+    const data=JSON.parse(raw);
+    return Array.isArray(data) && data.length ? data : null;
+  }catch(e){ return null; }
+}
+function saveStore(arr){
+  try{ localStorage.setItem(KEY,JSON.stringify(arr)); return true; }
+  catch(e){ console.warn('save failed',e); return false; }
+}
+function ensureStore(){
+  let data=loadStore();
+  if(!data){
+    data=JSON.parse(JSON.stringify(SEED));
+    data.forEach(a=>{ a.source='authored'; });
+    saveStore(data);
+  }else{
+    let migrated=false;
+    data.forEach(a=>{
+      if(!a.source){ a.source='authored'; migrated=true; }
+      // Voices → Opinions migration
+      if(a.vertical==='voices'){ a.vertical='opinions'; migrated=true; }
+    });
+    // Seed the new Podcasts vertical if it's missing entirely (existing users)
+    const hasPodcasts = data.some(a=>a.vertical==='podcasts');
+    if(!hasPodcasts){
+      const podcastSeeds = SEED.filter(s=>s.vertical==='podcasts').map(s=>{
+        const copy = JSON.parse(JSON.stringify(s));
+        copy.source='authored';
+        return copy;
+      });
+      if(podcastSeeds.length){ data = podcastSeeds.concat(data); migrated=true; }
+    }
+    if(migrated) saveStore(data);
+  }
+  return data;
+}
+
+let ARTICLES=ensureStore();
+
+// ── HELPERS ───────────────────────────────────────────────────
+function esc(s){ return (s==null?'':String(s)).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function slugify(s){
+  return (s||'').toLowerCase().trim().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,72) || 'story-'+Date.now();
+}
+function timeAgo(iso){
+  const ms=Date.now()-new Date(iso).getTime();
+  const m=Math.floor(ms/60000);
+  if(m<1) return CURRENT_LANG==='ar'?'الآن':CURRENT_LANG==='fr'?"à l'instant":'just now';
+  if(m<60) return m+(CURRENT_LANG==='ar'?' د':CURRENT_LANG==='fr'?' min':'m ago');
+  const h=Math.floor(m/60);
+  if(h<24) return h+(CURRENT_LANG==='ar'?' س':CURRENT_LANG==='fr'?' h':'h ago');
+  return Math.floor(h/24)+(CURRENT_LANG==='ar'?' ي':CURRENT_LANG==='fr'?' j':'d ago');
+}
+function getArticle(slug){ return ARTICLES.find(a=>a.slug===slug); }
+
+// ── ARTICLE MEDIA HELPERS ─────────────────────────────────────
+// Default to deterministic Picsum photo seeded by slug — no auth needed.
+function defaultImageFor(article){
+  return 'https://picsum.photos/seed/'+encodeURIComponent(article.slug||'afripulse')+'/1200/600';
+}
+// Detect YouTube URL forms and convert to /embed/ form
+function normalizeYouTube(url){
+  if(!url) return null;
+  // already embed
+  const embed = url.match(/youtube\.com\/embed\/([^?&]+)/);
+  if(embed) return 'https://www.youtube.com/embed/'+embed[1];
+  const watch = url.match(/youtube\.com\/watch\?v=([^&]+)/);
+  if(watch) return 'https://www.youtube.com/embed/'+watch[1];
+  const shortUrl = url.match(/youtu\.be\/([^?&]+)/);
+  if(shortUrl) return 'https://www.youtube.com/embed/'+shortUrl[1];
+  return null;
+}
+function renderArticleMedia(a){
+  const m = a.media || {};
+  // VIDEO
+  if(m.type==='video' && m.src){
+    const ytEmbed = normalizeYouTube(m.src);
+    const videoHTML = ytEmbed
+      ? '<div class="video-wrap"><iframe src="'+esc(ytEmbed)+'" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe></div>'
+      : '<div class="video-wrap"><video src="'+esc(m.src)+'" controls style="width:100%;height:100%;object-fit:cover;background:#000"></video></div>';
+    return ''+
+      '<figure class="art-media">'+
+        videoHTML+
+        ((m.caption||m.credit) ? '<figcaption class="art-media-caption"><span>'+esc(m.caption||'')+'</span>'+(m.credit?'<span class="credit">'+esc(m.credit)+'</span>':'')+'</figcaption>' : '')+
+      '</figure>';
+  }
+  // IMAGE — explicit URL OR default placeholder
+  const src = (m.type==='image' && m.src) ? m.src : defaultImageFor(a);
+  const captionDefault = a.kicker || '';
+  const creditDefault = (m.type==='image' && m.src) ? '' : 'Placeholder · picsum.photos';
+  const caption = m.caption || captionDefault;
+  const credit = m.credit || creditDefault;
+  return ''+
+    '<figure class="art-media">'+
+      '<img src="'+esc(src)+'" alt="'+esc(a.headline)+'" loading="lazy" onerror="this.style.display=&quot;none&quot;;this.parentElement.querySelector(&quot;.placeholder&quot;).style.display=&quot;flex&quot;">'+
+      '<div class="placeholder" data-emoji="'+esc(a.emoji||'📰')+'" style="display:none;background:'+esc(a.color||'#2a2a0a')+'"></div>'+
+      ((caption||credit) ? '<figcaption class="art-media-caption"><span>'+esc(caption)+'</span>'+(credit?'<span class="credit">'+esc(credit)+'</span>':'')+'</figcaption>' : '')+
+    '</figure>';
+}
+function published(){ return ARTICLES.filter(a=>a.status==='published').sort((a,b)=>new Date(b.publishedAt)-new Date(a.publishedAt)); }
+function byVertical(v){ return published().filter(a=>a.vertical===v); }
+
+let toastTimer=null;
+function toast(msg){
+  const t=document.getElementById('toast');
+  if(!t) return;
+  t.textContent=msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+// ── SHARED HEADER ─────────────────────────────────────────────
+function renderHeader(activeVertical){
+  const now=new Date();
+  const locale = CURRENT_LANG==='fr'?'fr-FR':CURRENT_LANG==='ar'?'ar-EG':'en-GB';
+  let dateStr='';
+  try{
+    dateStr = now.toLocaleDateString(locale,{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  }catch(e){
+    dateStr = now.toDateString();
+  }
+  const pubCount=published().length;
+
+  let navHTML='';
+  for(const k of VERTICAL_KEYS){
+    const active=(k===activeVertical) || (activeVertical==null && k==='front');
+    const href = k==='front' ? '#/' : '#/v/'+k;
+    navHTML += '<a href="'+href+'" class="'+(active?'active':'')+'">'+esc(vlabel(k))+'</a>';
+  }
+  // Featured Journalists tab — far right
+  const jrActive = activeVertical==='__journalists__';
+  navHTML += '<a href="#/journalists" class="nav-journalists'+(jrActive?' active':'')+'">'+esc(t('featured_journalists'))+'</a>';
+
+  return ''+
+  '<div class="topbar">'+
+    '<div class="topbar-date">'+esc(dateStr)+'</div>'+
+    '<div class="topbar-live"><span class="dot"></span><span>'+pubCount+' '+esc(t('stories_live'))+'</span></div>'+
+    '<div class="topbar-right">'+
+      '<a class="lang-link'+(CURRENT_LANG==='en'?' active':'')+'" data-lang="en">EN</a>'+
+      '<a class="lang-link'+(CURRENT_LANG==='fr'?' active':'')+'" data-lang="fr">FR</a>'+
+      '<a class="lang-link'+(CURRENT_LANG==='ar'?' active':'')+'" data-lang="ar">AR</a>'+
+      '<a class="btn-sub" id="subscribe-link">'+esc(t('subscribe'))+'</a>'+
+    '</div>'+
+  '</div>'+
+  '<header class="masthead">'+
+    '<div>'+
+      '<div class="logo" data-r="home">Afri<span class="pulse">Pulse</span> <span class="times">Times</span></div>'+
+      '<div class="tagline">'+esc(t('tagline'))+'</div>'+
+    '</div>'+
+    '<div class="masthead-right">'+
+      '<div class="social-links" aria-label="AfriPulse Times on social media">'+
+        '<a href="https://facebook.com/afripulsetimes" target="_blank" rel="noopener" aria-label="Facebook" title="Facebook">'+
+          '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22.675 0H1.325C.593 0 0 .593 0 1.325v21.351C0 23.408.593 24 1.325 24H12.82v-9.294H9.692v-3.622h3.128V8.413c0-3.1 1.893-4.788 4.659-4.788 1.325 0 2.463.099 2.795.143v3.24l-1.918.001c-1.504 0-1.795.715-1.795 1.763v2.313h3.587l-.467 3.622h-3.12V24h6.116c.73 0 1.323-.593 1.323-1.325V1.325C24 .593 23.407 0 22.675 0z"/></svg>'+
+        '</a>'+
+        '<a href="https://instagram.com/afripulsetimes" target="_blank" rel="noopener" aria-label="Instagram" title="Instagram">'+
+          '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>'+
+        '</a>'+
+        '<a href="https://x.com/afripulsetimes" target="_blank" rel="noopener" aria-label="X (Twitter)" title="X (Twitter)">'+
+          '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231 5.45-6.231zm-1.161 17.52h1.833L7.084 4.126H5.117l11.966 15.644z"/></svg>'+
+        '</a>'+
+        '<a href="https://linkedin.com/company/afripulsetimes" target="_blank" rel="noopener" aria-label="LinkedIn" title="LinkedIn">'+
+          '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.063 2.063 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>'+
+        '</a>'+
+        '<a href="https://youtube.com/@afripulsetimes" target="_blank" rel="noopener" aria-label="YouTube" title="YouTube">'+
+          '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>'+
+        '</a>'+
+        '<a href="https://www.threads.net/@afripulsetimes" target="_blank" rel="noopener" aria-label="Threads" title="Threads">'+
+          '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17.553 11.06c-.084-.04-.169-.078-.255-.114-.15-2.792-1.675-4.39-4.234-4.407h-.034c-1.531 0-2.805.654-3.59 1.844l1.408.966c.587-.89 1.508-1.08 2.183-1.08h.023c.84.005 1.474.25 1.884.726.298.347.498.826.598 1.43-.755-.128-1.572-.168-2.446-.118-2.461.142-4.043 1.578-3.937 3.573.054 1.012.557 1.882 1.418 2.45.728.48 1.666.715 2.641.662 1.288-.07 2.298-.561 3.001-1.46.534-.683.873-1.567 1.014-2.679.583.352 1.014.815 1.252 1.371.405.945.428 2.498-.838 3.762-1.108 1.106-2.44 1.585-4.456 1.6-2.236-.017-3.927-.733-5.026-2.13-1.03-1.308-1.561-3.199-1.58-5.621.019-2.421.55-4.312 1.58-5.621 1.099-1.396 2.79-2.112 5.026-2.129 2.252.017 3.972.736 5.115 2.139.561.687.985 1.554 1.265 2.567l1.681-.45c-.34-1.247-.873-2.323-1.594-3.205C18.701 1.05 16.502.135 13.682.116h-.011C10.857.135 8.7 1.057 7.27 2.6 6 3.973 5.345 5.885 5.327 8.293L5.327 12l-.001.708c.019 2.41.673 4.32 1.944 5.694 1.43 1.542 3.586 2.464 6.4 2.482h.012c2.5-.017 4.262-.671 5.713-2.123 1.899-1.9 1.84-4.282 1.215-5.744-.448-1.05-1.302-1.901-2.467-2.461zm-4.413 3.535c-1.079.061-2.196-.421-2.252-1.443-.039-.758.541-1.604 2.317-1.706.205-.012.405-.018.602-.018.642 0 1.243.062 1.79.182-.205 2.541-1.391 2.917-2.457 2.985z"/></svg>'+
+        '</a>'+
+      '</div>'+
+      '<div class="search-bar">'+
+        '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="7" cy="7" r="5"/><path d="M11 11l3 3" stroke-linecap="round"/></svg>'+
+        '<input type="search" placeholder="'+esc(t('search_placeholder'))+'" id="site-search">'+
+      '</div>'+
+    '</div>'+
+  '</header>'+
+  '<nav class="nav">'+navHTML+'</nav>';
+}
+
+// ── TICKER + COMMODITIES (under verticals on reader views) ────
+function renderTicker(){
+  const items = published().slice(0,12);
+  if(!items.length) return '';
+
+  // Build ticker items (doubled for seamless scroll)
+  let tickerInner='';
+  const buildTickerItems = ()=>{
+    let h='';
+    for(const a of items){
+      const title = a.headline.length>72 ? a.headline.slice(0,72)+'…' : a.headline;
+      h += '<a class="ti" href="#/article/'+esc(a.slug)+'">'+
+        '<span class="ti-region">🌍 '+esc(vshort(a.vertical))+'</span>'+
+        '<span class="ti-title">'+esc(title)+'</span>'+
+        '<span class="ti-src">'+esc(a.byline)+'</span>'+
+      '</a>';
+    }
+    return h;
+  };
+  tickerInner = buildTickerItems() + buildTickerItems();
+
+  // Build commodities (doubled)
+  let comInner='';
+  const buildCom = ()=>{
+    let h='';
+    for(const c of COMMODITIES){
+      h += '<div class="com-item">'+
+        '<span class="com-name">'+esc(c.n)+'</span>'+
+        '<span>'+esc(c.v)+'</span>'+
+        '<span class="com-chg '+c.d+'">'+esc(c.c)+'</span>'+
+      '</div>';
+    }
+    return h;
+  };
+  comInner = buildCom() + buildCom();
+
+  return ''+
+  '<section class="ticker" aria-label="Live news ticker">'+
+    '<div class="ticker-badge"><span class="d"></span>'+esc(t('live'))+'</div>'+
+    '<div class="ticker-wrap"><div class="ticker-track">'+tickerInner+'</div></div>'+
+  '</section>'+
+  '<aside class="com-bar" aria-label="Commodities">'+
+    '<div class="com-label">⛏ '+esc(t('commodities'))+'</div>'+
+    '<div class="com-wrap"><div class="com-track">'+comInner+'</div></div>'+
+  '</aside>';
+}
+
+function renderInvestorCTA(){
+  const bureauCount = new Set(JOURNALISTS.map(j=>j.bureau)).size;
+  return ''+
+  '<section class="investor-cta" aria-labelledby="invest-h">'+
+    '<div class="investor-inner">'+
+      '<div>'+
+        '<div class="investor-eyebrow">'+esc(t('invest_eyebrow'))+'</div>'+
+        '<h2 class="investor-h" id="invest-h">'+esc(t('invest_h1'))+'<em>'+esc(t('invest_h2'))+'</em></h2>'+
+        '<p class="investor-lead">'+esc(t('invest_lead'))+'</p>'+
+        '<div class="investor-stats">'+
+          '<div class="investor-stat"><div class="num">54</div><div class="label">'+esc(t('invest_stat1'))+'</div></div>'+
+          '<div class="investor-stat"><div class="num">'+bureauCount+'</div><div class="label">'+esc(t('invest_stat2'))+'</div></div>'+
+          '<div class="investor-stat"><div class="num">3</div><div class="label">'+esc(t('invest_stat3'))+'</div></div>'+
+        '</div>'+
+        '<div class="investor-ctas">'+
+          '<a class="investor-btn primary" href="mailto:invest@afripulsetimes.com?subject=Investor%20enquiry%20%E2%80%93%20AfriPulse%20Times">'+esc(t('invest_btn_invest'))+'</a>'+
+          '<a class="investor-btn" href="mailto:partner@afripulsetimes.com?subject=Partnership%20enquiry%20%E2%80%93%20AfriPulse%20Times">'+esc(t('invest_btn_partner'))+'</a>'+
+        '</div>'+
+        '<p class="investor-note">'+esc(t('invest_note'))+'</p>'+
+      '</div>'+
+      '<aside class="investor-card">'+
+        '<div class="pill">'+esc(t('invest_card_pill'))+'</div>'+
+        '<div class="email-label">'+esc(t('invest_card_label'))+'</div>'+
+        '<a class="email" href="mailto:invest@afripulsetimes.com">invest@afripulsetimes.com</a>'+
+        '<div class="email-label">'+esc(t('invest_card_general'))+'</div>'+
+        '<a class="email" style="font-size:18px" href="mailto:hello@afripulsetimes.com">hello@afripulsetimes.com</a>'+
+        '<div class="meta">Domain · afripulsetimes.com<br>Instagram · X · Threads · @afripulsetimes</div>'+
+      '</aside>'+
+    '</div>'+
+  '</section>';
+}
+
+function renderAdSlotBanner(){
+  return ''+
+  '<aside class="ad-slot" role="complementary" aria-label="Advertising placement">'+
+    '<span class="ad-label">'+esc(t('ad_label'))+'</span>'+
+    '<div class="ad-content">'+
+      '<div class="ad-title">'+esc(t('ad_banner_title'))+'</div>'+
+      '<div class="ad-sub">'+esc(t('ad_banner_sub'))+'</div>'+
+    '</div>'+
+    '<a class="ad-cta" href="mailto:advertise@afripulsetimes.com?subject=Banner%20placement%20%E2%80%93%20AfriPulse%20Times">'+esc(t('ad_cta'))+'</a>'+
+  '</aside>';
+}
+
+function renderAdSlotMini(){
+  return ''+
+  '<div class="ad-slot-mini" role="complementary" aria-label="Sponsored panel">'+
+    '<div class="ad-label">'+esc(t('ad_label'))+'</div>'+
+    '<div class="ad-title">'+esc(t('ad_panel_title'))+'</div>'+
+    '<div class="ad-sub">'+esc(t('ad_panel_sub'))+'</div>'+
+    '<a class="ad-cta" href="mailto:advertise@afripulsetimes.com?subject=Right-rail%20panel%20%E2%80%93%20AfriPulse%20Times">'+esc(t('ad_cta'))+'</a>'+
+  '</div>';
+}
+
+function renderFooter(){
+  let vertLinks='';
+  for(const k of VERTICAL_KEYS){
+    const href = k==='front' ? '#/' : '#/v/'+k;
+    vertLinks += '<a href="'+href+'">'+esc(vlabel(k))+'</a>';
+  }
+  return ''+
+  '<footer class="footer">'+
+    '<div class="footer-grid">'+
+      '<div>'+
+        '<div class="footer-brand">Afri<span class="pulse">Pulse</span> <span class="times">Times</span></div>'+
+        '<p class="footer-desc">'+esc(t('tagline'))+'</p>'+
+      '</div>'+
+      '<div><h4>'+esc(t('verticals'))+'</h4>'+vertLinks+'</div>'+
+      '<div><h4>'+esc(t('newsroom'))+'</h4>'+
+        '<a href="#/admin">'+esc(t('cms'))+'</a>'+
+        '<a href="#/admin/new">'+esc(t('new_article'))+'</a>'+
+        '<a href="#/newsletter">'+esc(t('daily_briefing'))+'</a>'+
+      '</div>'+
+    '</div>'+
+    '<div class="footer-bot">'+
+      '<span>© 2026 AfriPulse Times Media Limited · Mauritius</span>'+
+      '<span style="color:var(--accent)">afripulsetimes.com</span>'+
+    '</div>'+
+  '</footer>';
+}
+
+// ── VIEW: HOME ────────────────────────────────────────────────
+function viewHome(){
+  const pub=published();
+  const hero=pub[0];
+  const subs=pub.slice(1,5);
+  const feed=pub.slice(5,15);
+
+  let html=renderHeader(null)+renderTicker();
+
+  if(!hero){
+    html+='<div class="empty" style="padding:80px 20px">No published stories yet. <a href="#/admin/new" style="color:var(--accent);text-decoration:underline">'+esc(t('new_article'))+'</a></div>';
+    html+=renderFooter();
+    return html;
+  }
+
+  let subsHTML='';
+  for(const a of subs){
+    subsHTML += '<a class="sub" href="#/article/'+esc(a.slug)+'">'+
+      '<div class="sub-cat">'+esc(vlabel(a.vertical))+'</div>'+
+      '<div class="sub-title">'+esc(a.headline)+'</div>'+
+      '<div class="sub-meta">'+esc(a.dateline)+' · '+esc(timeAgo(a.publishedAt))+'</div>'+
+    '</a>';
+  }
+  if(!subsHTML) subsHTML='<div class="sub"><div class="sub-cat">·</div><div class="sub-meta">·</div></div>';
+
+  html += '<section class="hero">'+
+    '<div class="hero-grid">'+
+      '<a class="hero-main" href="#/article/'+esc(hero.slug)+'">'+
+        '<div class="hero-img" data-emoji="'+esc(hero.emoji||'🌍')+'" style="background:'+esc(hero.color||'#0e2818')+'">'+
+          '<span class="hero-cat">'+esc(vlabel(hero.vertical))+'</span>'+
+        '</div>'+
+        '<div class="hero-body">'+
+          '<div class="hero-kicker">'+esc(hero.kicker)+'</div>'+
+          '<h2 class="hero-title">'+esc(hero.headline)+'</h2>'+
+          '<p class="hero-ex">'+esc(hero.standfirst)+'</p>'+
+          '<div class="hero-meta">'+
+            '<span style="color:var(--accent)">📍 '+esc(hero.dateline)+'</span>'+
+            '<span class="by">'+esc(t('by'))+' '+esc(hero.byline)+'</span>'+
+            '<span>'+esc(timeAgo(hero.publishedAt))+'</span>'+
+            '<span>'+esc(hero.readingMin||4)+' '+esc(t('min_read'))+'</span>'+
+          '</div>'+
+        '</div>'+
+      '</a>'+
+      '<div class="hero-subs">'+subsHTML+'</div>'+
+    '</div>'+
+  '</section>'+
+  renderAdSlotBanner();
+
+  let feedHTML='';
+  for(const a of feed){
+    feedHTML += '<a class="card" href="#/article/'+esc(a.slug)+'">'+
+      '<div class="card-thumb" style="background:'+esc(a.color||'#2a2a0a')+'">'+esc(a.emoji||'📰')+'</div>'+
+      '<div>'+
+        '<div class="card-cat">'+esc(vlabel(a.vertical))+' <span class="r">'+esc(a.readingMin||4)+' '+esc(t('min_read'))+'</span></div>'+
+        '<div class="card-title">'+esc(a.headline)+'</div>'+
+        '<div class="card-meta">'+esc(a.dateline)+' · '+esc(timeAgo(a.publishedAt))+' · '+esc(a.byline)+'</div>'+
+        '<div class="card-url">→ /article/'+esc(a.slug)+'</div>'+
+      '</div>'+
+    '</a>';
+  }
+  if(!feedHTML) feedHTML='<div class="empty">·</div>';
+
+  let marketsHTML='';
+  for(const m of MARKETS){
+    marketsHTML += '<div class="mrow"><span class="n">'+esc(m.n)+'</span><span class="v">'+esc(m.v)+'</span><span class="'+m.d+'">'+esc(m.c)+'</span></div>';
+  }
+
+  let commHTML='';
+  for(const c of COMMODITY_PANEL){
+    commHTML += '<div class="mrow"><span class="n">'+esc(c.n)+'</span><span class="v">'+esc(c.v)+'</span><span class="'+c.d+'">'+esc(c.c)+'</span></div>';
+  }
+
+  // Build LEFT RAIL — by-vertical archive aggregator
+  let leftRailHTML = '<div class="lr-head">'+
+    '<span>'+esc(t('browse_by_vertical'))+'</span>'+
+    '<span class="lr-total">'+pub.length+' '+esc(t('archive_total'))+'</span>'+
+  '</div>'+
+  '<button class="lr-toggle-all" type="button" id="lr-toggle-all" data-state="expanded" style="margin-bottom:10px;width:100%">'+esc(t('collapse_all'))+'</button>';
+
+  for(const vk of VERTICAL_KEYS){
+    const stories = byVertical(vk);
+    if(stories.length === 0) continue;
+    leftRailHTML += '<div class="lr-vert">'+
+      '<a class="lr-vert-head" href="#/v/'+esc(vk)+'" data-lr-vert="'+esc(vk)+'">'+
+        '<span><span class="arrow open" aria-hidden="true">▸</span> '+esc(vlabel(vk))+'</span>'+
+        '<span class="lr-vert-count">'+stories.length+'</span>'+
+      '</a>'+
+      '<div class="lr-list open" data-lr-list="'+esc(vk)+'">';
+    for(const a of stories.slice(0,3)){
+      const isLive = a.source === 'rss';
+      leftRailHTML += '<a class="lr-art" href="#/article/'+esc(a.slug)+'">'+
+        '<div class="lr-art-title">'+esc(a.headline)+'</div>'+
+        '<div class="lr-art-meta">'+
+          '<span>'+esc(a.dateline)+' · '+esc(timeAgo(a.publishedAt))+'</span>'+
+          (isLive ? '<span class="live-badge">WIRE</span>' : '')+
+        '</div>'+
+      '</a>';
+    }
+    if(stories.length > 3){
+      leftRailHTML += '<a class="lr-viewall" href="#/v/'+esc(vk)+'">'+esc(t('view_all'))+' ('+stories.length+') →</a>';
+    }
+    leftRailHTML += '</div></div>';
+  }
+
+  if(pub.length === 0){
+    leftRailHTML += '<div class="lr-empty">'+esc(t('no_articles'))+'</div>';
+  }
+
+  // ── REGION ROWS (right panel) ────────────────────────────────
+  let regionsHTML='';
+  for(const rk of REGION_KEYS){
+    const count = byRegion(rk).length;
+    regionsHTML += '<div class="mrow region-row" data-link="#/region/'+esc(rk)+'" style="cursor:pointer">'+
+      '<span class="n"><span class="flag" aria-hidden="true">'+esc(REGIONS[rk].flag)+'</span> '+esc(rlabel(rk))+'</span>'+
+      '<span class="v">'+count+'</span>'+
+    '</div>';
+  }
+
+  html += '<div class="main">'+
+    '<aside class="left-rail" aria-label="Archive by vertical">'+leftRailHTML+'</aside>'+
+    '<section class="feed">'+
+      '<div class="feed-head"><span>'+esc(t('latest_stories'))+'</span><a href="#/admin" style="color:var(--accent)">'+esc(t('manage'))+'</a></div>'+
+      feedHTML+
+    '</section>'+
+    '<aside class="rpanel">'+
+      '<div class="panel-head">'+esc(t('live_markets'))+'</div>'+marketsHTML+
+      '<div class="panel-head">'+esc(t('commodities'))+'</div>'+commHTML+
+      '<div style="margin:14px 0">'+renderAdSlotMini()+'</div>'+
+      '<div class="panel-head">'+esc(t('browse_by_region'))+'</div>'+regionsHTML+
+      '<div class="panel-head">'+esc(t('newsroom'))+'</div>'+
+      '<div class="mrow" style="cursor:pointer" data-link="#/admin"><span class="n">'+esc(t('cms'))+'</span><span class="v">'+ARTICLES.length+' docs</span></div>'+
+      '<div class="mrow" style="cursor:pointer" data-link="#/newsletter"><span class="n">'+esc(t('daily_briefing'))+'</span><span class="v">'+esc(t('preview'))+'</span></div>'+
+    '</aside>'+
+  '</div>';
+
+  html += renderInvestorCTA() + renderFooter();
+  return html;
+}
+
+// ── VIEW: VERTICAL ────────────────────────────────────────────
+function viewVertical(v){
+  if(VERTICAL_KEYS.indexOf(v)===-1) return view404();
+  const stories=byVertical(v);
+  let cardsHTML='';
+  for(const a of stories){
+    cardsHTML += '<a class="vert-card" href="#/article/'+esc(a.slug)+'">'+
+      '<div class="vc-thumb" data-emoji="'+esc(a.emoji||'📰')+'" style="background:'+esc(a.color||'#2a2a0a')+'">'+
+        '<span class="vc-cat">'+esc(vlabel(v))+'</span>'+
+      '</div>'+
+      '<div class="vc-body">'+
+        '<div class="vc-title">'+esc(a.headline)+'</div>'+
+        '<div class="vc-meta">'+esc(a.dateline)+' · '+esc(timeAgo(a.publishedAt))+' · '+esc(a.byline)+'</div>'+
+      '</div>'+
+    '</a>';
+  }
+  if(!cardsHTML) cardsHTML='<div class="empty">·</div>';
+
+  return renderHeader(v)+renderTicker()+
+    '<section class="vert-head"><h2 class="vert-h">'+esc(vlabel(v))+'</h2><div class="vert-sub">'+stories.length+' · /v/'+esc(v)+'</div></section>'+
+    '<div class="vert-grid">'+cardsHTML+'</div>'+
+    renderFooter();
+}
+
+// ── VIEW: REGION ARCHIVE ──────────────────────────────────────
+function viewRegion(slug){
+  const r=REGIONS[slug];
+  if(!r) return view404();
+  const stories=byRegion(slug);
+
+  let cardsHTML='';
+  for(const a of stories){
+    cardsHTML += '<a class="vert-card" href="#/article/'+esc(a.slug)+'">'+
+      '<div class="vc-thumb" data-emoji="'+esc(a.emoji||'📰')+'" style="background:'+esc(a.color||'#2a2a0a')+'">'+
+        '<span class="vc-cat">'+esc(vlabel(a.vertical))+'</span>'+
+      '</div>'+
+      '<div class="vc-body">'+
+        '<div class="vc-title">'+esc(a.headline)+'</div>'+
+        '<div class="vc-meta">'+esc(a.dateline)+' · '+esc(timeAgo(a.publishedAt))+' · '+esc(a.byline)+'</div>'+
+      '</div>'+
+    '</a>';
+  }
+  if(!cardsHTML) cardsHTML='<div class="empty">No stories filed under this region yet.</div>';
+
+  // Country chips
+  let chipsHTML='';
+  const realCountries = r.countries.filter(c=>c!==r.label);
+  for(const c of realCountries.slice(0,10)){
+    chipsHTML += '<span style="display:inline-block;font-size:10px;letter-spacing:.08em;text-transform:uppercase;background:var(--bg-2);color:var(--ink);padding:4px 9px;font-weight:500;margin:2px 4px 2px 0">'+esc(c)+'</span>';
+  }
+
+  return renderHeader(null)+renderTicker()+
+    '<a class="art-back" href="#/" style="padding:14px 22px">'+esc(t('back_to_regions'))+'</a>'+
+    '<section class="vert-head">'+
+      '<div style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);font-weight:700;margin-bottom:6px">'+esc(t('browse_by_region'))+'</div>'+
+      '<h2 class="vert-h">'+esc(rlabel(slug))+'</h2>'+
+      '<div class="vert-sub">'+stories.length+' stor'+(stories.length===1?'y':'ies')+' · /region/'+esc(slug)+'</div>'+
+      '<div style="margin-top:14px">'+chipsHTML+'</div>'+
+    '</section>'+
+    '<div class="vert-grid">'+cardsHTML+'</div>'+
+    renderFooter();
+}
+
+// ── VIEW: JOURNALISTS INDEX ──────────────────────────────────
+function viewJournalists(){
+  let cardsHTML='';
+  for(const j of JOURNALISTS){
+    const count = published().filter(a=>a.byline===j.name).length;
+    cardsHTML += '<a class="jr-card" href="#/journalist/'+esc(j.slug)+'">'+
+      '<div class="jr-card-top">'+
+        '<div class="jr-avatar" style="background:'+esc(j.color)+'">'+esc(journalistInitials(j.name))+'</div>'+
+        '<div>'+
+          '<div class="jr-name">'+esc(j.name)+'</div>'+
+          '<div class="jr-beat">'+esc(j.beat)+'</div>'+
+        '</div>'+
+      '</div>'+
+      '<div class="jr-meta">'+
+        '<span>📍 '+esc(j.bureau)+'</span>'+
+        '<span>'+esc(j.role)+'</span>'+
+      '</div>'+
+      '<div class="jr-bio">'+esc(j.bio)+'</div>'+
+      '<div class="jr-stat">'+
+        '<span>'+esc(t('stories_published'))+'</span>'+
+        '<span class="count">'+count+'</span>'+
+      '</div>'+
+    '</a>';
+  }
+  return renderHeader('__journalists__')+renderTicker()+
+    '<section class="jr-head">'+
+      '<div class="label">AfriPulse Times</div>'+
+      '<h2>'+esc(t('our_journalists'))+'</h2>'+
+      '<div class="sub">'+JOURNALISTS.length+' correspondents across '+new Set(JOURNALISTS.map(j=>j.bureau)).size+' bureaux</div>'+
+    '</section>'+
+    '<div class="jr-grid">'+cardsHTML+'</div>'+
+    renderFooter();
+}
+
+// ── VIEW: SINGLE JOURNALIST PROFILE ──────────────────────────
+function viewJournalist(slug){
+  const j = getJournalist(slug);
+  if(!j) return view404();
+  const stories = published().filter(a=>a.byline===j.name);
+
+  let storiesHTML='';
+  for(const a of stories){
+    storiesHTML += '<a class="vert-card" href="#/article/'+esc(a.slug)+'">'+
+      '<div class="vc-thumb" data-emoji="'+esc(a.emoji||'📰')+'" style="background:'+esc(a.color||'#2a2a0a')+'">'+
+        '<span class="vc-cat">'+esc(vlabel(a.vertical))+'</span>'+
+      '</div>'+
+      '<div class="vc-body">'+
+        '<div class="vc-title">'+esc(a.headline)+'</div>'+
+        '<div class="vc-meta">'+esc(a.dateline)+' · '+esc(timeAgo(a.publishedAt))+'</div>'+
+      '</div>'+
+    '</a>';
+  }
+  if(!storiesHTML) storiesHTML='<div class="empty">No stories filed yet.</div>';
+
+  return renderHeader('__journalists__')+renderTicker()+
+    '<a class="art-back" href="#/journalists" style="padding:14px 22px">'+esc(t('back_to_roster'))+'</a>'+
+    '<section class="jr-profile">'+
+      '<div class="jr-profile-grid">'+
+        '<div class="jr-profile-left">'+
+          '<div class="jr-profile-avatar" style="background:'+esc(j.color)+'">'+esc(journalistInitials(j.name))+'</div>'+
+          '<div class="jr-profile-meta">'+
+            '<div><span class="label">'+esc(t('bureau'))+':</span> '+esc(j.bureau)+'</div>'+
+            '<div><span class="label">'+esc(t('beat'))+':</span> '+esc(j.beat)+'</div>'+
+            '<div><span class="label">Role:</span> '+esc(j.role)+'</div>'+
+          '</div>'+
+        '</div>'+
+        '<div class="jr-profile-right">'+
+          '<h2>'+esc(j.name)+'</h2>'+
+          '<div class="beat">'+esc(j.beat)+' · '+esc(j.bureau)+'</div>'+
+          '<p class="bio">'+esc(j.bio)+'</p>'+
+          '<div style="font-size:11px;color:var(--muted);font-family:\'JetBrains Mono\',monospace;letter-spacing:.04em">'+stories.length+' '+esc(t('stories_published'))+'</div>'+
+        '</div>'+
+      '</div>'+
+    '</section>'+
+    '<div class="jr-stories-head">'+esc(t('recent_stories'))+' — '+esc(j.name)+'</div>'+
+    '<div class="jr-stories">'+storiesHTML+'</div>'+
+    renderFooter();
+}
+
+// ── VIEW: ARTICLE ─────────────────────────────────────────────
+function viewArticle(slug){
+  const a=getArticle(slug);
+  if(!a) return view404();
+  const related=byVertical(a.vertical).filter(r=>r.slug!==a.slug).slice(0,4);
+  let relHTML='';
+  for(const r of related){
+    relHTML += '<a class="rel" href="#/article/'+esc(r.slug)+'">'+
+      '<div class="rel-cat">'+esc(vlabel(r.vertical))+' · '+esc(r.dateline)+'</div>'+
+      '<div class="rel-t">'+esc(r.headline)+'</div>'+
+      '<div class="rel-url">/article/'+esc(r.slug)+'</div>'+
+    '</a>';
+  }
+  if(!relHTML) relHTML='<div style="color:var(--muted);font-size:13px;font-style:italic">·</div>';
+
+  let bodyHTML='';
+  for(const p of (a.body||[])) bodyHTML += '<p>'+esc(p)+'</p>';
+
+  let tagsHTML='';
+  if(a.tags && a.tags.length){
+    tagsHTML='<div class="art-tags">';
+    for(const tg of a.tags) tagsHTML+='<span class="art-tag">'+esc(tg)+'</span>';
+    tagsHTML+='</div>';
+  }
+
+  const sourceBlock = (a.source==='rss' && a.sourceUrl)
+    ? '<div class="art-source"><strong style="color:#E5484D">Live wire from '+esc(a.sourceLabel||a.byline)+'.</strong> <a href="'+esc(a.sourceUrl)+'" target="_blank" rel="noopener">Read at source ↗</a></div>'
+    : '';
+
+  const langNote = CURRENT_LANG !== 'en'
+    ? '<div class="art-lang-note" dir="'+(CURRENT_LANG==='ar'?'rtl':'ltr')+'">'+esc(t('not_localized'))+'</div>'
+    : '';
+
+  return renderHeader(a.vertical)+renderTicker()+
+    '<a class="art-back" href="#/v/'+esc(a.vertical)+'">'+esc(t('back_all'))+' '+esc(vlabel(a.vertical))+'</a>'+
+    renderArticleMedia(a)+
+    '<article class="article">'+
+      '<div class="art-body" dir="ltr">'+
+        '<div class="art-kicker">'+esc(a.kicker)+'</div>'+
+        '<h2 class="art-h1">'+esc(a.headline)+'</h2>'+
+        '<div class="art-meta">'+
+          (function(){
+            const jr=findJournalistByName(a.byline);
+            const bylineEl = jr ? '<a href="#/journalist/'+esc(jr.slug)+'" style="color:var(--ink);font-weight:500;text-decoration:underline;text-decoration-color:var(--accent);text-underline-offset:3px">'+esc(a.byline)+'</a>' : esc(a.byline);
+            return '<span class="by">By '+bylineEl+'</span>';
+          })()+' · '+esc(a.dateline)+' · '+esc(timeAgo(a.publishedAt))+' · '+esc(a.readingMin||4)+' min read'+
+        '</div>'+
+        '<p class="art-lead">'+esc(a.standfirst)+'</p>'+
+        bodyHTML+
+        sourceBlock+
+        tagsHTML+
+        langNote+
+        '<div class="art-note">'+esc(t('edit_in_cms')).replace('CMS','<a href="#/admin/edit/'+esc(a.slug)+'" style="color:var(--accent);text-decoration:underline">CMS</a>')+'</div>'+
+      '</div>'+
+      '<aside class="art-side">'+
+        '<div class="panel-head" style="margin-top:0;border-top:none">'+esc(t('live'))+' · '+esc(a.dateline)+'</div>'+
+        '<div class="data-row"><div class="data-label">Cobalt /t</div><div class="data-val">$32,450</div><div class="data-chg dn">▼ 0.8%</div></div>'+
+        '<div class="data-row"><div class="data-label">Brent</div><div class="data-val">$81.30</div><div class="data-chg dn">▼ 0.9%</div></div>'+
+        '<div class="data-row"><div class="data-label">USD / NGN</div><div class="data-val">1,540</div><div class="data-chg dn">▼ 0.2%</div></div>'+
+        '<div class="data-row"><div class="data-label">JSE</div><div class="data-val">82,440</div><div class="data-chg up">▲ 1.2%</div></div>'+
+      '</aside>'+
+    '</article>'+
+    '<section class="related">'+
+      '<div class="panel-head" style="margin-top:0;border-top:none">'+esc(t('more_from'))+' '+esc(vlabel(a.vertical))+'</div>'+
+      '<div class="rel-grid">'+relHTML+'</div>'+
+    '</section>'+
+    renderFooter();
+}
+
+// ── VIEW: ADMIN (LTR always — newsroom workflow) ──────────────
+function adminShell(activeSlug, paneHTML){
+  const all=ARTICLES.slice().sort((a,b)=>new Date(b.publishedAt)-new Date(a.publishedAt));
+  let docList='';
+  for(const a of all){
+    const isLive=a.source==='rss';
+    const cls=isLive?'live':(a.status==='published'?'pub':'draft');
+    const lbl=isLive?'live wire':a.status;
+    docList += '<div class="adm-doc'+(a.slug===activeSlug?' active':'')+'" data-link="#/admin/edit/'+esc(a.slug)+'">'+
+      '<div class="adm-doc-title">'+esc(a.headline)+'</div>'+
+      '<div class="adm-doc-meta">'+
+        '<span class="adm-status s-'+cls+'">'+esc(lbl)+'</span>'+
+        '<span>'+esc(vshort(a.vertical))+' · '+esc(timeAgo(a.publishedAt))+'</span>'+
+      '</div>'+
+    '</div>';
+  }
+
+  return ''+
+  '<div class="topbar"><div class="topbar-date">AfriPulse Admin · Sanity-style CMS</div><div class="topbar-right"><a href="#/">'+esc(t('back_to_site'))+'</a><a class="btn-sub" href="#/admin/new">'+esc(t('new_article'))+'</a></div></div>'+
+  '<div class="admin">'+
+    '<aside class="adm-list">'+
+      '<div class="adm-list-head">'+
+        '<div class="adm-list-title">Articles · '+ARTICLES.length+'</div>'+
+        '<button class="adm-new-btn" type="button" data-link="#/admin/new" title="New article">+</button>'+
+      '</div>'+
+      '<div class="adm-filter"><input id="adm-filter" type="search" placeholder="Filter articles…"></div>'+
+      '<div id="adm-doc-list">'+docList+'</div>'+
+    '</aside>'+
+    '<main class="adm-pane">'+paneHTML+'</main>'+
+  '</div>';
+}
+
+function adminWelcome(){
+  const pubCount=ARTICLES.filter(a=>a.status==='published'&&a.source==='authored').length;
+  const wireCount=ARTICLES.filter(a=>a.source==='rss').length;
+  const draftCount=ARTICLES.filter(a=>a.status!=='published').length;
+  return ''+
+  '<div class="adm-bar"><span class="adm-crumb">Articles</span><div class="adm-actions"><a class="adm-btn primary" href="#/admin/new">'+esc(t('new_article'))+'</a></div></div>'+
+  '<div class="adm-welcome">'+
+    '<h2>'+esc(t('newsroom_dashboard'))+'</h2>'+
+    '<p>'+esc(t('pick_story'))+'</p>'+
+    '<div class="adm-stats">'+
+      '<div class="adm-stat"><div class="adm-stat-label">'+esc(t('authored_pub'))+'</div><div class="adm-stat-val">'+pubCount+'</div></div>'+
+      '<div class="adm-stat"><div class="adm-stat-label">'+esc(t('live_wire'))+'</div><div class="adm-stat-val">'+wireCount+'</div></div>'+
+      '<div class="adm-stat"><div class="adm-stat-label">'+esc(t('drafts'))+'</div><div class="adm-stat-val">'+draftCount+'</div></div>'+
+    '</div>'+
+    '<div style="background:#1A1C1E;padding:14px 18px;border-radius:6px;border:1px solid #2A2D31;font-size:13px;line-height:1.7;color:#9AA0A6;max-width:600px">'+
+      '<strong style="color:#E4E6E8;font-weight:500">Try this:</strong> Click an article on the left, edit the headline, hit '+esc(t('save'))+'. Then visit the <a href="#/" style="color:var(--accent)">home page</a> or <a href="#/newsletter" style="color:var(--accent)">'+esc(t('daily_briefing'))+'</a> — your change is live everywhere.'+
+    '</div>'+
+  '</div>';
+}
+
+function adminEditor(a){
+  let vertOpts='';
+  for(const k of VERTICAL_KEYS){
+    vertOpts += '<option value="'+esc(k)+'"'+(a.vertical===k?' selected':'')+'>'+esc(vlabel(k))+'</option>';
+  }
+  let statusOpts='';
+  for(const s of ['draft','review','published']){
+    statusOpts += '<option value="'+esc(s)+'"'+(a.status===s?' selected':'')+'>'+esc(s)+'</option>';
+  }
+  let tagsHTML='';
+  for(const tg of (a.tags||[])){
+    tagsHTML += '<span class="adm-tag" data-tag="'+esc(tg)+'" style="background:#222528;color:#9AA0A6;padding:4px 10px;border-radius:999px;font-size:11px;display:inline-flex;align-items:center;gap:6px;margin:2px">'+esc(tg)+'<span class="x" data-remove-tag="'+esc(tg)+'" style="cursor:pointer;color:#5F6469">×</span></span>';
+  }
+  const isNew=!a.slug;
+  const slugDisplay=isNew?'(auto from headline)':('/article/'+a.slug);
+  const headlineLen=(a.headline||'').length;
+  return ''+
+  '<div class="adm-bar">'+
+    '<span class="adm-crumb">Articles › <span class="cur">'+esc(isNew?'New article':a.headline.slice(0,40))+(a.headline.length>40?'…':'')+'</span></span>'+
+    '<div class="adm-actions">'+
+      (isNew?'':'<a class="adm-btn" href="#/article/'+esc(a.slug)+'" target="_blank">Preview ↗</a>')+
+      (isNew?'':'<button class="adm-btn danger" id="delete-btn" type="button">'+esc(t('delete_btn'))+'</button>')+
+      '<button class="adm-btn primary" id="save-btn" type="button">'+esc(t('save'))+'</button>'+
+    '</div>'+
+  '</div>'+
+  '<form class="adm-form" id="article-form" data-original-slug="'+esc(a.slug||'')+'" onsubmit="return false">'+
+    '<div class="adm-slug">🔗 Slug<span class="u" id="slug-preview">'+esc(slugDisplay)+'</span></div>'+
+    '<div class="adm-field">'+
+      '<label class="adm-label">Headline <span class="help"><span id="head-count">'+headlineLen+'</span> / 80 characters</span></label>'+
+      '<input class="adm-input title" name="headline" value="'+esc(a.headline||'')+'" maxlength="120">'+
+    '</div>'+
+    '<div class="adm-field">'+
+      '<label class="adm-label">Standfirst</label>'+
+      '<textarea class="adm-input" name="standfirst" rows="2" style="line-height:1.6">'+esc(a.standfirst||'')+'</textarea>'+
+    '</div>'+
+    '<div class="adm-grid">'+
+      '<div class="adm-field"><label class="adm-label">Vertical</label><select class="adm-input" name="vertical">'+vertOpts+'</select></div>'+
+      '<div class="adm-field"><label class="adm-label">Status</label><select class="adm-input" name="status">'+statusOpts+'</select></div>'+
+      '<div class="adm-field"><label class="adm-label">Byline</label><input class="adm-input" name="byline" value="'+esc(a.byline||'')+'"></div>'+
+      '<div class="adm-field"><label class="adm-label">Dateline</label><input class="adm-input" name="dateline" value="'+esc(a.dateline||'')+'"></div>'+
+      '<div class="adm-field"><label class="adm-label">Kicker</label><input class="adm-input" name="kicker" value="'+esc(a.kicker||'')+'"></div>'+
+      '<div class="adm-field"><label class="adm-label">Reading time (min)</label><input class="adm-input" name="readingMin" type="number" min="1" max="60" value="'+esc(a.readingMin||4)+'"></div>'+
+      '<div class="adm-field"><label class="adm-label">Emoji</label><input class="adm-input" name="emoji" value="'+esc(a.emoji||'📰')+'" maxlength="4"></div>'+
+      '<div class="adm-field"><label class="adm-label">Hero color</label><input class="adm-input" name="color" value="'+esc(a.color||'#2a2a0a')+'"></div>'+
+    '</div>'+
+    '<div class="adm-field">'+
+      '<label class="adm-label">Tags <span class="help">Type and press Enter</span></label>'+
+      '<div id="tags-container" style="display:flex;flex-wrap:wrap;gap:6px;background:#1A1C1E;border:1px solid #2A2D31;border-radius:4px;padding:8px 10px;min-height:42px">'+
+        tagsHTML+
+        '<input class="adm-input" id="tag-input" placeholder="Add tag…" style="background:transparent;border:none;flex:1;min-width:120px;padding:4px;width:auto">'+
+      '</div>'+
+    '</div>'+
+    '<div class="adm-field" style="border-top:1px solid #2A2D31;padding-top:18px">'+
+      '<label class="adm-label">'+esc(t('media_type'))+' <span class="help">'+esc(t('media_help'))+'</span></label>'+
+      '<div class="adm-grid" style="grid-template-columns:200px 1fr">'+
+        '<select class="adm-input" name="mediaType">'+
+          '<option value=""'+(!(a.media&&a.media.type)?' selected':'')+'>'+esc(t('media_none'))+'</option>'+
+          '<option value="image"'+(a.media&&a.media.type==='image'?' selected':'')+'>'+esc(t('media_image'))+'</option>'+
+          '<option value="video"'+(a.media&&a.media.type==='video'?' selected':'')+'>'+esc(t('media_video'))+'</option>'+
+        '</select>'+
+        '<input class="adm-input" name="mediaSrc" placeholder="https://… or leave blank for auto" value="'+esc((a.media&&a.media.src)||'')+'">'+
+      '</div>'+
+    '</div>'+
+    '<div class="adm-grid">'+
+      '<div class="adm-field"><label class="adm-label">'+esc(t('media_caption'))+'</label><input class="adm-input" name="mediaCaption" value="'+esc((a.media&&a.media.caption)||'')+'"></div>'+
+      '<div class="adm-field"><label class="adm-label">'+esc(t('media_credit'))+'</label><input class="adm-input" name="mediaCredit" value="'+esc((a.media&&a.media.credit)||'')+'"></div>'+
+    '</div>'+
+    '<div class="adm-field">'+
+      '<label class="adm-label">Body <span class="help">Blank line between paragraphs</span></label>'+
+      '<textarea class="adm-input adm-textarea" name="body" rows="14">'+esc((a.body||[]).join('\n\n'))+'</textarea>'+
+    '</div>'+
+  '</form>';
+}
+
+function viewAdmin(slug){
+  if(slug){
+    const a=getArticle(slug);
+    if(!a) return view404();
+    return adminShell(slug, adminEditor(a));
+  }
+  return adminShell(null, adminWelcome());
+}
+
+function viewNewArticle(){
+  const blank={slug:'',vertical:'front',kicker:'',headline:'',standfirst:'',byline:'AfriPulse Bureau',dateline:'Lagos',readingMin:4,emoji:'📰',color:'#2a2a0a',status:'draft',publishedAt:new Date().toISOString(),tags:[],body:[]};
+  return adminShell(null, adminEditor(blank));
+}
+
+// ── VIEW: NEWSLETTER ──────────────────────────────────────────
+function viewNewsletter(){
+  const pub=published();
+  const top=pub.slice(0,3);
+  const also=pub.slice(3,8);
+  const issueNo=142;
+  const locale = CURRENT_LANG==='fr'?'fr-FR':CURRENT_LANG==='ar'?'ar-EG':'en-GB';
+  let dateStr='';
+  try{ dateStr=new Date().toLocaleDateString(locale,{weekday:'short',day:'numeric',month:'short',year:'numeric'}); }catch(e){ dateStr=new Date().toDateString(); }
+
+  let topHTML='';
+  for(const a of top){
+    topHTML += '<div class="nl-story" data-link="#/article/'+esc(a.slug)+'">'+
+      '<div class="nl-story-cat">'+esc(vlabel(a.vertical))+' · '+esc(a.dateline)+'</div>'+
+      '<div class="nl-story-t">'+esc(a.headline)+'</div>'+
+      '<div class="nl-story-s">'+esc(a.standfirst)+'</div>'+
+      '<div style="font-size:11px;color:var(--muted);font-family:\'JetBrains Mono\',monospace;display:flex;justify-content:space-between"><span style="color:var(--ink);font-family:\'DM Sans\',sans-serif;font-weight:500">'+esc(t('by'))+' '+esc(a.byline)+' · '+esc(a.readingMin||4)+' '+esc(t('min_read'))+'</span><span style="color:var(--accent);font-weight:500">'+esc(t('read'))+'</span></div>'+
+    '</div>';
+  }
+  if(!topHTML) topHTML='<div class="empty">·</div>';
+
+  let alsoHTML='';
+  for(const a of also){
+    alsoHTML += '<div class="nl-story" data-link="#/article/'+esc(a.slug)+'">'+
+      '<div class="nl-story-cat">'+esc(vlabel(a.vertical))+' · '+esc(a.dateline)+'</div>'+
+      '<div class="nl-story-t">'+esc(a.headline)+'</div>'+
+      '<div class="nl-story-s">'+esc((a.standfirst||'').slice(0,160))+'</div>'+
+    '</div>';
+  }
+  if(!alsoHTML) alsoHTML='<div style="font-size:13px;color:var(--muted);font-style:italic">·</div>';
+
+  let numCells='';
+  const allNums=COMMODITY_PANEL.concat(MARKETS).slice(0,6);
+  for(const c of allNums){
+    numCells += '<div class="num-cell"><div class="num-label">'+esc(c.n)+'</div><div class="num-val">'+esc(c.v)+'</div><div class="num-chg '+c.d+'">'+esc(c.c)+'</div></div>';
+  }
+
+  return ''+
+  '<div class="topbar"><div class="topbar-date">'+esc(t('daily_briefing'))+' · '+esc(t('preview'))+'</div><div class="topbar-right"><a href="#/">'+esc(t('back_to_site'))+'</a></div></div>'+
+  '<div class="nl-stage">'+
+    '<div class="nl-client">'+
+      '<div class="nl-bar"><span>From:</span> <span class="f">'+esc(t('daily_briefing'))+' &lt;daily@afripulsetimes.com&gt;</span><span style="margin-left:auto">'+esc(dateStr)+' · 06:00 Lagos</span></div>'+
+      '<div class="nl-email">'+
+        '<div class="nl-head">'+
+          '<div class="nl-kicker"><span>'+esc(t('issue'))+' №'+issueNo+' · '+esc(dateStr)+'</span><span style="color:var(--ink);font-weight:500">'+esc(t('edition'))+'</span></div>'+
+          '<div class="nl-brand">Afri<span class="pulse">Pulse</span> <span class="times">Times</span></div>'+
+          '<div class="nl-sub">'+esc(t('daily_byline'))+'</div>'+
+        '</div>'+
+        '<div class="nl-intro">'+
+          '<div class="nl-greet">'+esc(t('good_morning'))+' <em>—</em></div>'+
+          '<p>'+esc(top[0]?top[0].standfirst:'·')+'</p>'+
+          '<p>'+esc(t('todays_read'))+': '+top.reduce(function(s,a){return s+(a.readingMin||4);},0)+' '+esc(t('minutes_total'))+'</p>'+
+        '</div>'+
+        '<div class="nl-sect">'+
+          '<div class="nl-sect-h">'+esc(t('top_front'))+'</div>'+topHTML+
+        '</div>'+
+        '<div class="nl-numbers">'+
+          '<div class="nl-sect-h" style="color:#7A7470">'+esc(t('by_numbers'))+'</div>'+
+          '<div class="num-grid">'+numCells+'</div>'+
+        '</div>'+
+        '<div class="nl-sect">'+
+          '<div class="nl-sect-h">'+esc(t('also_today'))+'</div>'+alsoHTML+
+        '</div>'+
+        '<div class="nl-foot">'+
+          '<div class="nl-foot-b">Afri<span class="pulse">Pulse</span> Times</div>'+
+          '<p>© 2026 AfriPulse Times Media Limited · Mauritius</p>'+
+        '</div>'+
+      '</div>'+
+    '</div>'+
+  '</div>';
+}
+
+// ── 404 ───────────────────────────────────────────────────────
+function view404(){
+  return renderHeader(null)+
+  '<main style="padding:80px 22px;text-align:center;min-height:40vh">'+
+    '<h2 style="font-family:\'Fraunces\',serif;font-size:56px;font-weight:900;letter-spacing:-2px;color:var(--accent);margin-bottom:14px">'+esc(t('not_found_title'))+'</h2>'+
+    '<p style="font-family:\'Fraunces\',serif;font-size:18px">'+esc(t('not_found_msg'))+'</p>'+
+    '<p style="font-size:13px;color:var(--muted);margin-top:8px">'+esc(t('not_found_sub'))+'</p>'+
+    '<p style="margin-top:18px"><a href="#/" style="color:var(--accent);font-weight:500;text-decoration:underline">'+esc(t('back_front_page'))+'</a> · <a href="#/admin" style="color:var(--accent);font-weight:500;text-decoration:underline">'+esc(t('open_admin'))+'</a></p>'+
+  '</main>'+
+  renderFooter();
+}
+
+// ── ROUTER ────────────────────────────────────────────────────
+function route(){
+  try{
+    const hash=(location.hash||'#/').replace(/^#/,'');
+    const parts=hash.split('/').filter(Boolean);
+    const app=document.getElementById('app');
+    if(!app){ console.error('No #app element'); return; }
+
+    let html;
+    if(parts.length===0) html=viewHome();
+    else if(parts[0]==='article' && parts[1]) html=viewArticle(decodeURIComponent(parts[1]));
+    else if(parts[0]==='v' && parts[1]) html=viewVertical(decodeURIComponent(parts[1]));
+    else if(parts[0]==='region' && parts[1]) html=viewRegion(decodeURIComponent(parts[1]));
+    else if(parts[0]==='journalists') html=viewJournalists();
+    else if(parts[0]==='journalist' && parts[1]) html=viewJournalist(decodeURIComponent(parts[1]));
+    else if(parts[0]==='admin' && parts[1]==='new') html=viewNewArticle();
+    else if(parts[0]==='admin' && parts[1]==='edit' && parts[2]) html=viewAdmin(decodeURIComponent(parts[2]));
+    else if(parts[0]==='admin') html=viewAdmin(null);
+    else if(parts[0]==='newsletter') html=viewNewsletter();
+    else html=view404();
+
+    app.innerHTML=html;
+    try{ window.scrollTo(0,0); }catch(e){}
+    updateDevbarPath();
+    bindView();
+  }catch(err){
+    console.error('Route error:',err);
+    const app=document.getElementById('app');
+    if(app) app.innerHTML='<div style="padding:60px 22px;text-align:center"><h2 style="font-family:\'Fraunces\',serif;color:var(--accent);font-size:32px;margin-bottom:10px">Something broke.</h2><p style="color:var(--muted);font-size:14px">Check the browser console, then click <a href="#/" style="color:var(--accent)">Home</a> to retry.</p><p style="font-size:11px;color:var(--muted);margin-top:18px;font-family:monospace">'+esc(String(err.message||err))+'</p></div>';
+  }
+}
+
+function updateDevbarPath(){
+  const info=document.getElementById('dev-info');
+  if(info){
+    const wires=ARTICLES.filter(a=>a.source==='rss').length;
+    info.textContent = (wires>0 ? wires+' wires · ' : '')+'lang: '+CURRENT_LANG;
+  }
+  document.querySelectorAll('.devbar a[data-r]').forEach(a=>a.classList.remove('active'));
+  const h=location.hash||'#/';
+  let activeKey='home';
+  if(h.startsWith('#/article/')||h==='#/'||h==='#'||h==='') activeKey='home';
+  else if(h.startsWith('#/v/')) activeKey='vert';
+  else if(h.startsWith('#/region/')) activeKey='home';
+  else if(h.startsWith('#/journalists')||h.startsWith('#/journalist/')) activeKey='home';
+  else if(h.startsWith('#/admin')) activeKey='admin';
+  else if(h.startsWith('#/newsletter')) activeKey='nl';
+  const el=document.querySelector('.devbar a[data-r="'+activeKey+'"]');
+  if(el) el.classList.add('active');
+}
+
+// ── EVENT BINDING (delegated) ─────────────────────────────────
+function bindView(){
+  // data-link → set hash
+  document.querySelectorAll('[data-link]').forEach(el=>{
+    el.addEventListener('click',function(e){
+      e.preventDefault();
+      const href=el.getAttribute('data-link');
+      if(href) location.hash=href;
+    });
+  });
+
+  // Logo home
+  document.querySelectorAll('[data-r="home"]').forEach(el=>{
+    if(el.classList && el.classList.contains('logo')){
+      el.addEventListener('click',function(){ location.hash='#/'; });
+    }
+  });
+
+  // Language switcher — works on every view
+  document.querySelectorAll('.lang-link[data-lang]').forEach(el=>{
+    el.addEventListener('click',function(e){
+      e.preventDefault();
+      setLang(el.getAttribute('data-lang'));
+    });
+  });
+
+  // Left rail · per-vertical collapse (click the arrow area; the full anchor still navigates)
+  // We let users tap the small arrow chevron to expand/collapse without navigating away.
+  document.querySelectorAll('.lr-vert-head .arrow').forEach(arrow=>{
+    arrow.addEventListener('click',function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      const head=arrow.closest('.lr-vert-head');
+      const vk=head && head.getAttribute('data-lr-vert');
+      if(!vk) return;
+      const list=document.querySelector('[data-lr-list="'+vk+'"]');
+      if(list){
+        list.classList.toggle('open');
+        arrow.classList.toggle('open');
+      }
+    });
+  });
+
+  // Left rail · expand/collapse all
+  const toggleAll=document.getElementById('lr-toggle-all');
+  if(toggleAll){
+    toggleAll.addEventListener('click',function(){
+      const isExpanded=toggleAll.getAttribute('data-state')==='expanded';
+      document.querySelectorAll('.lr-list').forEach(l=>l.classList.toggle('open',!isExpanded));
+      document.querySelectorAll('.lr-vert-head .arrow').forEach(a=>a.classList.toggle('open',!isExpanded));
+      toggleAll.setAttribute('data-state',isExpanded?'collapsed':'expanded');
+      // Update label dynamically based on current language
+      const collapseLbl = CURRENT_LANG==='fr'?'Tout replier':CURRENT_LANG==='ar'?'طيّ الكل':'Collapse all';
+      const expandLbl = CURRENT_LANG==='fr'?'Tout déplier':CURRENT_LANG==='ar'?'فتح الكل':'Expand all';
+      toggleAll.textContent = isExpanded ? expandLbl : collapseLbl;
+    });
+  }
+
+  // Subscribe (toast only)
+  const sub=document.getElementById('subscribe-link');
+  if(sub) sub.addEventListener('click',function(e){
+    e.preventDefault();
+    toast(CURRENT_LANG==='fr'?'Inscrit à la newsletter quotidienne.':CURRENT_LANG==='ar'?'تم الاشتراك في النشرة اليومية.':'Subscribed to the Daily Briefing.');
+  });
+
+  // Search
+  const search=document.getElementById('site-search');
+  if(search){
+    search.addEventListener('keydown',function(e){
+      if(e.key!=='Enter') return;
+      e.preventDefault();
+      const q=this.value.trim().toLowerCase();
+      if(!q) return;
+      const hits=published().filter(a=>(a.headline+' '+a.standfirst+' '+(a.tags||[]).join(' ')).toLowerCase().indexOf(q)>-1);
+      if(hits.length){ location.hash='#/article/'+hits[0].slug; toast(hits.length+' result'+(hits.length>1?'s':'')+' for "'+q+'"'); }
+      else toast('No stories match "'+q+'".');
+    });
+  }
+
+  // Admin filter
+  const filt=document.getElementById('adm-filter');
+  if(filt){
+    filt.addEventListener('input',function(){
+      const q=this.value.trim().toLowerCase();
+      document.querySelectorAll('#adm-doc-list .adm-doc').forEach(d=>{
+        const t=d.querySelector('.adm-doc-title').textContent.toLowerCase();
+        d.style.display=(!q || t.indexOf(q)>-1)?'':'none';
+      });
+    });
+  }
+
+  // Admin editor
+  const headInput=document.querySelector('input[name="headline"]');
+  if(headInput){
+    headInput.addEventListener('input',function(){
+      const c=document.getElementById('head-count');
+      if(c) c.textContent=this.value.length;
+      const form=document.getElementById('article-form');
+      const origSlug=form && form.getAttribute('data-original-slug');
+      if(!origSlug){
+        const sp=document.getElementById('slug-preview');
+        if(sp) sp.textContent='/article/'+(slugify(this.value)||'untitled');
+      }
+    });
+  }
+
+  const tagInput=document.getElementById('tag-input');
+  if(tagInput){
+    tagInput.addEventListener('keydown',function(e){
+      if(e.key!=='Enter' && e.key!==',') return;
+      e.preventDefault();
+      const val=this.value.trim();
+      if(!val) return;
+      const container=document.getElementById('tags-container');
+      const existing=Array.from(container.querySelectorAll('.adm-tag')).map(tt=>tt.getAttribute('data-tag'));
+      if(existing.indexOf(val)===-1){
+        const span=document.createElement('span');
+        span.className='adm-tag';
+        span.setAttribute('data-tag',val);
+        span.style.cssText='background:#222528;color:#9AA0A6;padding:4px 10px;border-radius:999px;font-size:11px;display:inline-flex;align-items:center;gap:6px;margin:2px';
+        span.innerHTML=esc(val)+'<span class="x" data-remove-tag="'+esc(val)+'" style="cursor:pointer;color:#5F6469">×</span>';
+        container.insertBefore(span,this);
+      }
+      this.value='';
+    });
+    const tagsContainer=document.getElementById('tags-container');
+    if(tagsContainer){
+      tagsContainer.addEventListener('click',function(e){
+        const x=e.target.closest('[data-remove-tag]');
+        if(x && x.parentElement) x.parentElement.remove();
+      });
+    }
+  }
+
+  const saveBtn=document.getElementById('save-btn');
+  if(saveBtn) saveBtn.addEventListener('click',saveArticle);
+  const delBtn=document.getElementById('delete-btn');
+  if(delBtn) delBtn.addEventListener('click',deleteArticle);
+}
+
+function saveArticle(){
+  const form=document.getElementById('article-form');
+  if(!form){ toast('Editor not found.'); return; }
+  const data={};
+  form.querySelectorAll('[name]').forEach(el=>{ data[el.name]=el.value.trim(); });
+  if(!data.headline){ toast('Headline required.'); return; }
+
+  const originalSlug=form.getAttribute('data-original-slug') || '';
+  const existing=originalSlug?getArticle(originalSlug):null;
+  const tags=Array.from(form.querySelectorAll('#tags-container .adm-tag')).map(tt=>tt.getAttribute('data-tag'));
+  const body=(data.body||'').split(/\n{2,}/).map(p=>p.trim()).filter(Boolean);
+
+  let newSlug;
+  if(existing){
+    newSlug=existing.slug;
+  }else{
+    newSlug=slugify(data.headline);
+    let n=1; const base=newSlug;
+    while(ARTICLES.some(a=>a.slug===newSlug)){ newSlug=base+'-'+(++n); }
+  }
+
+  // Media: only set if a type was chosen
+  let mediaObj = null;
+  if(data.mediaType){
+    mediaObj = {
+      type: data.mediaType,
+      src: data.mediaSrc || '',
+      caption: data.mediaCaption || '',
+      credit: data.mediaCredit || ''
+    };
+  }
+
+  const updated={
+    slug:newSlug,
+    vertical:data.vertical||'front',
+    kicker:data.kicker||'',
+    headline:data.headline,
+    standfirst:data.standfirst||'',
+    byline:data.byline||'AfriPulse Bureau',
+    dateline:data.dateline||'Lagos',
+    readingMin:parseInt(data.readingMin,10)||4,
+    emoji:data.emoji||'📰',
+    color:data.color||'#2a2a0a',
+    status:data.status||'draft',
+    publishedAt:existing?existing.publishedAt:new Date().toISOString(),
+    tags:tags,
+    body:body.length?body:(existing?existing.body:['Start writing here.']),
+    media: mediaObj,
+    source:'authored'
+  };
+
+  if(existing){
+    const i=ARTICLES.findIndex(a=>a.slug===originalSlug);
+    ARTICLES[i]=updated;
+  }else{
+    ARTICLES.unshift(updated);
+  }
+  saveStore(ARTICLES);
+  toast(existing?'Saved.':'Created.');
+  location.hash='#/admin/edit/'+updated.slug;
+  setTimeout(route,30);
+}
+
+function deleteArticle(){
+  const form=document.getElementById('article-form');
+  if(!form) return;
+  const slug=form.getAttribute('data-original-slug');
+  if(!slug) return;
+  if(!confirm('Delete this article?')) return;
+  ARTICLES=ARTICLES.filter(a=>a.slug!==slug);
+  saveStore(ARTICLES);
+  toast('Deleted.');
+  location.hash='#/admin';
+  setTimeout(route,30);
+}
+
+// ── LIVE WIRE ─────────────────────────────────────────────────
+// Multiple CORS proxies tried in rotation; first success wins per feed.
+const PROXIES=[
+  function(u){ return 'https://api.allorigins.win/raw?url='+encodeURIComponent(u); },
+  function(u){ return 'https://corsproxy.io/?url='+encodeURIComponent(u); },
+  function(u){ return 'https://api.codetabs.com/v1/proxy/?quest='+encodeURIComponent(u); },
+  function(u){ return 'https://thingproxy.freeboard.io/fetch/'+u; },
+  function(u){ return 'https://api.allorigins.win/get?url='+encodeURIComponent(u); }
+];
+const FEEDS=[
+  {url:'https://feeds.bbci.co.uk/news/world/africa/rss.xml',label:'BBC Africa',hint:'front'},
+  {url:'https://www.aljazeera.com/xml/rss/all.xml',label:'Al Jazeera',hint:'front'},
+  {url:'https://allafrica.com/tools/headlines/rdf/latest/headlines.rdf',label:'AllAfrica',hint:'front'},
+  {url:'https://www.premiumtimesng.com/feed',label:'Premium Times',hint:'politics'},
+  {url:'https://www.dailymaverick.co.za/feed/',label:'Daily Maverick',hint:'politics'},
+  {url:'https://techcabal.com/feed/',label:'TechCabal',hint:'tech'},
+  {url:'https://african.business/feed',label:'African Business',hint:'markets'},
+  {url:'https://guardian.ng/feed/',label:'The Guardian Nigeria',hint:'front'},
+  {url:'https://www.theeastafrican.co.ke/tea/rss',label:'The East African',hint:'politics'},
+  {url:'https://mg.co.za/feed/',label:'Mail & Guardian',hint:'politics'},
+  {url:'https://www.engineeringnews.co.za/rss/mining',label:'Mining Weekly',hint:'mining'},
+  {url:'https://disrupt-africa.com/feed/',label:'Disrupt Africa',hint:'tech'}
+];
+// Auto-refresh interval (ms). 0 disables. Default: 5 minutes.
+const AUTO_REFRESH_MS=5*60*1000;
+let AUTO_TIMER=null;
+const VKW={
+  mining:['cobalt','gold','copper','lithium','platinum','oil','gas','energy','mining','mine','solar','renewable','lng','crude','uranium','battery'],
+  markets:['rand','naira','bourse','stock','jse','ngx','imf','inflation','gdp','currency','market','trade','afcfta','tariff','bank','rate','exchange','listing','earnings'],
+  tech:['ai ','artificial intelligence','tech','startup','fintech','app ','platform','data','cloud','digital','m-pesa','safaricom','crypto','blockchain','software'],
+  culture:['music','film','art','festival','burna','nollywood','culture','tour','afrobeats','album','movie'],
+  sports:['football','afcon','soccer','match','goal','striker','player','caf','athletics','olympic','world cup','squad','tournament','marathon','athlete','runner','sport','medal'],
+  politics:['election','senate','parliament','president','minister','vote','government','reform','policy','bill','protest','au summit','peace']
+};
+const VDEF={front:{emoji:'🌍',color:'#0e2818'},politics:{emoji:'🏛️',color:'#1a3a1a'},mining:{emoji:'⛏️',color:'#3a1a0a'},markets:{emoji:'📊',color:'#0a1a2a'},tech:{emoji:'🤖',color:'#2a2a0a'},culture:{emoji:'🎭',color:'#2a1a2a'},sports:{emoji:'⚽',color:'#1a1a3a'},opinions:{emoji:'✍️',color:'#241a2a'},podcasts:{emoji:'🎙️',color:'#1a1a3a'}};
+
+function guessVertical(title,desc,hint){
+  const text=((title||'')+' '+(desc||'')).toLowerCase();
+  const scores={};
+  for(const v in VKW){ scores[v]=VKW[v].reduce((s,w)=>s+(text.indexOf(w)>-1?1:0),0); }
+  if(hint && scores[hint]!==undefined) scores[hint]+=0.5;
+  const best=Object.keys(scores).sort((a,b)=>scores[b]-scores[a])[0];
+  return scores[best]>0?best:(hint||'front');
+}
+
+function parseRSS(xml,feed){
+  const items=[];
+  try{
+    const doc=new DOMParser().parseFromString(xml,'text/xml');
+    const entries=Array.from(doc.querySelectorAll('item')).concat(Array.from(doc.querySelectorAll('entry')));
+    entries.slice(0,6).forEach(e=>{
+      const title=((e.querySelector('title')||{}).textContent||'').replace(/<[^>]+>/g,'').trim();
+      let desc=((e.querySelector('description')||e.querySelector('summary')||{}).textContent||'').replace(/<[^>]+>/g,'').trim();
+      if(desc.length>500) desc=desc.slice(0,497)+'…';
+      const linkEl=e.querySelector('link');
+      const link=(linkEl && (linkEl.textContent || linkEl.getAttribute('href')) || '#').trim();
+      const pubEl=e.querySelector('pubDate')||e.querySelector('published')||e.querySelector('updated');
+      const pub=pubEl?pubEl.textContent:null;
+      if(title.length<10) return;
+      const vert=guessVertical(title,desc,feed.hint);
+      const def=VDEF[vert];
+      items.push({
+        slug:'live-'+slugify(title).slice(0,56)+'-'+Math.random().toString(36).slice(2,6),
+        vertical:vert,
+        kicker:(vlabel(vert))+' · '+feed.label,
+        headline:title,
+        standfirst:desc||title,
+        byline:feed.label,
+        dateline:'Wire',
+        readingMin:Math.max(2,Math.ceil((desc.length||200)/600)),
+        emoji:def.emoji,color:def.color,
+        status:'published',
+        publishedAt:pub?new Date(pub).toISOString():new Date().toISOString(),
+        tags:[feed.label,'Live wire',vlabel(vert)],
+        body:[desc||'Full story at source.'],
+        source:'rss',sourceUrl:link,sourceLabel:feed.label
+      });
+    });
+  }catch(e){ console.warn('parseRSS',feed.label,e); }
+  return items;
+}
+
+function fetchTimeout(url,ms){
+  if(typeof AbortSignal!=='undefined' && AbortSignal.timeout){
+    return fetch(url,{signal:AbortSignal.timeout(ms)});
+  }
+  const c=new AbortController();
+  setTimeout(()=>c.abort(),ms);
+  return fetch(url,{signal:c.signal});
+}
+
+async function fetchFeed(feed){
+  for(const wrap of PROXIES){
+    try{
+      const res=await fetchTimeout(wrap(feed.url),8000);
+      if(!res||!res.ok) continue;
+      let txt=await res.text();
+      if(!txt||txt.length<80) continue;
+      // allorigins /get returns JSON {contents:"..."}; unwrap it
+      if(txt.charAt(0)==='{' && txt.indexOf('"contents"')>-1){
+        try{ const j=JSON.parse(txt); if(j && j.contents) txt=j.contents; }catch(e){}
+      }
+      const items=parseRSS(txt,feed);
+      if(items.length) return items;
+    }catch(e){}
+  }
+  return [];
+}
+
+// Try the AfriPulse backend API first (reliable, server-side, no CORS).
+// Returns an array of normalized articles, or null if no backend is present.
+async function pullFromAPI(){
+  try{
+    const res=await fetchTimeout('/api/news?limit=120',8000);
+    if(!res || !res.ok) return null;
+    const data=await res.json();
+    if(!data || !data.ok || !Array.isArray(data.articles)) return null;
+    return data.articles.map(a=>{
+      const vert=a.vertical||'front';
+      const def=VDEF[vert]||VDEF.front;
+      return {
+        slug:'live-'+slugify(a.headline).slice(0,56)+'-'+Math.random().toString(36).slice(2,6),
+        vertical:vert,
+        kicker:a.kicker||((vlabel(vert))+' · '+(a.source||'Wire')),
+        headline:a.headline,
+        standfirst:a.standfirst||a.headline,
+        byline:a.byline||a.source||'Wire',
+        dateline:'Wire',
+        readingMin:a.readingMin||3,
+        emoji:def.emoji,color:def.color,
+        status:'published',
+        publishedAt:a.publishedAt||new Date().toISOString(),
+        tags:[a.source||'Wire','Live wire',vlabel(vert)],
+        body:[a.standfirst||'Full story at source.'],
+        source:'rss',sourceUrl:a.sourceUrl||'#',sourceLabel:a.source||'Wire'
+      };
+    });
+  }catch(e){ return null; }
+}
+
+async function pullLiveWire(opts){
+  opts=opts||{};
+  const silent=!!opts.silent;
+  const btn=document.getElementById('btn-live');
+  if(btn && !silent){ btn.disabled=true; btn.textContent='⏳…'; }
+  if(btn && silent){ btn.textContent='⟳ syncing…'; }
+
+  // Primary path: backend API. Fallback: public CORS proxies.
+  let unique=[]; let okFeeds=0; let viaAPI=false;
+  const apiArticles=await pullFromAPI();
+  if(apiArticles && apiArticles.length){
+    viaAPI=true; okFeeds=FEEDS.length;
+    const seen=new Set();
+    unique=apiArticles.filter(a=>{
+      const k=a.headline.slice(0,50).toLowerCase();
+      if(seen.has(k)) return false;
+      seen.add(k); return true;
+    });
+  } else {
+    const batches=await Promise.allSettled(FEEDS.map(fetchFeed));
+    const incoming=[];
+    batches.forEach(b=>{ if(b.status==='fulfilled' && b.value.length){ okFeeds++; incoming.push(...b.value); }});
+    const seen=new Set();
+    unique=incoming.filter(a=>{
+      const k=a.headline.slice(0,50).toLowerCase();
+      if(seen.has(k)) return false;
+      seen.add(k); return true;
+    });
+  }
+  if(unique.length){
+    ARTICLES=ARTICLES.filter(a=>a.source!=='rss').concat(unique);
+    if(ARTICLES.length>120){
+      ARTICLES.sort((a,b)=>new Date(b.publishedAt)-new Date(a.publishedAt));
+      ARTICLES=ARTICLES.slice(0,120);
+    }
+    saveStore(ARTICLES);
+    localStorage.setItem('afripulse_mvp_v2_synced',Date.now().toString());
+  }
+  if(btn){
+    btn.disabled=false;
+    btn.textContent='Pull live wire ↻';
+    if(unique.length) btn.classList.add('live');
+  }
+  updateSyncStatus();
+  if(!silent){
+    if(unique.length) toast('Pulled '+unique.length+' wires'+(viaAPI?' from live backend.':' from '+okFeeds+'/'+FEEDS.length+' feeds.'));
+    else toast('No wires returned · retry shortly.');
+  }
+  // Re-render only if the user is on a feed-driven view
+  const h=location.hash||'#/';
+  if(unique.length && (h==='#/'||h==='#'||h===''||h.indexOf('#/v/')===0||h.indexOf('#/newsletter')===0)){
+    route();
+  }
+  return unique.length;
+}
+
+function updateSyncStatus(){
+  const el=document.getElementById('dev-info');
+  if(!el) return;
+  const raw=localStorage.getItem('afripulse_mvp_v2_synced');
+  if(!raw){ el.textContent='wire idle'; return; }
+  const ts=parseInt(raw,10);
+  const secs=Math.floor((Date.now()-ts)/1000);
+  let ago;
+  if(secs<60) ago=secs+'s ago';
+  else if(secs<3600) ago=Math.floor(secs/60)+'m ago';
+  else ago=Math.floor(secs/3600)+'h ago';
+  const wires=ARTICLES.filter(a=>a.source==='rss').length;
+  el.textContent='⬤ '+wires+' wires · synced '+ago;
+  el.style.color = secs<AUTO_REFRESH_MS/1000 ? '#5BC97F' : '#9A938B';
+}
+
+function startAutoRefresh(){
+  if(AUTO_TIMER) clearInterval(AUTO_TIMER);
+  if(!AUTO_REFRESH_MS) return;
+  AUTO_TIMER=setInterval(function(){
+    // Skip if tab hidden, to respect rate limits
+    if(document.hidden) return;
+    pullLiveWire({silent:true});
+  },AUTO_REFRESH_MS);
+  // Tick the "synced Xs ago" label every 15s
+  setInterval(updateSyncStatus,15000);
+  // When tab regains focus, refresh if stale (>AUTO_REFRESH_MS)
+  document.addEventListener('visibilitychange',function(){
+    if(document.hidden) return;
+    const raw=localStorage.getItem('afripulse_mvp_v2_synced');
+    const stale=!raw || (Date.now()-parseInt(raw,10))>AUTO_REFRESH_MS;
+    if(stale) pullLiveWire({silent:true});
+    else updateSyncStatus();
+  });
+}
+
+// ── BOOT ──────────────────────────────────────────────────────
+function boot(){
+  // Apply saved language
+  try{
+    const saved=localStorage.getItem('afripulse_lang');
+    if(saved && LANG[saved]) applyLang(saved);
+  }catch(e){}
+
+  const resetBtn=document.getElementById('btn-reset');
+  if(resetBtn){
+    resetBtn.addEventListener('click',function(){
+      if(!confirm('Reset to seed library? Custom edits lost.')) return;
+      ARTICLES=JSON.parse(JSON.stringify(SEED));
+      ARTICLES.forEach(a=>{ a.source='authored'; });
+      saveStore(ARTICLES);
+      localStorage.removeItem('afripulse_mvp_v2_synced');
+      const liveBtn=document.getElementById('btn-live');
+      if(liveBtn) liveBtn.classList.remove('live');
+      toast('Reset.');
+      route();
+    });
+  }
+  const liveBtn=document.getElementById('btn-live');
+  if(liveBtn) liveBtn.addEventListener('click',function(){ pullLiveWire({silent:false}); });
+
+  window.addEventListener('hashchange',route);
+  route();
+
+  // Live feed engine: show status, schedule auto-refresh, and pull on
+  // first load if we've never synced or the cache is stale.
+  updateSyncStatus();
+  startAutoRefresh();
+  try{
+    const raw=localStorage.getItem('afripulse_mvp_v2_synced');
+    const stale=!raw || (Date.now()-parseInt(raw,10))>AUTO_REFRESH_MS;
+    if(stale){
+      // Small delay so first paint isn't blocked by the network
+      setTimeout(function(){ pullLiveWire({silent:true}); },1200);
+    }
+  }catch(e){}
+}
+
+if(document.readyState==='loading'){
+  document.addEventListener('DOMContentLoaded',boot);
+}else{
+  boot();
+}
+
+// DevTools
+window.__APT={
+  get articles(){ return ARTICLES; },
+  pullLiveWire:pullLiveWire,
+  guessVertical:guessVertical,
+  route:route,
+  setLang:setLang,
+  get lang(){ return CURRENT_LANG; }
+};
+
+console.log('%c AfriPulse Times MVP ', 'background:#C8401A;color:#fff;font-size:16px;font-weight:bold;padding:6px 14px;font-family:Georgia,serif');
+console.log('Routes:','#/','· #/v/<vertical>','· #/article/<slug>','· #/admin','· #/admin/new','· #/admin/edit/<slug>','· #/newsletter');
+console.log('Languages: EN · FR · AR (RTL) · DevTools: window.__APT');
+
+})();
+</script>
+</body>
+</html>

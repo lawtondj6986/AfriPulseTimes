@@ -1,0 +1,17 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Local env files (keep secrets out of git; commit .env.example instead)
+.env.local
+.env.*.local
+
+# Vercel
+.vercel/
+
+# Logs & OS noise
+*.log
+npm-debug.log*
+.DS_Store
