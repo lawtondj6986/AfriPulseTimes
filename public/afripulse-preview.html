@@ -325,6 +325,22 @@ html[dir="rtl"] .art-side{padding:8px 22px 0 0;border-left:none;border-right:0.5
 .adm-stat{background:#1A1C1E;border:1px solid #2A2D31;border-radius:6px;padding:14px 18px}
 .adm-stat-label{font-size:11px;color:#9AA0A6;letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px}
 .adm-stat-val{font-family:'Fraunces',serif;font-size:32px;font-weight:900}
+/* ADMIN AUTH (magic-link login) */
+.adm-acct{padding:10px 16px;border-bottom:1px solid #2A2D31;display:flex;align-items:center;gap:8px}
+.adm-acct-email{font-size:11px;color:#9AA0A6;font-family:'JetBrains Mono',monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.adm-acct .adm-btn{padding:5px 10px;font-size:11px}
+.adm-auth{background:#101112;color:#E4E6E8;min-height:calc(100vh - 38px);display:flex;align-items:center;justify-content:center;direction:ltr;text-align:left;padding:24px}
+.adm-auth-card{background:#191B1D;border:1px solid #2A2D31;border-radius:10px;padding:32px;width:100%;max-width:380px}
+.adm-auth-brand{font-family:'Fraunces',serif;font-size:24px;font-weight:900;letter-spacing:-.5px;margin-bottom:6px}
+.adm-auth-brand span{color:var(--accent);font-style:italic}
+.adm-auth-lead{font-size:13px;color:#9AA0A6;line-height:1.6;margin-bottom:20px}
+.adm-auth-form .adm-label{display:block;margin-bottom:8px}
+.adm-auth-note{font-size:11px;color:#5F6469;line-height:1.6;margin-top:12px}
+.adm-auth-sent{text-align:center}
+.adm-auth-sent .ico{font-size:34px;margin-bottom:10px}
+.adm-auth-sent h3{font-family:'Fraunces',serif;font-size:20px;font-weight:700;margin-bottom:8px}
+.adm-auth-sent p{font-size:13px;color:#9AA0A6;line-height:1.6;margin-bottom:18px}
+.adm-auth-sent strong{color:#E4E6E8}
 
 /* NEWSLETTER */
 .nl-stage{background:#D8D3C9;padding:24px;min-height:calc(100vh - 38px)}
@@ -1100,6 +1116,62 @@ async function ensureStore(){
 // Instant first paint from the cache; boot() refreshes from the database.
 let ARTICLES=normalize(loadCache()||seedClone());
 
+// ── AUTH (Supabase magic-link) ────────────────────────────────
+// Admin routes are gated on an authenticated session. The public site never
+// touches this — it reads published articles through the anon key + RLS.
+let SESSION=null;                 // current Supabase session, or null
+let AUTH_READY=false;             // has the initial session check finished?
+let LOGIN_SENT_EMAIL='';          // set after a magic link is sent (for the UI)
+const RETURN_KEY='afripulse_admin_return';
+
+function isAuthed(){ return !!SESSION; }
+function currentUserEmail(){ return (SESSION && SESSION.user && SESSION.user.email) || ''; }
+
+async function initAuth(){
+  const sb=await ensureSupabase();
+  if(!sb){ AUTH_READY=true; route(); return; }
+  try{ const {data}=await sb.auth.getSession(); SESSION=data.session||null; }catch(e){ SESSION=null; }
+  AUTH_READY=true;
+  // Keep auth state live (magic-link sign-in, sign-out, token refresh).
+  sb.auth.onAuthStateChange(function(event,session){
+    SESSION=session||null;
+    AUTH_READY=true;
+    const hash=location.hash||'';
+    const isCallback=hash.indexOf('access_token')>-1 || hash.indexOf('error_description')>-1 || (location.search||'').indexOf('code=')>-1;
+    if(SESSION && (event==='SIGNED_IN' || isCallback)){
+      // Return the user to where they were headed before signing in.
+      let dest='#/admin';
+      try{ const d=localStorage.getItem(RETURN_KEY); if(d) dest=d; localStorage.removeItem(RETURN_KEY); }catch(e){}
+      LOGIN_SENT_EMAIL='';
+      if(location.hash!==dest) location.hash=dest;
+    }
+    route();
+  });
+  route();
+}
+
+async function sendMagicLink(email, returnHash){
+  const sb=await ensureSupabase();
+  if(!sb){ toast('Auth unavailable · check Supabase config.'); return false; }
+  try{ localStorage.setItem(RETURN_KEY, returnHash||'#/admin'); }catch(e){}
+  // Token returns on a clean URL (no hash), then we restore the intended route.
+  const redirect=location.origin+location.pathname;
+  try{
+    const {error}=await sb.auth.signInWithOtp({ email:email, options:{ emailRedirectTo:redirect } });
+    if(error){ toast(error.message||'Could not send link.'); return false; }
+    return true;
+  }catch(e){ toast('Could not send link.'); return false; }
+}
+
+async function signOut(){
+  const sb=await ensureSupabase();
+  if(sb){ try{ await sb.auth.signOut(); }catch(e){} }
+  SESSION=null;
+  toast('Signed out.');
+  location.hash='#/';
+  route();
+}
+
 // ── HELPERS ───────────────────────────────────────────────────
 function esc(s){ return (s==null?'':String(s)).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function slugify(s){
@@ -1740,6 +1812,10 @@ function adminShell(activeSlug, paneHTML){
   '<div class="topbar"><div class="topbar-date">AfriPulse Admin · Sanity-style CMS</div><div class="topbar-right"><a href="#/">'+esc(t('back_to_site'))+'</a><a class="btn-sub" href="#/admin/new">'+esc(t('new_article'))+'</a></div></div>'+
   '<div class="admin">'+
     '<aside class="adm-list">'+
+      '<div class="adm-acct">'+
+        '<span class="adm-acct-email" title="'+esc(currentUserEmail())+'">'+esc(currentUserEmail()||'Signed in')+'</span>'+
+        '<button class="adm-btn" id="signout-btn" type="button">Sign out</button>'+
+      '</div>'+
       '<div class="adm-list-head">'+
         '<div class="adm-list-title">Articles · '+ARTICLES.length+'</div>'+
         '<button class="adm-new-btn" type="button" data-link="#/admin/new" title="New article">+</button>'+
@@ -1843,6 +1919,39 @@ function adminEditor(a){
       '<textarea class="adm-input adm-textarea" name="body" rows="14">'+esc((a.body||[]).join('\n\n'))+'</textarea>'+
     '</div>'+
   '</form>';
+}
+
+// ── VIEW: ADMIN AUTH ──────────────────────────────────────────
+function adminAuthTopbar(){
+  return '<div class="topbar"><div class="topbar-date">AfriPulse Admin · Sign in</div><div class="topbar-right"><a href="#/">'+esc(t('back_to_site'))+'</a></div></div>';
+}
+function viewAuthChecking(){
+  return adminAuthTopbar()+
+  '<div class="adm-auth"><div class="adm-auth-card">'+
+    '<div class="adm-auth-brand">Afri<span>Pulse</span> Admin</div>'+
+    '<p class="adm-auth-lead">Checking your session…</p>'+
+  '</div></div>';
+}
+function viewAdminLogin(returnHash){
+  let inner;
+  if(LOGIN_SENT_EMAIL){
+    inner='<div class="adm-auth-sent">'+
+      '<div class="ico">✉️</div>'+
+      '<h3>Check your email</h3>'+
+      '<p>We sent a one-time sign-in link to <strong>'+esc(LOGIN_SENT_EMAIL)+'</strong>. Open it on this device to continue.</p>'+
+      '<button class="adm-btn" id="login-reset" type="button">Use a different email</button>'+
+    '</div>';
+  }else{
+    inner='<div class="adm-auth-brand">Afri<span>Pulse</span> Admin</div>'+
+      '<p class="adm-auth-lead">Sign in to the newsroom. We\'ll email you a magic link — no password needed.</p>'+
+      '<form class="adm-auth-form" id="login-form" data-return="'+esc(returnHash||'#/admin')+'">'+
+        '<label class="adm-label" for="login-email">Email address</label>'+
+        '<input class="adm-input" id="login-email" name="email" type="email" required autocomplete="email" placeholder="you@example.com">'+
+        '<button class="adm-btn primary" id="login-send" type="submit" style="width:100%;margin-top:14px">Send magic link</button>'+
+        '<p class="adm-auth-note">Only authorised editors can sign in. The link expires shortly after it\'s sent.</p>'+
+      '</form>';
+  }
+  return adminAuthTopbar()+'<div class="adm-auth"><div class="adm-auth-card">'+inner+'</div></div>';
 }
 
 function viewAdmin(slug){
@@ -1951,16 +2060,26 @@ function route(){
     const app=document.getElementById('app');
     if(!app){ console.error('No #app element'); return; }
 
+    // Supabase magic-link callback lands here with tokens in the URL; hold a
+    // "signing in…" screen until onAuthStateChange restores the intended route.
+    const isAuthCallback=hash.indexOf('access_token')>-1 || hash.indexOf('error_description')>-1 || (location.search||'').indexOf('code=')>-1;
+
     let html;
-    if(parts.length===0) html=viewHome();
+    if(isAuthCallback) html=viewAuthChecking();
+    else if(parts.length===0) html=viewHome();
     else if(parts[0]==='article' && parts[1]) html=viewArticle(decodeURIComponent(parts[1]));
     else if(parts[0]==='v' && parts[1]) html=viewVertical(decodeURIComponent(parts[1]));
     else if(parts[0]==='region' && parts[1]) html=viewRegion(decodeURIComponent(parts[1]));
     else if(parts[0]==='journalists') html=viewJournalists();
     else if(parts[0]==='journalist' && parts[1]) html=viewJournalist(decodeURIComponent(parts[1]));
-    else if(parts[0]==='admin' && parts[1]==='new') html=viewNewArticle();
-    else if(parts[0]==='admin' && parts[1]==='edit' && parts[2]) html=viewAdmin(decodeURIComponent(parts[2]));
-    else if(parts[0]==='admin') html=viewAdmin(null);
+    else if(parts[0]==='admin'){
+      // Gate every #/admin* route on an authenticated session.
+      if(!AUTH_READY) html=viewAuthChecking();
+      else if(!isAuthed()) html=viewAdminLogin('#'+hash);
+      else if(parts[1]==='new') html=viewNewArticle();
+      else if(parts[1]==='edit' && parts[2]) html=viewAdmin(decodeURIComponent(parts[2]));
+      else html=viewAdmin(null);
+    }
     else if(parts[0]==='newsletter') html=viewNewsletter();
     else html=view404();
 
@@ -2132,6 +2251,28 @@ function bindView(){
   if(saveBtn) saveBtn.addEventListener('click',saveArticle);
   const delBtn=document.getElementById('delete-btn');
   if(delBtn) delBtn.addEventListener('click',deleteArticle);
+
+  // Auth: sign out + magic-link login form
+  const signoutBtn=document.getElementById('signout-btn');
+  if(signoutBtn) signoutBtn.addEventListener('click',signOut);
+  const loginForm=document.getElementById('login-form');
+  if(loginForm){
+    loginForm.addEventListener('submit',function(e){
+      e.preventDefault();
+      const emailEl=document.getElementById('login-email');
+      const email=emailEl?emailEl.value.trim():'';
+      if(!email){ toast('Enter your email.'); return; }
+      const returnHash=loginForm.getAttribute('data-return')||'#/admin';
+      const btn=document.getElementById('login-send');
+      if(btn){ btn.disabled=true; btn.textContent='Sending…'; }
+      sendMagicLink(email,returnHash).then(function(ok){
+        if(ok){ LOGIN_SENT_EMAIL=email; route(); }
+        else if(btn){ btn.disabled=false; btn.textContent='Send magic link'; }
+      });
+    });
+  }
+  const loginReset=document.getElementById('login-reset');
+  if(loginReset) loginReset.addEventListener('click',function(){ LOGIN_SENT_EMAIL=''; route(); });
 }
 
 function saveArticle(){
@@ -2474,6 +2615,8 @@ function boot(){
   window.addEventListener('hashchange',route);
   route();
 
+  // Resolve the auth session (gates #/admin*) and refresh the article store.
+  initAuth();
   // Read-through cache: the page just painted from localStorage; now refresh
   // the canonical set from Supabase (seeding the DB on first run) and re-render.
   ensureStore().then(function(list){
