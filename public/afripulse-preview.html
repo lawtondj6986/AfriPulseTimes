@@ -460,6 +460,10 @@ html[dir="rtl"] .art-side{padding:8px 22px 0 0;border-left:none;border-right:0.5
 <div id="app"></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
+<!-- Supabase browser client: resolves window.__supabaseReady once loaded. -->
+<script>window.__supabaseReady = new Promise(function(res){ window.__supabaseResolve = res; });</script>
+<script type="module" src="/supabase-config.js"></script>
+
 <script>
 (function(){
 'use strict';
@@ -957,8 +961,41 @@ const SEED = [
 ];
 
 // ── STORAGE ───────────────────────────────────────────────────
+// Articles live in Supabase (Postgres). localStorage is a read-through cache:
+// the site paints instantly from the cache on load, then refreshes from the
+// database. Writes update the cache write-through and push to Supabase.
 const KEY='afripulse_mvp_v2';
-function loadStore(){
+
+// Supabase client handed over by /supabase-config.js. Null until ready (we race
+// a timeout so a blocked CDN/config can't hang the boot path indefinitely).
+let SUPA=null;
+async function ensureSupabase(){
+  if(SUPA) return SUPA;
+  try{
+    SUPA = await Promise.race([
+      (window.__supabaseReady||Promise.resolve(null)),
+      new Promise(function(r){ setTimeout(function(){ r(null); },6000); })
+    ]);
+  }catch(e){ SUPA=null; }
+  return SUPA;
+}
+
+// Light normalisation kept from the old localStorage migration path.
+function normalize(list){
+  (list||[]).forEach(a=>{
+    if(!a.source) a.source='authored';
+    if(a.vertical==='voices') a.vertical='opinions'; // legacy → Opinions
+  });
+  return list||[];
+}
+function seedClone(){
+  const s=JSON.parse(JSON.stringify(SEED));
+  s.forEach(a=>{ a.source='authored'; });
+  return s;
+}
+
+// --- localStorage read-through cache (synchronous, for instant first paint) ---
+function loadCache(){
   try{
     const raw=localStorage.getItem(KEY);
     if(!raw) return null;
@@ -966,39 +1003,102 @@ function loadStore(){
     return Array.isArray(data) && data.length ? data : null;
   }catch(e){ return null; }
 }
-function saveStore(arr){
+function saveCache(arr){
   try{ localStorage.setItem(KEY,JSON.stringify(arr)); return true; }
-  catch(e){ console.warn('save failed',e); return false; }
-}
-function ensureStore(){
-  let data=loadStore();
-  if(!data){
-    data=JSON.parse(JSON.stringify(SEED));
-    data.forEach(a=>{ a.source='authored'; });
-    saveStore(data);
-  }else{
-    let migrated=false;
-    data.forEach(a=>{
-      if(!a.source){ a.source='authored'; migrated=true; }
-      // Voices → Opinions migration
-      if(a.vertical==='voices'){ a.vertical='opinions'; migrated=true; }
-    });
-    // Seed the new Podcasts vertical if it's missing entirely (existing users)
-    const hasPodcasts = data.some(a=>a.vertical==='podcasts');
-    if(!hasPodcasts){
-      const podcastSeeds = SEED.filter(s=>s.vertical==='podcasts').map(s=>{
-        const copy = JSON.parse(JSON.stringify(s));
-        copy.source='authored';
-        return copy;
-      });
-      if(podcastSeeds.length){ data = podcastSeeds.concat(data); migrated=true; }
-    }
-    if(migrated) saveStore(data);
-  }
-  return data;
+  catch(e){ console.warn('cache save failed',e); return false; }
 }
 
-let ARTICLES=ensureStore();
+// --- mapping between the rich front-end article and a Supabase row ---
+function authorSlugFor(byline){ const j=findJournalistByName(byline); return j?j.slug:null; }
+function regionSlugFor(a){ for(const slug of REGION_KEYS){ if(articleMatchesRegion(a,slug)) return slug; } return null; }
+function articleToRow(a){
+  const media=a.media||null;
+  return {
+    slug:a.slug,
+    headline:a.headline||'',
+    dek:a.standfirst||'',
+    body:Array.isArray(a.body)?a.body.join('\n\n'):(a.body||''),
+    vertical:a.vertical||null,
+    region:regionSlugFor(a),
+    author_slug:authorSlugFor(a.byline),
+    hero_image:(media&&media.type==='image')?media.src:null,
+    video_url:(media&&media.type==='video')?media.src:null,
+    status:a.status||'draft',
+    source:a.source||'authored',
+    source_url:a.sourceUrl||null,
+    published_at:a.publishedAt||new Date().toISOString(),
+    payload:a // full object → lossless round-trip (see migration)
+  };
+}
+function rowToArticle(r){
+  // Prefer the lossless payload; fall back to typed columns for rows written
+  // outside the app (e.g. straight SQL inserts).
+  if(r.payload && typeof r.payload==='object'){
+    const a=Object.assign({}, r.payload);
+    a.slug=r.slug; a.status=r.status; a.publishedAt=r.published_at||a.publishedAt;
+    if(r.source) a.source=r.source;
+    return a;
+  }
+  const vert=r.vertical||'front'; const def=VDEF[vert]||VDEF.front;
+  return {
+    slug:r.slug, vertical:vert, kicker:'', headline:r.headline||'',
+    standfirst:r.dek||'', byline:r.author_slug||'AfriPulse Bureau', dateline:'',
+    readingMin:4, emoji:def.emoji, color:def.color,
+    status:r.status||'draft', publishedAt:r.published_at||new Date().toISOString(),
+    tags:[], body:r.body?String(r.body).split('\n\n'):[],
+    media:r.hero_image?{type:'image',src:r.hero_image}:(r.video_url?{type:'video',src:r.video_url}:null),
+    source:r.source||'authored', sourceUrl:r.source_url||null
+  };
+}
+
+// --- async store: reads/writes Supabase ---
+async function loadStore(){
+  const sb=await ensureSupabase();
+  if(!sb) return null;
+  try{
+    const {data,error}=await sb.from('articles').select('*').order('published_at',{ascending:false}).limit(500);
+    if(error){ console.warn('loadStore',error.message); return null; }
+    return normalize((data||[]).map(rowToArticle));
+  }catch(e){ console.warn('loadStore',e); return null; }
+}
+async function dbUpsert(list){
+  const sb=await ensureSupabase();
+  if(!sb) return false;
+  const rows=(Array.isArray(list)?list:[list]).map(articleToRow);
+  try{
+    const {error}=await sb.from('articles').upsert(rows,{onConflict:'slug'});
+    if(error){ console.warn('dbUpsert',error.message); return false; }
+    return true;
+  }catch(e){ console.warn('dbUpsert',e); return false; }
+}
+async function dbDelete(slug){
+  const sb=await ensureSupabase();
+  if(!sb) return false;
+  try{
+    const {error}=await sb.from('articles').delete().eq('slug',slug);
+    if(error){ console.warn('dbDelete',error.message); return false; }
+    return true;
+  }catch(e){ console.warn('dbDelete',e); return false; }
+}
+async function saveStore(arr){
+  saveCache(arr);          // write-through cache (instant)
+  return dbUpsert(arr);    // push to Supabase (needs an authenticated session)
+}
+async function ensureStore(){
+  const remote=await loadStore();
+  if(remote && remote.length){ saveCache(remote); return remote; }
+  if(remote && remote.length===0){
+    const seed=seedClone();
+    await dbUpsert(seed);   // best-effort first-run seed (needs auth)
+    saveCache(seed);
+    return seed;
+  }
+  // Database unreachable → fall back to the cache, then the bundled seed.
+  return normalize(loadCache()||seedClone());
+}
+
+// Instant first paint from the cache; boot() refreshes from the database.
+let ARTICLES=normalize(loadCache()||seedClone());
 
 // ── HELPERS ───────────────────────────────────────────────────
 function esc(s){ return (s==null?'':String(s)).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
@@ -2091,10 +2191,12 @@ function saveArticle(){
   }else{
     ARTICLES.unshift(updated);
   }
-  saveStore(ARTICLES);
+  saveCache(ARTICLES);                 // instant local persistence
   toast(existing?'Saved.':'Created.');
   location.hash='#/admin/edit/'+updated.slug;
   setTimeout(route,30);
+  // Persist this article (save / publish) to Supabase.
+  dbUpsert(updated).then(function(ok){ if(!ok) toast('Saved locally · sign in to sync to the database.'); });
 }
 
 function deleteArticle(){
@@ -2104,10 +2206,12 @@ function deleteArticle(){
   if(!slug) return;
   if(!confirm('Delete this article?')) return;
   ARTICLES=ARTICLES.filter(a=>a.slug!==slug);
-  saveStore(ARTICLES);
+  saveCache(ARTICLES);                 // instant local removal
   toast('Deleted.');
   location.hash='#/admin';
   setTimeout(route,30);
+  // Remove from Supabase.
+  dbDelete(slug).then(function(ok){ if(!ok) toast('Removed locally · sign in to sync the deletion.'); });
 }
 
 // ── LIVE WIRE ─────────────────────────────────────────────────
@@ -2285,7 +2389,8 @@ async function pullLiveWire(opts){
       ARTICLES.sort((a,b)=>new Date(b.publishedAt)-new Date(a.publishedAt));
       ARTICLES=ARTICLES.slice(0,120);
     }
-    saveStore(ARTICLES);
+    // RSS articles go through the same store (cache + Supabase upsert).
+    await saveStore(ARTICLES);
     localStorage.setItem('afripulse_mvp_v2_synced',Date.now().toString());
   }
   if(btn){
@@ -2354,9 +2459,8 @@ function boot(){
   if(resetBtn){
     resetBtn.addEventListener('click',function(){
       if(!confirm('Reset to seed library? Custom edits lost.')) return;
-      ARTICLES=JSON.parse(JSON.stringify(SEED));
-      ARTICLES.forEach(a=>{ a.source='authored'; });
-      saveStore(ARTICLES);
+      ARTICLES=seedClone();
+      saveStore(ARTICLES);              // cache + Supabase upsert
       localStorage.removeItem('afripulse_mvp_v2_synced');
       const liveBtn=document.getElementById('btn-live');
       if(liveBtn) liveBtn.classList.remove('live');
@@ -2369,6 +2473,12 @@ function boot(){
 
   window.addEventListener('hashchange',route);
   route();
+
+  // Read-through cache: the page just painted from localStorage; now refresh
+  // the canonical set from Supabase (seeding the DB on first run) and re-render.
+  ensureStore().then(function(list){
+    if(list && list.length){ ARTICLES=list; saveCache(ARTICLES); route(); updateSyncStatus(); }
+  });
 
   // Live feed engine: show status, schedule auto-refresh, and pull on
   // first load if we've never synced or the cache is stale.
