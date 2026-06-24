@@ -1469,7 +1469,7 @@ function viewHome(){
   html += '<section class="hero">'+
     '<div class="hero-grid">'+
       '<a class="hero-main" href="#/article/'+esc(hero.slug)+'">'+
-        '<div class="hero-img" data-emoji="'+esc(hero.emoji||'🌍')+'" style="background:'+esc(hero.color||'#0e2818')+'">'+
+        '<div class="hero-img" data-emoji="" style="background:linear-gradient(to top, rgba(0,0,0,.5), rgba(0,0,0,0) 55%), url(\'/images/ai-rss-agents.jpg\') center/cover no-repeat, '+esc(hero.color||'#0e2818')+'">'+
           '<span class="hero-cat">'+esc(vlabel(hero.vertical))+'</span>'+
         '</div>'+
         '<div class="hero-body">'+
