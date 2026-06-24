@@ -5,6 +5,6 @@
   "outputDirectory": "dist",
   "framework": "vite",
   "crons": [
-    { "path": "/api/pull-wire", "schedule": "*/15 * * * *" }
+    { "path": "/api/pull-wire", "schedule": "0 6 * * *" }
   ]
 }
