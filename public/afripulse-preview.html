@@ -1053,6 +1053,7 @@ function rowToArticle(r){
     const a=Object.assign({}, r.payload);
     a.slug=r.slug; a.status=r.status; a.publishedAt=r.published_at||a.publishedAt;
     if(r.source) a.source=r.source;
+    a.translations=r.translations || a.translations || null; // FR/AR (server-generated)
     return a;
   }
   const vert=r.vertical||'front'; const def=VDEF[vert]||VDEF.front;
@@ -1063,8 +1064,24 @@ function rowToArticle(r){
     status:r.status||'draft', publishedAt:r.published_at||new Date().toISOString(),
     tags:[], body:r.body?String(r.body).split('\n\n'):[],
     media:r.hero_image?{type:'image',src:r.hero_image}:(r.video_url?{type:'video',src:r.video_url}:null),
-    source:r.source||'authored', sourceUrl:r.source_url||null
+    source:r.source||'authored', sourceUrl:r.source_url||null, translations:r.translations||null
   };
+}
+
+// Return a copy of the article with headline/standfirst/body/kicker swapped to
+// the current language when a server-generated translation exists. English (or
+// any untranslated article) is returned unchanged — so the site never breaks
+// before translations are populated.
+function localizeArticle(a){
+  if(!a || CURRENT_LANG==='en') return a;
+  const t = a.translations && a.translations[CURRENT_LANG];
+  if(!t) return a;
+  return Object.assign({}, a, {
+    headline: t.headline || a.headline,
+    standfirst: t.standfirst || a.standfirst,
+    kicker: t.kicker || a.kicker,
+    body: (Array.isArray(t.body) && t.body.length) ? t.body : a.body
+  });
 }
 
 // --- async store: reads/writes Supabase ---
@@ -1186,7 +1203,10 @@ function timeAgo(iso){
   if(h<24) return h+(CURRENT_LANG==='ar'?' س':CURRENT_LANG==='fr'?' h':'h ago');
   return Math.floor(h/24)+(CURRENT_LANG==='ar'?' ي':CURRENT_LANG==='fr'?' j':'d ago');
 }
-function getArticle(slug){ return ARTICLES.find(a=>a.slug===slug); }
+// Raw lookup — returns the ORIGINAL (English) article. Admin edits this; reader
+// views localize via localizeArticle() / published() so editing never sees a
+// translated copy.
+function getArticle(slug){ return ARTICLES.find(x=>x.slug===slug); }
 
 // ── ARTICLE MEDIA HELPERS ─────────────────────────────────────
 // Default to deterministic Picsum photo seeded by slug — no auth needed.
@@ -1232,7 +1252,7 @@ function renderArticleMedia(a){
       ((caption||credit) ? '<figcaption class="art-media-caption"><span>'+esc(caption)+'</span>'+(credit?'<span class="credit">'+esc(credit)+'</span>':'')+'</figcaption>' : '')+
     '</figure>';
 }
-function published(){ return ARTICLES.filter(a=>a.status==='published').sort((a,b)=>new Date(b.publishedAt)-new Date(a.publishedAt)); }
+function published(){ return ARTICLES.filter(a=>a.status==='published').sort((a,b)=>new Date(b.publishedAt)-new Date(a.publishedAt)).map(localizeArticle); }
 function byVertical(v){ return published().filter(a=>a.vertical===v); }
 
 let toastTimer=null;
@@ -1724,7 +1744,7 @@ function viewJournalist(slug){
 
 // ── VIEW: ARTICLE ─────────────────────────────────────────────
 function viewArticle(slug){
-  const a=getArticle(slug);
+  const a=localizeArticle(getArticle(slug));   // reader page → translated when available
   if(!a) return view404();
   const related=byVertical(a.vertical).filter(r=>r.slug!==a.slug).slice(0,4);
   let relHTML='';
