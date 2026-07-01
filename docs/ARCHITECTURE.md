@@ -18,7 +18,7 @@ privileges (RSS ingestion and newsletter signup).
   │  (SPA)   │◀──────────│  │ .html (SPA)       │  │ subscribe.js │  │
   └────┬─────┘   assets  │  │ supabase-config.js│  └──────┬───────┘  │
        │                 │  └───────────────────┘         │          │
-       │                 │            ▲ Cron */15min ──────┘          │
+       │                 │            ▲ Cron daily ────────┘          │
        │                 └────────────┼──────────────────────────────┘
        │                              │ (service-role key, server-only)
        │ anon key + JWT               │
@@ -27,7 +27,8 @@ privileges (RSS ingestion and newsletter signup).
   ┌─────────────────────────────────────────────┐        ┌──────────────────┐
   │                 Supabase                     │        │   RSS sources    │
   │  Postgres: articles, authors, verticals,     │        │ (BBC, AllAfrica, │
-  │            regions, rss_sources, subscribers │◀───────│  TechCabal, …)   │
+  │        regions, rss_sources, subscribers,    │◀───────│  TechCabal, …)   │
+  │        leads                                 │        │                  │
   │  Auth: magic-link email                      │ fetch  └──────────────────┘
   │  RLS: anon reads published; auth writes      │         (server-side only)
   └─────────────────────────────────────────────┘
@@ -48,8 +49,10 @@ privileges (RSS ingestion and newsletter signup).
 | `supabase-config.js` | Browser | — | Creates the browser Supabase client from the **public** anon key |
 | `/api/pull-wire.js` | Vercel function | service-role key / CRON_SECRET | Fetch + parse RSS, dedupe, insert articles |
 | `/api/subscribe.js` | Vercel function | service-role key | Validate email, insert subscriber, push to Buttondown |
+| `/api/translate.js` | Vercel function | service-role key / CRON_SECRET | Translate published articles into FR + AR via Claude |
+| `/api/contact.js` | Vercel function | service-role key | Validate + insert investor/partner enquiries into `leads` |
 | Supabase | Managed | — | Postgres, RLS, magic-link auth |
-| Vercel Cron | Vercel | CRON_SECRET | Calls `/api/pull-wire` every 15 min |
+| Vercel Cron | Vercel | CRON_SECRET | Daily: `/api/pull-wire` 06:00 UTC, `/api/translate` 06:30 UTC |
 | Buttondown | Managed | API key | Newsletter list / delivery |
 
 ## Trust boundaries
