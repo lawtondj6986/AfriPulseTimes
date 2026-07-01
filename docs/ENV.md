@@ -27,6 +27,11 @@ written into `public/supabase-config.js`. Change them → rebuild/redeploy.
 | `CRON_SECRET` | Recommended | `pull-wire.js` | Shared secret protecting `/api/pull-wire`. Vercel Cron sends it as `Authorization: Bearer …`. If unset, the endpoint is **open** (logs a warning). Generate with `openssl rand -hex 32`. |
 | `BUTTONDOWN_API_KEY` | ✅ for newsletter | `subscribe.js` | Buttondown API key. If unset, signups still save to Supabase and Buttondown is skipped with a warning. |
 | `BUTTONDOWN_API_URL` | Optional | `subscribe.js` | Override the Buttondown endpoint. Defaults to `https://api.buttondown.email/v1/subscribers`. Used mainly for testing. |
+| `ANTHROPIC_API_KEY` | ✅ for AI translation | `translate.js` | Anthropic (Claude) API key. If unset, `/api/translate` can't run; the site still works with English articles + the localization ribbon. **Secret.** |
+| `RESEND_API_KEY` | Optional | `contact.js` | Resend API key for investor-enquiry email alerts. If unset (or `LEADS_NOTIFY_TO` is unset), enquiries still save and the email is skipped. **Secret.** |
+| `LEADS_NOTIFY_TO` | Optional | `contact.js` | Recipient(s) for enquiry alerts. Comma-separated for multiple. Required (with `RESEND_API_KEY`) to actually send. |
+| `LEADS_NOTIFY_FROM` | Optional | `contact.js` | Sender address for alerts. Defaults to Resend's shared `onboarding@resend.dev` (delivers only to your account email until you verify a domain). |
+| `RESEND_API_URL` | Optional | `contact.js` | Override the Resend endpoint. Defaults to `https://api.resend.com/emails`. Testing only. |
 
 ## Where each variable lives
 

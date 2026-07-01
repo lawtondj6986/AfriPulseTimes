@@ -51,7 +51,9 @@ overflow at a 390 px mobile viewport.
 - **Server-side wire aggregation** (`/api/pull-wire`, daily cron) pulling from
   vetted African RSS sources into the same article store.
 - **Newsletter** capture to Supabase + Buttondown (`/api/subscribe`).
-- **Investor lead capture** to Supabase (`/api/contact` → `leads` table).
+- **Investor lead capture** to Supabase (`/api/contact` → `leads` table), with an
+  optional **email notification to the team** on every new enquiry (via Resend) so
+  nobody has to watch the dashboard — best-effort, never blocks the submission.
 - **Admin desk** with magic-link auth: create / edit / publish / delete articles
   live against Supabase, gated by row-level security. Includes an **Enquiries
   tab** to work investor/partner leads — filter, mark new/contacted/closed
@@ -115,6 +117,11 @@ These need YOUR accounts; they can't be done from the dev sandbox.
    - `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` (functions: contact, subscribe, wire, translate)
    - `BUTTONDOWN_API_KEY` (newsletter)
    - `ANTHROPIC_API_KEY` (only if you want AI translations live for the pitch)
+   - _(optional)_ `RESEND_API_KEY` + `LEADS_NOTIFY_TO` to get an **email alert
+     each time someone submits the investor form**. Skip these and enquiries are
+     still saved (and visible in the Enquiries tab) — you just won't be emailed.
+     Get a free key at resend.com; leave `LEADS_NOTIFY_FROM` at its default until
+     you've verified a sending domain.
 3. **Smoke-test the live site** (2 min): open it, switch to FR (ribbon appears),
    search a country, submit the investor form with your own email, then check
    Supabase → Table editor → `leads` for the row.
@@ -162,8 +169,8 @@ continent."
 - Server-side rendering / prerender for real per-article URLs → SEO + shareable
   links with correct OG images per story (today routing is hash-based).
 - Editorial workflow: draft → review → publish states, scheduled publishing.
-- Lead pipeline: email notifications on new enquiries, CSV export, notes/owner
-  assignment (the admin Enquiries tab already covers triage: new/contacted/closed).
+- Lead pipeline: CSV export, notes/owner assignment (triage via the admin
+  Enquiries tab and email alerts on new enquiries are already in place).
 
 **Mid term (3–9 months)**
 - Reader accounts, saved stories, and comments.
