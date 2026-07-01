@@ -56,6 +56,10 @@ overflow at a 390 px mobile viewport.
   live against Supabase, gated by row-level security. Includes an **Enquiries
   tab** to work investor/partner leads — filter, mark new/contacted/closed
   (persisted to Supabase), reply by email, and a "new" badge count.
+- **Admin image upload**: editors can upload a hero image straight from the
+  article editor to Supabase Storage (public `article-media` bucket), with live
+  preview, 5 MB / image-type guard, and the public URL wired into the article —
+  replacing the paste-a-URL-or-placeholder workflow.
 - **Premium branding**: deep-green / gold palette, Fraunces display type,
   consistent placeholders, refined masthead and investor section.
 - **Resilience**: the site always paints instantly from a local cache/seed, then
@@ -96,10 +100,15 @@ Full schema and system diagram: [`ARCHITECTURE.md`](./ARCHITECTURE.md).
 
 These need YOUR accounts; they can't be done from the dev sandbox.
 
-1. **Run the leads migration** on your Supabase project.
-   Supabase dashboard → SQL Editor → paste the contents of
-   `supabase/migrations/20260701120000_leads.sql` → Run. Without this, the
-   investor form shows a friendly error and the `mailto:` fallback still works.
+1. **Run the two new migrations** on your Supabase project (Supabase dashboard →
+   SQL Editor → paste each file's contents → Run):
+   - `supabase/migrations/20260701120000_leads.sql` — the investor-enquiry table.
+     Without it the investor form shows a friendly error (the `mailto:` fallback
+     still works) and the admin Enquiries tab stays empty.
+   - `supabase/migrations/20260701140000_article_media_storage.sql` — the public
+     `article-media` storage bucket + policies that power admin image upload.
+     Without it, the editor's "Upload image" button returns a storage error (you
+     can still paste an image URL).
 2. **Confirm the site's env vars in Vercel** (Project → Settings → Environment
    Variables) — see [`ENV.md`](./ENV.md):
    - `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` (browser)
@@ -152,7 +161,6 @@ continent."
 **Near term (0–3 months)**
 - Server-side rendering / prerender for real per-article URLs → SEO + shareable
   links with correct OG images per story (today routing is hash-based).
-- Admin image upload to Supabase Storage (replace placeholder-or-hotlink).
 - Editorial workflow: draft → review → publish states, scheduled publishing.
 - Lead pipeline: email notifications on new enquiries, CSV export, notes/owner
   assignment (the admin Enquiries tab already covers triage: new/contacted/closed).

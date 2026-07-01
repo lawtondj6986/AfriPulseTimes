@@ -381,6 +381,14 @@ html[dir="rtl"] .art-side{padding:8px 22px 0 0;border-left:none;border-right:0.5
 .lead-status.s-contacted{border-color:#3A5A8A;color:#9BC0EE}
 .lead-status.s-closed{color:#5F6469}
 .lead-actions .adm-btn{padding:5px 11px;font-size:11px}
+/* ADMIN IMAGE UPLOAD */
+.adm-upload{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:10px}
+.adm-upload-hint{font-size:11px;color:#5F6469}
+.adm-upload-status{font-size:12px;font-weight:500;color:#9AA0A6}
+.adm-upload-status.ok{color:#5BC97F}
+.adm-upload-status.err{color:#E5484D}
+.adm-upload-preview{margin-top:12px;max-width:360px}
+.adm-upload-preview img{width:100%;height:auto;border-radius:6px;border:1px solid #2A2D31;display:block}
 .adm-auth{background:#101112;color:#E4E6E8;min-height:calc(100vh - 38px);display:flex;align-items:center;justify-content:center;direction:ltr;text-align:left;padding:24px}
 .adm-auth-card{background:#191B1D;border:1px solid #2A2D31;border-radius:10px;padding:32px;width:100%;max-width:380px}
 .adm-auth-brand{font-family:'Fraunces',serif;font-size:24px;font-weight:900;letter-spacing:-.5px;margin-bottom:6px}
@@ -1305,6 +1313,32 @@ function refreshLeadsSummary(){
   const badge=document.getElementById('adm-leads-badge');
   if(badge){ badge.textContent=n?String(n):''; badge.style.display=n?'':'none'; }
 }
+
+// --- article image upload → Supabase Storage (admin only) ---
+// Uploads to the public `article-media` bucket (see migration). Storage RLS
+// allows authenticated uploads + public reads, so the returned URL is a stable
+// public link we can drop straight into the article's media.src.
+const MEDIA_BUCKET='article-media';
+async function uploadArticleImage(file){
+  const sb=await ensureSupabase();
+  if(!sb || !sb.storage) return {error:'Storage unavailable · check Supabase config.'};
+  if(!isAuthed()) return {error:'Sign in to upload images.'};
+  const dot=file.name.lastIndexOf('.');
+  let ext=(dot>-1?file.name.slice(dot+1):'').toLowerCase().replace(/[^a-z0-9]/g,'');
+  if(!ext){ ext=(file.type.split('/')[1]||'bin').replace(/[^a-z0-9]/g,''); }
+  let base=(dot>-1?file.name.slice(0,dot):file.name).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,40);
+  if(!base) base='image';
+  const rand=Math.random().toString(36).slice(2,7);
+  const path=base+'-'+Date.now()+'-'+rand+'.'+ext;
+  try{
+    const {error}=await sb.storage.from(MEDIA_BUCKET).upload(path,file,{cacheControl:'3600',upsert:false,contentType:file.type||undefined});
+    if(error) return {error:error.message||'Upload failed'};
+    const {data}=sb.storage.from(MEDIA_BUCKET).getPublicUrl(path);
+    const url=data&&data.publicUrl;
+    if(!url) return {error:'Uploaded but could not resolve public URL'};
+    return {url:url};
+  }catch(e){ return {error:String((e&&e.message)||e)}; }
+}
 async function ensureStore(){
   const remote=await loadStore();
   if(remote && remote.length){ saveCache(remote); return remote; }
@@ -2208,7 +2242,16 @@ function adminEditor(a){
           '<option value="image"'+(a.media&&a.media.type==='image'?' selected':'')+'>'+esc(t('media_image'))+'</option>'+
           '<option value="video"'+(a.media&&a.media.type==='video'?' selected':'')+'>'+esc(t('media_video'))+'</option>'+
         '</select>'+
-        '<input class="adm-input" name="mediaSrc" placeholder="https://… or leave blank for auto" value="'+esc((a.media&&a.media.src)||'')+'">'+
+        '<input class="adm-input" name="mediaSrc" id="media-src" placeholder="https://… , upload below, or leave blank for auto" value="'+esc((a.media&&a.media.src)||'')+'">'+
+      '</div>'+
+      '<div class="adm-upload">'+
+        '<input type="file" id="media-file" accept="image/png,image/jpeg,image/webp,image/gif,image/avif" style="display:none">'+
+        '<button type="button" class="adm-btn" id="media-upload-btn">⬆ Upload image</button>'+
+        '<span class="adm-upload-hint">PNG · JPG · WebP · GIF, up to 5 MB. Stored in Supabase.</span>'+
+        '<span class="adm-upload-status" id="media-upload-status"></span>'+
+      '</div>'+
+      '<div class="adm-upload-preview" id="media-preview"'+((a.media&&a.media.type==='image'&&a.media.src)?'':' style="display:none"')+'>'+
+        ((a.media&&a.media.type==='image'&&a.media.src)?'<img src="'+esc(a.media.src)+'" alt="Current hero image">':'')+
       '</div>'+
     '</div>'+
     '<div class="adm-grid">'+
@@ -2663,6 +2706,37 @@ function bindView(){
         if(x && x.parentElement) x.parentElement.remove();
       });
     }
+  }
+
+  // Article image upload → Supabase Storage
+  const upBtn=document.getElementById('media-upload-btn');
+  const fileInput=document.getElementById('media-file');
+  if(upBtn && fileInput){
+    upBtn.addEventListener('click',function(){ fileInput.click(); });
+    fileInput.addEventListener('change',function(){
+      const f=this.files && this.files[0];
+      this.value='';                       // allow re-picking the same file later
+      if(!f) return;
+      const statusEl=document.getElementById('media-upload-status');
+      if(!/^image\//.test(f.type)){ if(statusEl){statusEl.textContent='Please choose an image file.';statusEl.className='adm-upload-status err';} return; }
+      if(f.size > 5*1024*1024){ if(statusEl){statusEl.textContent='Image is over 5 MB — please compress it.';statusEl.className='adm-upload-status err';} return; }
+      upBtn.disabled=true;
+      if(statusEl){ statusEl.textContent='Uploading…'; statusEl.className='adm-upload-status'; }
+      uploadArticleImage(f).then(function(res){
+        upBtn.disabled=false;
+        if(res.error){
+          if(statusEl){ statusEl.textContent='Upload failed: '+res.error; statusEl.className='adm-upload-status err'; }
+          return;
+        }
+        const srcInput=document.getElementById('media-src');
+        if(srcInput) srcInput.value=res.url;
+        const typeSel=document.querySelector('select[name="mediaType"]');
+        if(typeSel && !typeSel.value) typeSel.value='image';
+        const prev=document.getElementById('media-preview');
+        if(prev){ prev.innerHTML='<img src="'+esc(res.url)+'" alt="Uploaded hero image">'; prev.style.display=''; }
+        if(statusEl){ statusEl.textContent='Uploaded ✓'; statusEl.className='adm-upload-status ok'; }
+      });
+    });
   }
 
   const saveBtn=document.getElementById('save-btn');
