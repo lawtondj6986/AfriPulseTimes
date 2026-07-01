@@ -3,9 +3,21 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AfriPulse Times — MVP</title>
-<meta name="description" content="AfriPulse Times integrated MVP — home, articles, admin, newsletter, EN/FR/AR.">
-<meta name="theme-color" content="#0D0D0D">
+<title>AfriPulse Times — Pan-African News Across 54 Nations</title>
+<meta name="description" content="AfriPulse Times is the pan-African newsroom covering politics, business, technology, mining &amp; energy, culture and sport across all 54 nations — one masthead, real-time, in English, French and Arabic.">
+<meta name="theme-color" content="#0E2818">
+<link rel="canonical" href="https://afri-pulse-times.vercel.app/afripulse-preview.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="AfriPulse Times">
+<meta property="og:title" content="AfriPulse Times — Pan-African News Across 54 Nations">
+<meta property="og:description" content="The continent's voice: politics, business, tech, energy, culture and sport across all 54 African nations — in EN, FR and AR.">
+<meta property="og:image" content="https://afri-pulse-times.vercel.app/images/ai-rss-agents.jpg">
+<meta property="og:url" content="https://afri-pulse-times.vercel.app/afripulse-preview.html">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="AfriPulse Times — Pan-African News Across 54 Nations">
+<meta name="twitter:description" content="The continent's voice across 54 nations — in EN, FR and AR.">
+<meta name="twitter:image" content="https://afri-pulse-times.vercel.app/images/ai-rss-agents.jpg">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"NewsMediaOrganization","name":"AfriPulse Times","url":"https://afri-pulse-times.vercel.app/","logo":"https://afri-pulse-times.vercel.app/images/ai-rss-agents.jpg","slogan":"The continent's voice across 54 nations","areaServed":"Africa","knowsLanguage":["en","fr","ar"]}</script>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%230D0D0D'/%3E%3Ctext x='32' y='47' font-family='Georgia,serif' font-size='44' font-weight='bold' fill='%23C8401A' text-anchor='middle'%3EA%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -457,6 +469,27 @@ html[dir="rtl"] .art-side{padding:8px 22px 0 0;border-left:none;border-right:0.5
   *,*::before,*::after{animation-duration:.001ms !important;transition-duration:.001ms !important}
   .ticker-track,.com-track{animation:none !important}
 }
+/* BRANDED IMAGE PLACEHOLDER (no third-party stock) */
+.art-media .placeholder .ph-wm{position:relative;z-index:1;font-family:'Fraunces',serif;font-weight:900;font-size:26px;letter-spacing:.3px;color:rgba(255,255,255,.92);text-shadow:0 2px 14px rgba(0,0,0,.45)}
+.art-media .placeholder .ph-wm em{color:var(--gold);font-style:italic;font-weight:400}
+/* NEWSLETTER SUBSCRIBE MODAL */
+.nl-modal{position:fixed;inset:0;background:rgba(13,13,13,.62);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;z-index:1000;padding:20px;animation:nlfade .16s ease}
+@keyframes nlfade{from{opacity:0}to{opacity:1}}
+.nl-modal-card{background:var(--card);border-radius:12px;max-width:430px;width:100%;padding:30px 28px 26px;position:relative;box-shadow:0 24px 70px rgba(0,0,0,.4);border-top:4px solid var(--accent);animation:nlrise .2s ease}
+@keyframes nlrise{from{transform:translateY(10px);opacity:.6}to{transform:translateY(0);opacity:1}}
+.nl-modal-x{position:absolute;top:10px;right:14px;background:none;border:none;font-size:26px;line-height:1;color:var(--muted);cursor:pointer}
+.nl-modal-x:hover{color:var(--ink)}
+.nl-modal-kicker{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--accent);font-weight:700;margin-bottom:8px}
+.nl-modal-h{font-family:'Fraunces',serif;font-size:25px;font-weight:900;letter-spacing:-.5px;line-height:1.1;margin-bottom:8px}
+.nl-modal-p{font-size:14px;color:var(--muted);line-height:1.6;margin-bottom:18px}
+.nl-modal-form{display:flex;gap:8px;flex-wrap:wrap}
+.nl-modal-email{flex:1;min-width:190px;padding:12px 14px;border:1px solid var(--border);border-radius:6px;font-size:14px;background:var(--bg);color:var(--ink)}
+.nl-modal-email:focus{outline:none;border-color:var(--accent)}
+.nl-modal-btn{background:var(--accent);color:#fff;border:none;padding:12px 22px;border-radius:6px;font-weight:600;cursor:pointer;font-size:14px}
+.nl-modal-btn:hover{background:var(--accent-2)}
+.nl-modal-btn:disabled{opacity:.6;cursor:default}
+.nl-modal-note{font-size:11px;color:var(--muted);margin-top:12px;display:flex;align-items:center;gap:6px}
+html[dir="rtl"] .nl-modal-x{right:auto;left:14px}
 </style>
 </head>
 <body>
@@ -1239,16 +1272,23 @@ function renderArticleMedia(a){
         ((m.caption||m.credit) ? '<figcaption class="art-media-caption"><span>'+esc(m.caption||'')+'</span>'+(m.credit?'<span class="credit">'+esc(m.credit)+'</span>':'')+'</figcaption>' : '')+
       '</figure>';
   }
-  // IMAGE — explicit URL OR default placeholder
-  const src = (m.type==='image' && m.src) ? m.src : defaultImageFor(a);
-  const captionDefault = a.kicker || '';
-  const creditDefault = (m.type==='image' && m.src) ? '' : 'Placeholder · picsum.photos';
-  const caption = m.caption || captionDefault;
-  const credit = m.credit || creditDefault;
+  // IMAGE — render a real editorial image if one exists; otherwise a branded
+  // placeholder. We never pull random third-party stock, so nothing off-brand
+  // (or inappropriate) can ever surface on a card or article.
+  const hasImage = (m.type==='image' && m.src);
+  const caption = m.caption || a.kicker || '';
+  const credit = hasImage ? (m.credit||'') : '';
+  const wm = '<span class="ph-wm">AfriPulse<em>Times</em></span>';
+  if(!hasImage){
+    return '<figure class="art-media">'+
+      '<div class="placeholder" data-emoji="'+esc(a.emoji||'📰')+'" style="display:flex;background:'+esc(a.color||'#0e2818')+'">'+wm+'</div>'+
+      (caption ? '<figcaption class="art-media-caption"><span>'+esc(caption)+'</span></figcaption>' : '')+
+    '</figure>';
+  }
   return ''+
     '<figure class="art-media">'+
-      '<img src="'+esc(src)+'" alt="'+esc(a.headline)+'" loading="lazy" onerror="this.style.display=&quot;none&quot;;this.parentElement.querySelector(&quot;.placeholder&quot;).style.display=&quot;flex&quot;">'+
-      '<div class="placeholder" data-emoji="'+esc(a.emoji||'📰')+'" style="display:none;background:'+esc(a.color||'#2a2a0a')+'"></div>'+
+      '<img src="'+esc(m.src)+'" alt="'+esc(a.headline)+'" loading="lazy" onerror="this.style.display=&quot;none&quot;;this.parentElement.querySelector(&quot;.placeholder&quot;).style.display=&quot;flex&quot;">'+
+      '<div class="placeholder" data-emoji="'+esc(a.emoji||'📰')+'" style="display:none;background:'+esc(a.color||'#0e2818')+'">'+wm+'</div>'+
       ((caption||credit) ? '<figcaption class="art-media-caption"><span>'+esc(caption)+'</span>'+(credit?'<span class="credit">'+esc(credit)+'</span>':'')+'</figcaption>' : '')+
     '</figure>';
 }
@@ -2195,7 +2235,7 @@ function bindView(){
   const sub=document.getElementById('subscribe-link');
   if(sub) sub.addEventListener('click',function(e){
     e.preventDefault();
-    subscribeNewsletter();
+    openSubscribeModal();
   });
 
   // Search
@@ -2388,24 +2428,48 @@ function subToast(kind){
   };
   return (M[kind]&&(M[kind][L]||M[kind].en))||'';
 }
-async function subscribeNewsletter(){
-  const ask=CURRENT_LANG==='fr'?'Votre adresse e-mail :':CURRENT_LANG==='ar'?'بريدك الإلكتروني:':'Your email address:';
-  let email;
-  try{ email=window.prompt(ask,''); }catch(e){ email=null; }
-  if(email==null) return;                 // user cancelled
-  email=String(email).trim();
-  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ toast(subToast('invalid')); return; }
-  toast(subToast('sending'));
-  try{
-    const res=await fetch('/api/subscribe',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({ email:email, language:CURRENT_LANG })
-    });
-    const data=await res.json().catch(function(){ return null; });
-    if(res.ok && data && data.ok) toast(subToast('ok'));
-    else toast(subToast('err'));
-  }catch(e){ toast(subToast('err')); }
+// A clean inline subscribe modal (replaces the old window.prompt). Posts to
+// /api/subscribe → Supabase + Buttondown.
+function openSubscribeModal(){
+  if(document.getElementById('nl-modal')) return;
+  const L=CURRENT_LANG;
+  const heads={en:'Get the Daily Briefing',fr:'Recevez le brief quotidien',ar:'احصل على النشرة اليومية'};
+  const subs={en:'The continent, every morning — the stories that matter across 54 nations, in your inbox.',fr:'Le continent chaque matin — l\'essentiel à travers 54 nations, dans votre boîte mail.',ar:'القارة كل صباح — أهم الأخبار عبر 54 دولة، في بريدك.'};
+  const wrap=document.createElement('div');
+  wrap.id='nl-modal'; wrap.className='nl-modal';
+  wrap.setAttribute('dir', L==='ar'?'rtl':'ltr');
+  wrap.innerHTML=
+    '<div class="nl-modal-card" role="dialog" aria-modal="true" aria-label="Subscribe">'+
+      '<button class="nl-modal-x" type="button" aria-label="Close">×</button>'+
+      '<div class="nl-modal-kicker">'+esc(t('daily_briefing'))+'</div>'+
+      '<h3 class="nl-modal-h">'+esc(heads[L]||heads.en)+'</h3>'+
+      '<p class="nl-modal-p">'+esc(subs[L]||subs.en)+'</p>'+
+      '<form class="nl-modal-form" novalidate>'+
+        '<input class="nl-modal-email" type="email" required autocomplete="email" placeholder="you@example.com">'+
+        '<button class="nl-modal-btn" type="submit">'+esc(t('subscribe'))+'</button>'+
+      '</form>'+
+      '<div class="nl-modal-note">🔒 EN · FR · AR · one email each morning. No spam, unsubscribe anytime.</div>'+
+    '</div>';
+  document.body.appendChild(wrap);
+  const close=function(){ wrap.remove(); document.removeEventListener('keydown',onKey); };
+  const onKey=function(e){ if(e.key==='Escape') close(); };
+  document.addEventListener('keydown',onKey);
+  wrap.addEventListener('click',function(e){ if(e.target===wrap) close(); });
+  wrap.querySelector('.nl-modal-x').addEventListener('click',close);
+  const form=wrap.querySelector('.nl-modal-form');
+  const emailEl=wrap.querySelector('.nl-modal-email');
+  const btn=wrap.querySelector('.nl-modal-btn');
+  form.addEventListener('submit',function(e){
+    e.preventDefault();
+    const email=(emailEl.value||'').trim();
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ toast(subToast('invalid')); emailEl.focus(); return; }
+    btn.disabled=true; btn.textContent=subToast('sending');
+    fetch('/api/subscribe',{ method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ email:email, language:CURRENT_LANG }) })
+      .then(function(r){ return r.json().catch(function(){ return null; }); })
+      .then(function(d){ if(d && d.ok){ toast(subToast('ok')); close(); } else { toast(subToast('err')); btn.disabled=false; btn.textContent=t('subscribe'); } })
+      .catch(function(){ toast(subToast('err')); btn.disabled=false; btn.textContent=t('subscribe'); });
+  });
+  setTimeout(function(){ emailEl.focus(); },40);
 }
 
 // ── LIVE WIRE ─────────────────────────────────────────────────
