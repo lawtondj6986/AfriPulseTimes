@@ -549,6 +549,11 @@ const LANG = {
     sign_in:'Sign In', subscribe:'Subscribe', stories_live:'stories live',
     tagline:"The continent's voice · 54 nations · real-time coverage",
     search_placeholder:'Search stories…',
+    search_eyebrow:'Search results',
+    search_count_one:'story matching', search_count_many:'stories matching',
+    search_none:'No stories match',
+    search_none_hint:'Try a country, a topic, or a byline — or browse the verticals above.',
+    search_empty:'Type a word above to search across every vertical.',
     latest_stories:'Latest Stories', manage:'Manage →',
     browse_by_vertical:'Browse Archive', archive_total:'total', view_all:'View all',
     expand_all:'Expand all', collapse_all:'Collapse all', no_articles:'No articles yet.',
@@ -624,6 +629,11 @@ const LANG = {
     sign_in:'Connexion', subscribe:"S'abonner", stories_live:'articles en direct',
     tagline:"La voix du continent · 54 nations · couverture en temps réel",
     search_placeholder:'Rechercher des articles…',
+    search_eyebrow:'Résultats de recherche',
+    search_count_one:'article correspondant à', search_count_many:'articles correspondant à',
+    search_none:'Aucun article ne correspond à',
+    search_none_hint:'Essayez un pays, un thème ou une signature — ou parcourez les rubriques ci-dessus.',
+    search_empty:'Saisissez un mot ci-dessus pour chercher dans toutes les rubriques.',
     latest_stories:'Dernières actualités', manage:'Gérer →',
     browse_by_vertical:'Parcourir les archives', archive_total:'au total', view_all:'Tout voir',
     expand_all:'Tout déplier', collapse_all:'Tout replier', no_articles:'Aucun article pour le moment.',
@@ -699,6 +709,11 @@ const LANG = {
     sign_in:'تسجيل الدخول', subscribe:'اشترك', stories_live:'قصة مباشرة',
     tagline:'صوت القارة · 54 دولة · تغطية فورية',
     search_placeholder:'ابحث في القصص…',
+    search_eyebrow:'نتائج البحث',
+    search_count_one:'قصة مطابقة لـ', search_count_many:'قصص مطابقة لـ',
+    search_none:'لا توجد قصص مطابقة لـ',
+    search_none_hint:'جرّب دولة أو موضوعاً أو اسم كاتب — أو تصفّح الأقسام أعلاه.',
+    search_empty:'اكتب كلمة في الأعلى للبحث في جميع الأقسام.',
     latest_stories:'أحدث القصص', manage:'إدارة ←',
     browse_by_vertical:'تصفّح الأرشيف', archive_total:'إجمالاً', view_all:'عرض الكل',
     expand_all:'فتح الكل', collapse_all:'طيّ الكل', no_articles:'لا مقالات بعد.',
@@ -1788,6 +1803,51 @@ function viewRegion(slug){
     renderFooter();
 }
 
+// ── VIEW: SEARCH RESULTS ──────────────────────────────────────
+function viewSearch(rawQuery){
+  const q=(rawQuery||'').trim();
+  const ql=q.toLowerCase();
+  const hits = q ? published().filter(function(a){
+    const hay=(a.headline+' '+(a.standfirst||'')+' '+(a.byline||'')+' '+(a.dateline||'')+' '+
+               vlabel(a.vertical)+' '+(a.tags||[]).join(' ')).toLowerCase();
+    return hay.indexOf(ql)>-1;
+  }) : [];
+
+  let cardsHTML='';
+  for(const a of hits){
+    cardsHTML += '<a class="vert-card" href="#/article/'+esc(a.slug)+'">'+
+      '<div class="vc-thumb" data-emoji="'+esc(a.emoji||'📰')+'" style="background:'+esc(a.color||'#2a2a0a')+'">'+
+        '<span class="vc-cat">'+esc(vlabel(a.vertical))+'</span>'+
+      '</div>'+
+      '<div class="vc-body">'+
+        '<div class="vc-title">'+esc(a.headline)+'</div>'+
+        '<div class="vc-meta">'+esc(a.dateline)+' · '+esc(timeAgo(a.publishedAt))+' · '+esc(a.byline)+'</div>'+
+      '</div>'+
+    '</a>';
+  }
+
+  let sub, body;
+  if(!q){
+    sub=''; body='<div class="empty" style="padding:48px 22px">'+esc(t('search_empty'))+'</div>';
+  }else if(hits.length){
+    const noun = hits.length===1 ? t('search_count_one') : t('search_count_many');
+    sub='<div class="vert-sub">'+hits.length+' '+esc(noun)+' “'+esc(q)+'”</div>';
+    body='<div class="vert-grid">'+cardsHTML+'</div>';
+  }else{
+    sub='<div class="vert-sub">'+esc(t('search_none'))+' “'+esc(q)+'”</div>';
+    body='<div class="empty" style="padding:40px 22px;max-width:560px">'+esc(t('search_none_hint'))+'</div>';
+  }
+
+  return renderHeader(null)+renderTicker()+
+    '<section class="vert-head">'+
+      '<div style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);font-weight:700;margin-bottom:6px">'+esc(t('search_eyebrow'))+'</div>'+
+      '<h2 class="vert-h">'+(q?('“'+esc(q)+'”'):esc(t('search_placeholder')))+'</h2>'+
+      sub+
+    '</section>'+
+    body+
+    renderFooter();
+}
+
 // ── VIEW: JOURNALISTS INDEX ──────────────────────────────────
 function viewJournalists(){
   let cardsHTML='';
@@ -2215,6 +2275,7 @@ function route(){
     else if(parts[0]==='article' && parts[1]) html=viewArticle(decodeURIComponent(parts[1]));
     else if(parts[0]==='v' && parts[1]) html=viewVertical(decodeURIComponent(parts[1]));
     else if(parts[0]==='region' && parts[1]) html=viewRegion(decodeURIComponent(parts[1]));
+    else if(parts[0]==='search') html=viewSearch(decodeURIComponent(parts.slice(1).join('/')));
     else if(parts[0]==='journalists') html=viewJournalists();
     else if(parts[0]==='journalist' && parts[1]) html=viewJournalist(decodeURIComponent(parts[1]));
     else if(parts[0]==='admin'){
@@ -2368,17 +2429,20 @@ function bindView(){
     });
   }
 
-  // Search
+  // Search → dedicated results view (#/search/<query>)
   const search=document.getElementById('site-search');
   if(search){
+    // Pre-fill the box when the current view IS a search, so the query stays visible.
+    const curHash=(location.hash||'').replace(/^#/,'');
+    if(curHash.indexOf('/search/')===0){
+      try{ search.value=decodeURIComponent(curHash.slice('/search/'.length)); }catch(e){}
+    }
     search.addEventListener('keydown',function(e){
       if(e.key!=='Enter') return;
       e.preventDefault();
-      const q=this.value.trim().toLowerCase();
+      const q=this.value.trim();
       if(!q) return;
-      const hits=published().filter(a=>(a.headline+' '+a.standfirst+' '+(a.tags||[]).join(' ')).toLowerCase().indexOf(q)>-1);
-      if(hits.length){ location.hash='#/article/'+hits[0].slug; toast(hits.length+' result'+(hits.length>1?'s':'')+' for "'+q+'"'); }
-      else toast('No stories match "'+q+'".');
+      location.hash='#/search/'+encodeURIComponent(q);
     });
   }
 
