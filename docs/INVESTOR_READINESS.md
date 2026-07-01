@@ -53,7 +53,9 @@ overflow at a 390 px mobile viewport.
 - **Newsletter** capture to Supabase + Buttondown (`/api/subscribe`).
 - **Investor lead capture** to Supabase (`/api/contact` → `leads` table).
 - **Admin desk** with magic-link auth: create / edit / publish / delete articles
-  live against Supabase, gated by row-level security.
+  live against Supabase, gated by row-level security. Includes an **Enquiries
+  tab** to work investor/partner leads — filter, mark new/contacted/closed
+  (persisted to Supabase), reply by email, and a "new" badge count.
 - **Premium branding**: deep-green / gold palette, Fraunces display type,
   consistent placeholders, refined masthead and investor section.
 - **Resilience**: the site always paints instantly from a local cache/seed, then
@@ -135,8 +137,9 @@ form fully live on stage.
    Supabase.)
 
 **If you have 3 minutes,** add: the admin desk (log in via magic link, publish a
-story, watch it appear on the public site) and the wire aggregator (explain the
-daily cron pulling vetted African sources).
+story, watch it appear on the public site; open the **Enquiries tab** to show the
+lead you just captured and mark it "contacted") and the wire aggregator (explain
+the daily cron pulling vetted African sources).
 
 **One-liner close:** "A production newsroom platform, trilingual, AI-assisted,
 running on infrastructure that costs us cents a day and scales to the whole
@@ -151,7 +154,8 @@ continent."
   links with correct OG images per story (today routing is hash-based).
 - Admin image upload to Supabase Storage (replace placeholder-or-hotlink).
 - Editorial workflow: draft → review → publish states, scheduled publishing.
-- Lead management view in the admin desk (work the `leads` table: new/contacted/closed).
+- Lead pipeline: email notifications on new enquiries, CSV export, notes/owner
+  assignment (the admin Enquiries tab already covers triage: new/contacted/closed).
 
 **Mid term (3–9 months)**
 - Reader accounts, saved stories, and comments.
