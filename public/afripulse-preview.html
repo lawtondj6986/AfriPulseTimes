@@ -417,6 +417,25 @@ html[dir="rtl"] .art-side{padding:8px 22px 0 0;border-left:none;border-right:0.5
 .investor-card .email{font-family:'Fraunces',serif;font-size:22px;color:#fff;font-weight:700;text-decoration:none;letter-spacing:-.5px;display:block;margin-bottom:18px}
 .investor-card .email:hover{text-decoration:underline}
 .investor-card .meta{font-size:11px;color:rgba(255,255,255,.62);line-height:1.7;font-family:'JetBrains Mono',monospace;letter-spacing:.04em}
+.investor-card .if-title{font-family:'Fraunces',serif;font-size:24px;font-weight:800;color:#fff;letter-spacing:-.4px;margin-bottom:6px}
+.investor-card .if-sub{font-size:12.5px;line-height:1.55;color:rgba(255,255,255,.72);margin-bottom:16px}
+.invest-form{display:flex;flex-direction:column;gap:9px}
+.if-input{width:100%;box-sizing:border-box;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.22);color:#fff;font-family:'DM Sans',sans-serif;font-size:13.5px;padding:11px 13px;border-radius:2px;transition:border-color .15s,background .15s;-webkit-appearance:none;appearance:none}
+.if-input::placeholder{color:rgba(255,255,255,.5)}
+.if-input:focus{outline:none;border-color:#fff;background:rgba(255,255,255,.12)}
+.if-select{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2 4l4 4 4-4' stroke='%23ffffff' stroke-width='1.4' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 13px center;padding-right:34px}
+.if-select option{color:#111}
+.if-textarea{resize:vertical;min-height:44px;line-height:1.5}
+.if-btn{margin-top:3px;background:#fff;color:var(--accent);border:1px solid #fff;padding:12px 18px;font-size:12px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;font-family:inherit;cursor:pointer;transition:background .18s,color .18s;border-radius:2px}
+.if-btn:hover{background:var(--ink);color:#fff;border-color:var(--ink)}
+.if-btn:disabled{opacity:.6;cursor:default}
+.if-status{font-size:12px;line-height:1.5;font-family:'DM Sans',sans-serif;min-height:0}
+.if-status.show{margin-top:4px}
+.if-status.ok{color:#8FE3A9}
+.if-status.err{color:#FFD3C7}
+.if-alt{margin-top:16px;font-size:11px;letter-spacing:.06em;color:rgba(255,255,255,.62);font-family:'JetBrains Mono',monospace;text-transform:uppercase}
+.if-alt a{color:#fff;text-decoration:none;border-bottom:1px solid rgba(255,255,255,.4)}
+.if-alt a:hover{border-color:#fff}
 @media (max-width:880px){.investor-inner{grid-template-columns:1fr;gap:24px}.investor-h{font-size:32px}.investor-h em{font-size:26px}}
 
 /* ADVERTISING SLOT PLACEHOLDERS */
@@ -543,6 +562,16 @@ const LANG = {
     invest_card_pill:'Open round',
     invest_card_label:'Investor relations',
     invest_card_general:'General partnerships',
+    invest_form_title:'Register your interest',
+    invest_form_sub:'Tell us who you are — we reply to every serious enquiry within two business days.',
+    invest_form_name:'Full name', invest_form_email:'Email address', invest_form_org:'Organisation (optional)',
+    invest_form_interest:'I am interested as…',
+    invest_opt_investor:'An investor', invest_opt_advertiser:'An advertiser', invest_opt_partner:'A strategic partner', invest_opt_other:'Other',
+    invest_form_msg:'A short message (optional)',
+    invest_form_submit:'Send enquiry', invest_form_sending:'Sending…',
+    invest_form_success:'Thank you — your enquiry is in. We’ll be in touch shortly.',
+    invest_form_error:'Something went wrong. Please email invest@afripulsetimes.com directly.',
+    invest_form_need:'Please add your name and a valid email.',
     ad_label:'Advertising · Reserved',
     ad_banner_title:'Premium banner placement',
     ad_banner_sub:'Top-of-fold reach across home, vertical, and article pages. Burnt-sienna brand surround. ~250K weekly impressions at launch.',
@@ -608,6 +637,16 @@ const LANG = {
     invest_card_pill:'Tour ouvert',
     invest_card_label:'Relations investisseurs',
     invest_card_general:'Partenariats',
+    invest_form_title:'Manifestez votre intérêt',
+    invest_form_sub:'Dites-nous qui vous êtes — nous répondons à chaque demande sérieuse sous deux jours ouvrés.',
+    invest_form_name:'Nom complet', invest_form_email:'Adresse e-mail', invest_form_org:'Organisation (facultatif)',
+    invest_form_interest:'Je suis intéressé en tant que…',
+    invest_opt_investor:'Investisseur', invest_opt_advertiser:'Annonceur', invest_opt_partner:'Partenaire stratégique', invest_opt_other:'Autre',
+    invest_form_msg:'Un court message (facultatif)',
+    invest_form_submit:'Envoyer', invest_form_sending:'Envoi…',
+    invest_form_success:'Merci — votre demande est enregistrée. Nous vous recontacterons rapidement.',
+    invest_form_error:'Une erreur est survenue. Écrivez-nous à invest@afripulsetimes.com.',
+    invest_form_need:'Merci d’indiquer votre nom et un e-mail valide.',
     ad_label:'Publicité · Réservé',
     ad_banner_title:'Emplacement bannière premium',
     ad_banner_sub:'Visibilité au-dessus de la ligne de flottaison sur la home, les rubriques et les articles. Environ 250 000 impressions hebdomadaires au lancement.',
@@ -673,6 +712,16 @@ const LANG = {
     invest_card_pill:'جولة مفتوحة',
     invest_card_label:'علاقات المستثمرين',
     invest_card_general:'شراكات عامة',
+    invest_form_title:'سجّل اهتمامك',
+    invest_form_sub:'أخبرنا من أنت — نردّ على كل استفسار جادّ خلال يومَي عمل.',
+    invest_form_name:'الاسم الكامل', invest_form_email:'البريد الإلكتروني', invest_form_org:'المؤسسة (اختياري)',
+    invest_form_interest:'أنا مهتم بصفتي…',
+    invest_opt_investor:'مستثمر', invest_opt_advertiser:'معلن', invest_opt_partner:'شريك استراتيجي', invest_opt_other:'أخرى',
+    invest_form_msg:'رسالة قصيرة (اختياري)',
+    invest_form_submit:'إرسال', invest_form_sending:'جارٍ الإرسال…',
+    invest_form_success:'شكراً لك — تم استلام استفسارك. سنتواصل معك قريباً.',
+    invest_form_error:'حدث خطأ ما. يُرجى مراسلتنا على invest@afripulsetimes.com.',
+    invest_form_need:'يرجى إدخال اسمك وبريد إلكتروني صحيح.',
     ad_label:'إعلان · محجوز',
     ad_banner_title:'إعلان بانر مميز',
     ad_banner_sub:'وصول فوق الطية في الصفحة الرئيسية والأقسام والمقالات. حوالي 250 ألف ظهور أسبوعي عند الإطلاق.',
@@ -1466,11 +1515,23 @@ function renderInvestorCTA(){
       '</div>'+
       '<aside class="investor-card">'+
         '<div class="pill">'+esc(t('invest_card_pill'))+'</div>'+
-        '<div class="email-label">'+esc(t('invest_card_label'))+'</div>'+
-        '<a class="email" href="mailto:invest@afripulsetimes.com">invest@afripulsetimes.com</a>'+
-        '<div class="email-label">'+esc(t('invest_card_general'))+'</div>'+
-        '<a class="email" style="font-size:18px" href="mailto:hello@afripulsetimes.com">hello@afripulsetimes.com</a>'+
-        '<div class="meta">Domain · afripulsetimes.com<br>Instagram · X · Threads · @afripulsetimes</div>'+
+        '<div class="if-title">'+esc(t('invest_form_title'))+'</div>'+
+        '<p class="if-sub">'+esc(t('invest_form_sub'))+'</p>'+
+        '<form class="invest-form" id="invest-form" novalidate>'+
+          '<input class="if-input" type="text" id="if-name" name="name" placeholder="'+esc(t('invest_form_name'))+'" autocomplete="name" required>'+
+          '<input class="if-input" type="email" id="if-email" name="email" placeholder="'+esc(t('invest_form_email'))+'" autocomplete="email" required>'+
+          '<input class="if-input" type="text" id="if-org" name="org" placeholder="'+esc(t('invest_form_org'))+'" autocomplete="organization">'+
+          '<select class="if-input if-select" id="if-interest" name="interest" aria-label="'+esc(t('invest_form_interest'))+'">'+
+            '<option value="investor">'+esc(t('invest_opt_investor'))+'</option>'+
+            '<option value="advertiser">'+esc(t('invest_opt_advertiser'))+'</option>'+
+            '<option value="partner">'+esc(t('invest_opt_partner'))+'</option>'+
+            '<option value="other">'+esc(t('invest_opt_other'))+'</option>'+
+          '</select>'+
+          '<textarea class="if-input if-textarea" id="if-msg" name="message" rows="2" placeholder="'+esc(t('invest_form_msg'))+'"></textarea>'+
+          '<button class="if-btn" type="submit" id="if-submit">'+esc(t('invest_form_submit'))+'</button>'+
+          '<div class="if-status" id="if-status" role="status" aria-live="polite"></div>'+
+        '</form>'+
+        '<div class="if-alt">'+esc(t('invest_card_label'))+' · <a href="mailto:invest@afripulsetimes.com">invest@afripulsetimes.com</a></div>'+
       '</aside>'+
     '</div>'+
   '</section>';
@@ -2261,6 +2322,51 @@ function bindView(){
     e.preventDefault();
     openSubscribeModal();
   });
+
+  // Investor / partner enquiry → /api/contact (Supabase leads table)
+  const investForm=document.getElementById('invest-form');
+  if(investForm){
+    investForm.addEventListener('submit',function(e){
+      e.preventDefault();
+      const nameEl=document.getElementById('if-name');
+      const emailEl=document.getElementById('if-email');
+      const orgEl=document.getElementById('if-org');
+      const interestEl=document.getElementById('if-interest');
+      const msgEl=document.getElementById('if-msg');
+      const btn=document.getElementById('if-submit');
+      const status=document.getElementById('if-status');
+      const name=(nameEl.value||'').trim();
+      const email=(emailEl.value||'').trim();
+      const okEmail=/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+      function setStatus(kind,text){
+        status.className='if-status show '+kind;
+        status.textContent=text;
+      }
+      if(!name || !okEmail){ setStatus('err',t('invest_form_need')); (name?emailEl:nameEl).focus(); return; }
+      btn.disabled=true;
+      const original=btn.textContent;
+      btn.textContent=t('invest_form_sending');
+      setStatus('', '');
+      const payload={
+        name:name, email:email,
+        organisation:(orgEl.value||'').trim(),
+        interest:interestEl.value,
+        message:(msgEl.value||'').trim(),
+        language:CURRENT_LANG
+      };
+      fetch('/api/contact',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)})
+        .then(function(r){ if(!r.ok) throw new Error('bad status '+r.status); return r.json().catch(function(){return {};}); })
+        .then(function(){
+          setStatus('ok',t('invest_form_success'));
+          investForm.reset();
+        })
+        .catch(function(err){
+          console.warn('contact submit failed',err);
+          setStatus('err',t('invest_form_error'));
+        })
+        .then(function(){ btn.disabled=false; btn.textContent=original; });
+    });
+  }
 
   // Search
   const search=document.getElementById('site-search');
