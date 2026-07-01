@@ -64,6 +64,9 @@ html[dir="rtl"] .topbar-right{margin-left:0;margin-right:auto}
 .topbar-right a:hover{color:#fff}
 .topbar-right .btn-sub{background:var(--accent);color:#fff !important;padding:5px 13px;font-weight:500}
 .topbar-right .btn-sub:hover{background:var(--accent-2)}
+.lang-ribbon{display:flex;align-items:center;justify-content:center;gap:9px;background:var(--green);color:#F3EEE2;font-family:'DM Sans',sans-serif;font-size:12.5px;line-height:1.4;letter-spacing:.01em;padding:8px 22px;text-align:center}
+.lang-ribbon[dir="rtl"]{font-size:13px}
+.lang-ribbon-dot{width:7px;height:7px;border-radius:50%;background:var(--gold);flex:0 0 auto;box-shadow:0 0 0 3px rgba(197,160,89,.22)}
 .masthead{padding:24px 22px 14px;border-bottom:3px solid var(--ink);background:var(--bg);display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap}
 .logo{font-family:'Fraunces',serif;font-size:50px;font-weight:900;letter-spacing:-2px;line-height:.95;cursor:pointer}
 .logo .pulse{color:var(--accent);font-style:italic}
@@ -1306,6 +1309,26 @@ function toast(msg){
 }
 
 // ── SHARED HEADER ─────────────────────────────────────────────
+// Honest localization notice. The interface (nav, labels, dates) is fully
+// localized; AI article translation (FR/AR) rolls out article-by-article via
+// /api/translate. This subtle ribbon appears ONLY when a non-English language
+// is selected AND no published article has been translated into it yet — so it
+// auto-disappears the moment translations go live. Prevents FR/AR from looking
+// "broken" when headlines are still in English.
+function langRibbon(){
+  if(CURRENT_LANG==='en') return '';
+  var hasTranslations = published().some(function(a){ return a.translations && a.translations[CURRENT_LANG]; });
+  if(hasTranslations) return '';
+  var msg = {
+    fr:'Interface en français. La traduction des articles par IA est en cours de déploiement — certains titres restent en anglais pour le moment.',
+    ar:'الواجهة معروضة بالعربية. تُنشر ترجمة المقالات بالذكاء الاصطناعي تدريجيًا — لا تزال بعض العناوين بالإنجليزية حاليًا.'
+  }[CURRENT_LANG] || '';
+  if(!msg) return '';
+  return '<div class="lang-ribbon"'+(CURRENT_LANG==='ar'?' dir="rtl"':'')+'>'+
+           '<span class="lang-ribbon-dot"></span>'+esc(msg)+
+         '</div>';
+}
+
 function renderHeader(activeVertical){
   const now=new Date();
   const locale = CURRENT_LANG==='fr'?'fr-FR':CURRENT_LANG==='ar'?'ar-EG':'en-GB';
@@ -1338,6 +1361,7 @@ function renderHeader(activeVertical){
       '<a class="btn-sub" id="subscribe-link">'+esc(t('subscribe'))+'</a>'+
     '</div>'+
   '</div>'+
+  langRibbon()+
   '<header class="masthead">'+
     '<div>'+
       '<div class="logo" data-r="home">Afri<span class="pulse">Pulse</span> <span class="times">Times</span></div>'+
