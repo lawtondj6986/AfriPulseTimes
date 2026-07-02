@@ -39,7 +39,9 @@ button,input,textarea,select{font-family:inherit;font-size:inherit}
 
 /* DEV BAR (always LTR for engineering clarity) */
 .devbar{background:#0a0a0a;color:#9A938B;padding:8px 18px;display:flex;align-items:center;gap:10px;font-family:'JetBrains Mono',monospace;font-size:11px;flex-wrap:wrap;position:sticky;top:0;z-index:100;direction:ltr;text-align:left}
-.devbar-tag{background:var(--accent);color:#fff;padding:2px 8px;letter-spacing:.1em;font-weight:600}
+.devbar-tag{background:#1E6B3A;color:#fff;padding:2px 8px;letter-spacing:.12em;font-weight:700;display:inline-flex;align-items:center;gap:5px}
+.devbar-tag .live-dot{width:6px;height:6px;border-radius:50%;background:#5BC97F;box-shadow:0 0 0 0 rgba(91,201,127,.7);animation:livePulse 1.8s infinite}
+@keyframes livePulse{0%{box-shadow:0 0 0 0 rgba(91,201,127,.6)}70%{box-shadow:0 0 0 6px rgba(91,201,127,0)}100%{box-shadow:0 0 0 0 rgba(91,201,127,0)}}
 .devbar a{color:#A09890;padding:4px 10px;border:0.5px solid #2A2520;transition:all .15s}
 .devbar a:hover,.devbar a.active{background:#1A1A1A;color:#F7F4EE;border-color:#3A3530}
 .devbar-spacer{flex:1}
@@ -565,8 +567,8 @@ html[dir="rtl"] .nl-modal-x{right:auto;left:14px}
 </head>
 <body>
 
-<div class="devbar" role="navigation" aria-label="MVP routes">
-  <span class="devbar-tag">MVP</span>
+<div class="devbar" role="navigation" aria-label="Site navigation">
+  <span class="devbar-tag"><span class="live-dot" aria-hidden="true"></span>LIVE</span>
   <a href="#/" data-r="home">Home</a>
   <a href="#/v/mining" data-r="vert">Mining</a>
   <a href="#/admin" data-r="admin">Admin</a>
@@ -609,7 +611,7 @@ const LANG = {
     invest_eyebrow:'Series Seed · 2026',
     invest_h1:"Africa's story is being written now.",
     invest_h2:'Help us write it together.',
-    invest_lead:"AfriPulse Times is raising to build the pan-African news network the continent has been waiting for. 54 nations. 9 verticals. One masthead, real-time. Join us as an investor, advertiser, or strategic partner.",
+    invest_lead:"African news is fragmented by country and language — and too often told from the outside. AfriPulse Times is the first real-time, pan-African newsroom: 54 nations under one masthead, in English, French and Arabic with AI translation. We're raising a Series Seed to scale it. Join us as an investor, advertiser, or strategic partner.",
     invest_stat1:'Nations covered', invest_stat2:'Bureaux launching', invest_stat3:'Languages live',
     invest_btn_invest:'Investor enquiries →', invest_btn_partner:'Become a partner',
     invest_note:'Holding company · AfriPulse Times Media Limited · Mauritius',
@@ -689,7 +691,7 @@ const LANG = {
     invest_eyebrow:'Série Seed · 2026',
     invest_h1:"L'histoire de l'Afrique s'écrit maintenant.",
     invest_h2:"Aidez-nous à l'écrire ensemble.",
-    invest_lead:"AfriPulse Times lève des fonds pour bâtir le réseau d'information panafricain que le continent attend. 54 nations. 9 rubriques. Une rédaction, en temps réel. Rejoignez-nous comme investisseur, annonceur ou partenaire stratégique.",
+    invest_lead:"L'information africaine est fragmentée par pays et par langue — et trop souvent racontée de l'extérieur. AfriPulse Times est la première rédaction panafricaine en temps réel : 54 nations sous une même voix, en anglais, français et arabe grâce à la traduction par IA. Nous levons un tour d'amorçage pour la déployer. Rejoignez-nous comme investisseur, annonceur ou partenaire stratégique.",
     invest_stat1:'Nations couvertes', invest_stat2:'Bureaux en ouverture', invest_stat3:'Langues actives',
     invest_btn_invest:'Investir →', invest_btn_partner:'Devenir partenaire',
     invest_note:'Société holding · AfriPulse Times Media Limited · Maurice',
@@ -769,7 +771,7 @@ const LANG = {
     invest_eyebrow:'تمويل تأسيسي · 2026',
     invest_h1:'قصة أفريقيا تُكتب الآن.',
     invest_h2:'ساعدنا في كتابتها معاً.',
-    invest_lead:'تجمع AfriPulse Times التمويل لبناء شبكة الأخبار الأفروقارية التي تنتظرها القارة. 54 دولة. 9 أقسام. صوت واحد، في الوقت الفعلي. انضموا إلينا كمستثمرين أو معلنين أو شركاء استراتيجيين.',
+    invest_lead:'الأخبار الأفريقية مجزّأة حسب الدولة واللغة — وكثيراً ما تُروى من الخارج. AfriPulse Times هي أول غرفة أخبار أفروقارية في الوقت الفعلي: 54 دولة تحت صوت واحد، بالإنجليزية والفرنسية والعربية عبر الترجمة بالذكاء الاصطناعي. نجمع تمويلاً تأسيسياً لتوسيعها. انضموا إلينا كمستثمرين أو معلنين أو شركاء استراتيجيين.',
     invest_stat1:'دولة مغطاة', invest_stat2:'مكاتب قيد الافتتاح', invest_stat3:'لغات نشطة',
     invest_btn_invest:'استفسارات المستثمرين ←', invest_btn_partner:'كن شريكاً',
     invest_note:'الشركة القابضة · AfriPulse Times Media Limited · موريشيوس',
@@ -3177,7 +3179,7 @@ window.__APT={
   get lang(){ return CURRENT_LANG; }
 };
 
-console.log('%c AfriPulse Times MVP ', 'background:#C8401A;color:#fff;font-size:16px;font-weight:bold;padding:6px 14px;font-family:Georgia,serif');
+console.log('%c AfriPulse Times ', 'background:#1E6B3A;color:#fff;font-size:16px;font-weight:bold;padding:6px 14px;font-family:Georgia,serif');
 console.log('Routes:','#/','· #/v/<vertical>','· #/article/<slug>','· #/admin','· #/admin/new','· #/admin/edit/<slug>','· #/newsletter');
 console.log('Languages: EN · FR · AR (RTL) · DevTools: window.__APT');
 

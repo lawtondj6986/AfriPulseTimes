@@ -102,4 +102,10 @@ vite.config.js           Vite config
 - [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) — deploy to Vercel + link Supabase
 - [`docs/ENV.md`](docs/ENV.md) — every environment variable, where it goes
 - [`docs/RUNBOOK.md`](docs/RUNBOOK.md) — operating the live site
+- [`docs/QA_REPORT.md`](docs/QA_REPORT.md) — automated test-pass results + roadmap
 - [`LAUNCH_CHECKLIST.md`](LAUNCH_CHECKLIST.md) — go-live checklist
+
+**For the pitch:**
+- [`docs/INVESTOR_BRIEF.md`](docs/INVESTOR_BRIEF.md) — one-page brief + deck outline
+- [`docs/INVESTOR_READINESS.md`](docs/INVESTOR_READINESS.md) — product status + demo script
+- [`docs/DEMO_DAY_RUNBOOK.md`](docs/DEMO_DAY_RUNBOOK.md) — pre-flight, live-demo script, backup plan
