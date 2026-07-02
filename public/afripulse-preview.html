@@ -400,6 +400,54 @@ html[dir="rtl"] .art-side{padding:8px 22px 0 0;border-left:none;border-right:0.5
 .adm-upload-status.err{color:#E5484D}
 .adm-upload-preview{margin-top:12px;max-width:360px}
 .adm-upload-preview img{width:100%;height:auto;border-radius:6px;border:1px solid #2A2D31;display:block}
+/* ADMIN TRACTION DASHBOARD (command center) */
+.mx-wrap{padding:20px 24px 48px;max-width:1120px}
+.mx-loading{color:#9AA0A6;padding:44px 8px;font-size:14px}
+.mx-head{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid #2A2D31}
+.mx-head-title{display:flex;align-items:center;gap:10px;font-family:'Fraunces',serif;font-size:22px;font-weight:800;color:#F4F1EA}
+.mx-pulse{width:9px;height:9px;border-radius:50%;background:#5BC97F;box-shadow:0 0 0 0 rgba(91,201,127,.7);animation:livePulse 1.8s infinite}
+.mx-head-time{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.08em;color:#6B7075;text-transform:uppercase}
+.mx-kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:14px}
+.mx-kpi{background:linear-gradient(160deg,#191B1D,#141618);border:1px solid #2A2D31;border-radius:10px;padding:15px 16px 13px;position:relative;overflow:hidden}
+.mx-kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--green),var(--gold))}
+.mx-kpi-label{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#8A9099;font-weight:600}
+.mx-kpi-num{font-family:'Fraunces',serif;font-size:36px;font-weight:900;letter-spacing:-1px;color:#fff;line-height:1.05;margin:5px 0 2px;font-variant-numeric:tabular-nums}
+.mx-kpi-sub{font-size:10.5px;color:#6B7075;font-family:'JetBrains Mono',monospace;letter-spacing:.03em}
+.mx-grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.mx-grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px}
+.mx-panel{background:#191B1D;border:1px solid #2A2D31;border-radius:10px;padding:16px 18px}
+.mx-panel-h{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#8A9099;font-weight:600;margin-bottom:14px}
+.mx-center{display:flex;flex-direction:column;align-items:center;text-align:center}
+.mx-bars{display:flex;align-items:flex-end;gap:4px;height:120px}
+.mx-bar{flex:1;height:100%;display:flex;align-items:flex-end;background:rgba(255,255,255,.03);border-radius:2px}
+.mx-bar-fill{width:100%;background:linear-gradient(180deg,var(--gold),var(--green));border-radius:2px;min-height:4px}
+.mx-cov{display:flex;flex-direction:column;gap:8px}
+.mx-hrow{display:flex;align-items:center;gap:10px;font-size:12px}
+.mx-hlabel{width:120px;color:#C4C8CC;flex:0 0 auto;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mx-htrack{flex:1;height:8px;background:rgba(255,255,255,.05);border-radius:99px;overflow:hidden}
+.mx-hfill{display:block;height:100%;background:linear-gradient(90deg,var(--green),#5BC97F);border-radius:99px}
+.mx-hval{width:34px;text-align:right;color:#9AA0A6;font-family:'JetBrains Mono',monospace;font-size:11px}
+.mx-radial{width:130px;height:130px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:6px 0 10px}
+.mx-radial-in{width:98px;height:98px;border-radius:50%;background:#191B1D;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.mx-radial-num{font-family:'Fraunces',serif;font-size:30px;font-weight:900;color:#fff}
+.mx-radial-lbl{font-size:10px;letter-spacing:.1em;color:#8A9099;font-family:'JetBrains Mono',monospace;margin-top:2px}
+.mx-mini{font-size:11px;color:#6B7075;font-family:'JetBrains Mono',monospace}
+.mx-stat-line{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #24272B;font-size:13px;color:#C4C8CC}
+.mx-stat-line:last-child{border-bottom:none}
+.mx-stat-v{color:#fff;font-weight:600;font-family:'JetBrains Mono',monospace}
+.mx-regs{display:flex;flex-direction:column;gap:0}
+.mx-reg{display:flex;justify-content:space-between;padding:6px 0;font-size:12.5px;color:#C4C8CC;border-bottom:1px solid #24272B}
+.mx-reg:last-child{border-bottom:none}
+.mx-reg-n{color:var(--gold);font-family:'JetBrains Mono',monospace;font-weight:600}
+.mx-top{display:flex;flex-direction:column}
+.mx-top-row{display:flex;justify-content:space-between;gap:14px;padding:9px 0;border-bottom:1px solid #24272B;color:#C4C8CC;text-decoration:none;font-size:13px}
+.mx-top-row:last-child{border-bottom:none}
+.mx-top-row:hover{color:#fff}
+.mx-top-title{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mx-top-count{color:var(--gold);font-family:'JetBrains Mono',monospace;flex:0 0 auto}
+.mx-empty{color:#6B7075;font-size:13px;font-style:italic}
+.mx-foot{margin-top:18px;font-size:11px;color:#5F6469;font-family:'JetBrains Mono',monospace;line-height:1.6}
+@media (max-width:900px){.mx-kpis{grid-template-columns:repeat(2,1fr)}.mx-grid2,.mx-grid3{grid-template-columns:1fr}}
 .adm-auth{background:#101112;color:#E4E6E8;min-height:calc(100vh - 38px);display:flex;align-items:center;justify-content:center;direction:ltr;text-align:left;padding:24px}
 .adm-auth-card{background:#191B1D;border:1px solid #2A2D31;border-radius:10px;padding:32px;width:100%;max-width:380px}
 .adm-auth-brand{font-family:'Fraunces',serif;font-size:24px;font-weight:900;letter-spacing:-.5px;margin-bottom:6px}
@@ -1362,6 +1410,93 @@ function refreshLeadsSummary(){
   if(badge){ badge.textContent=n?String(n):''; badge.style.display=n?'':'none'; }
 }
 
+// ── TRACTION METRICS ──────────────────────────────────────────
+// First-party page-view counter: one insert per article per session.
+let VIEWED_SESSION=new Set();
+async function recordView(slug){
+  if(!slug || VIEWED_SESSION.has(slug)) return;
+  VIEWED_SESSION.add(slug);
+  const sb=await ensureSupabase();
+  if(!sb) return;
+  try{ await sb.from('article_views').insert({ slug:slug }); }catch(e){}
+}
+
+let METRICS=null; let METRICS_LOADING=false; let METRICS_TIMER=null;
+
+// Every African country name (from REGIONS) → used for a real "nations active" count.
+const ALL_COUNTRIES=(function(){
+  const s=new Set();
+  try{ for(const k in REGIONS){ (REGIONS[k].countries||[]).forEach(function(c){ if(c && c!==REGIONS[k].label) s.add(String(c).toLowerCase()); }); } }catch(e){}
+  return s;
+})();
+
+// Metrics derived purely from the loaded ARTICLES (no network).
+function metricsFromArticles(){
+  const pub=ARTICLES.filter(function(a){ return a.status==='published'; });
+  const drafts=ARTICLES.filter(function(a){ return a.status!=='published'; }).length;
+  const wire=ARTICLES.filter(function(a){ return a.source==='rss'; }).length;
+  const authored=pub.filter(function(a){ return a.source!=='rss'; }).length;
+
+  const days=14; const buckets=[]; const today=new Date(); today.setHours(0,0,0,0);
+  for(let i=days-1;i>=0;i--){ const d=new Date(today); d.setDate(d.getDate()-i); buckets.push({ key:d.toISOString().slice(0,10), count:0 }); }
+  const bmap={}; buckets.forEach(function(b){ bmap[b.key]=b; });
+  pub.forEach(function(a){ const k=String(a.publishedAt||'').slice(0,10); if(bmap[k]) bmap[k].count++; });
+
+  const vert=[]; for(const vk of VERTICAL_KEYS){ vert.push({ key:vk, label:vlabel(vk), count:pub.filter(function(a){return a.vertical===vk;}).length }); }
+  const regions=[]; for(const rk of REGION_KEYS){ regions.push({ key:rk, label:rlabel(rk), count:byRegion(rk).length }); }
+
+  const seen=new Set();
+  pub.forEach(function(a){
+    const hay=((a.tags||[]).join(' ')+' '+(a.dateline||'')).toLowerCase();
+    ALL_COUNTRIES.forEach(function(c){ if(hay.indexOf(c)>-1) seen.add(c); });
+  });
+
+  const translated=pub.filter(function(a){ return a.translations && (a.translations.fr||a.translations.ar); }).length;
+
+  return {
+    published:pub.length, drafts:drafts, wire:wire, authored:authored,
+    cadence:buckets, verticals:vert, verticalsActive:vert.filter(function(v){return v.count>0;}).length,
+    regions:regions, regionsActive:regions.filter(function(r){return r.count>0;}).length,
+    nationsActive:seen.size, nationsTarget:54,
+    translationPct: pub.length ? Math.round(translated/pub.length*100) : 0, languages:3
+  };
+}
+
+// Full metrics = article-derived + live Supabase counts (subscribers, leads, sources, views).
+async function loadMetrics(){
+  const m=metricsFromArticles();
+  m.subscribers=null; m.leadsTotal=null; m.leadsNew=null; m.sourcesActive=null; m.lastPull=null;
+  m.views=null; m.viewsCadence=null; m.topRead=[];
+  const sb=await ensureSupabase();
+  if(sb){
+    try{ const r=await sb.from('subscribers').select('*',{count:'exact',head:true}); if(!r.error) m.subscribers=r.count||0; }catch(e){}
+    try{ const r=await sb.from('leads').select('status'); if(!r.error&&r.data){ m.leadsTotal=r.data.length; m.leadsNew=r.data.filter(function(x){return x.status==='new';}).length; } }catch(e){}
+    try{ const r=await sb.from('rss_sources').select('active,last_fetched_at'); if(!r.error&&r.data){ m.sourcesActive=r.data.filter(function(x){return x.active;}).length; const ts=r.data.map(function(x){return x.last_fetched_at;}).filter(Boolean).sort(); m.lastPull=ts.length?ts[ts.length-1]:null; } }catch(e){}
+    try{
+      const cnt=await sb.from('article_views').select('*',{count:'exact',head:true}); if(!cnt.error) m.views=cnt.count||0;
+      const rows=await sb.from('article_views').select('slug,created_at').order('created_at',{ascending:false}).limit(3000);
+      if(!rows.error&&rows.data){
+        const days=14; const buckets=[]; const today=new Date(); today.setHours(0,0,0,0);
+        for(let i=days-1;i>=0;i--){ const d=new Date(today); d.setDate(d.getDate()-i); buckets.push({key:d.toISOString().slice(0,10),count:0}); }
+        const bmap={}; buckets.forEach(function(b){bmap[b.key]=b;});
+        const bySlug={};
+        rows.data.forEach(function(v){ const k=String(v.created_at||'').slice(0,10); if(bmap[k]) bmap[k].count++; bySlug[v.slug]=(bySlug[v.slug]||0)+1; });
+        m.viewsCadence=buckets;
+        m.topRead=Object.keys(bySlug).map(function(s){return {slug:s,count:bySlug[s]};}).sort(function(a,b){return b.count-a.count;}).slice(0,5);
+      }
+    }catch(e){}
+  }
+  return m;
+}
+async function refreshMetrics(){
+  if(METRICS_LOADING) return;
+  METRICS_LOADING=true;
+  const m=await loadMetrics();
+  METRICS_LOADING=false;
+  METRICS=m;
+  if((location.hash||'').indexOf('#/admin/metrics')===0) route();
+}
+
 // --- article image upload → Supabase Storage (admin only) ---
 // Uploads to the public `article-media` bucket (see migration). Storage RLS
 // allows authenticated uploads + public reads, so the returned URL is a stable
@@ -1755,9 +1890,9 @@ function renderInvestorCTA(){
         '<h2 class="investor-h" id="invest-h">'+esc(t('invest_h1'))+'<em>'+esc(t('invest_h2'))+'</em></h2>'+
         '<p class="investor-lead">'+esc(t('invest_lead'))+'</p>'+
         '<div class="investor-stats">'+
-          '<div class="investor-stat"><div class="num" data-count="54">54</div><div class="label">'+esc(t('invest_stat1'))+'</div></div>'+
-          '<div class="investor-stat"><div class="num" data-count="'+bureauCount+'">'+bureauCount+'</div><div class="label">'+esc(t('invest_stat2'))+'</div></div>'+
-          '<div class="investor-stat"><div class="num" data-count="3">3</div><div class="label">'+esc(t('invest_stat3'))+'</div></div>'+
+          '<div class="investor-stat"><div class="num js-count" data-count="54">54</div><div class="label">'+esc(t('invest_stat1'))+'</div></div>'+
+          '<div class="investor-stat"><div class="num js-count" data-count="'+bureauCount+'">'+bureauCount+'</div><div class="label">'+esc(t('invest_stat2'))+'</div></div>'+
+          '<div class="investor-stat"><div class="num js-count" data-count="3">3</div><div class="label">'+esc(t('invest_stat3'))+'</div></div>'+
         '</div>'+
         '<div class="investor-ctas">'+
           '<a class="investor-btn primary" href="mailto:invest@afripulsetimes.com?subject=Investor%20enquiry%20%E2%80%93%20AfriPulse%20Times">'+esc(t('invest_btn_invest'))+'</a>'+
@@ -2309,6 +2444,7 @@ function adminShell(activeSlug, paneHTML, section){
   const navHTML='<div class="adm-nav">'+
     '<a class="adm-nav-tab'+(section==='articles'?' active':'')+'" href="#/admin">Articles</a>'+
     '<a class="adm-nav-tab'+(section==='leads'?' active':'')+'" href="#/admin/leads">Enquiries'+leadsBadge+'</a>'+
+    '<a class="adm-nav-tab'+(section==='metrics'?' active':'')+'" href="#/admin/metrics">Dashboard</a>'+
   '</div>';
   const all=ARTICLES.slice().sort((a,b)=>new Date(b.publishedAt)-new Date(a.publishedAt));
   let docList='';
@@ -2562,6 +2698,95 @@ function viewAdminLeads(){
   return adminShell(null, adminLeads(), 'leads');
 }
 
+// ── VIEW: ADMIN TRACTION DASHBOARD ("Command Center") ─────────
+function mxBars(buckets){
+  const max=Math.max(1, ...buckets.map(function(b){return b.count;}));
+  let bars='';
+  buckets.forEach(function(b){
+    const pct=Math.round(b.count/max*100);
+    bars+='<div class="mx-bar" title="'+esc(b.key+': '+b.count)+'"><span class="mx-bar-fill" style="height:'+Math.max(4,pct)+'%"></span></div>';
+  });
+  return '<div class="mx-bars">'+bars+'</div>';
+}
+function mxCoverage(items){
+  const max=Math.max(1, ...items.map(function(i){return i.count;}));
+  let rows='';
+  items.forEach(function(it){
+    const pct=Math.round(it.count/max*100);
+    rows+='<div class="mx-hrow"><span class="mx-hlabel">'+esc(it.label)+'</span>'+
+      '<span class="mx-htrack"><span class="mx-hfill" style="width:'+Math.max(2,pct)+'%"></span></span>'+
+      '<span class="mx-hval">'+it.count+'</span></div>';
+  });
+  return rows;
+}
+function mxKpi(label, value, sub){
+  const isNum=(typeof value==='number' && isFinite(value));
+  const disp=(value==null)?'—':(isNum?value.toLocaleString('en-US'):String(value));
+  return '<div class="mx-kpi">'+
+    '<div class="mx-kpi-label">'+esc(label)+'</div>'+
+    '<div class="mx-kpi-num'+(isNum?' js-count':'')+'"'+(isNum?' data-count="'+value+'"':'')+'>'+esc(disp)+'</div>'+
+    '<div class="mx-kpi-sub">'+esc(sub||'')+'</div>'+
+  '</div>';
+}
+function adminMetrics(){
+  const bar='<div class="adm-bar"><span class="adm-crumb">Traction · Command Center</span>'+
+    '<div class="adm-actions"><button class="adm-btn" id="metrics-refresh" type="button">Refresh ↻</button></div></div>';
+  if(METRICS===null){
+    return bar+'<div class="mx-wrap"><div class="mx-loading">Loading live metrics…</div></div>';
+  }
+  const m=METRICS; const dash='—';
+  const lastPull=m.lastPull?timeAgo(m.lastPull):dash;
+  let nowStr=''; try{ nowStr=new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit'}); }catch(e){}
+
+  let topHTML='';
+  (m.topRead||[]).forEach(function(tp){
+    const art=getArticle(tp.slug);
+    topHTML+='<a class="mx-top-row" href="#/article/'+esc(tp.slug)+'"><span class="mx-top-title">'+esc(art?art.headline:tp.slug)+'</span><span class="mx-top-count">'+tp.count+'</span></a>';
+  });
+  if(!topHTML) topHTML='<div class="mx-empty">No views recorded yet — open a few stories to seed this.</div>';
+
+  let regHTML='';
+  m.regions.forEach(function(r){ regHTML+='<div class="mx-reg"><span>'+esc(r.label)+'</span><span class="mx-reg-n">'+r.count+'</span></div>'; });
+
+  return bar+
+  '<div class="mx-wrap">'+
+    '<div class="mx-head">'+
+      '<div class="mx-head-title"><span class="mx-pulse"></span>Newsroom Command Center</div>'+
+      '<div class="mx-head-time">LIVE · '+esc(nowStr)+' · auto-refresh 30s</div>'+
+    '</div>'+
+    '<div class="mx-kpis">'+
+      mxKpi('Stories Live', m.published, 'published')+
+      mxKpi('Nations Active', m.nationsActive, 'of '+m.nationsTarget+' target')+
+      mxKpi('Subscribers', m.subscribers, 'newsletter')+
+      mxKpi('Enquiries', m.leadsTotal, (m.leadsNew!=null?m.leadsNew+' new':'investor + partner'))+
+      mxKpi('Pageviews', m.views, 'first-party')+
+    '</div>'+
+    '<div class="mx-grid2">'+
+      '<div class="mx-panel"><div class="mx-panel-h">Publishing cadence · 14 days</div>'+mxBars(m.cadence)+'</div>'+
+      '<div class="mx-panel"><div class="mx-panel-h">Coverage by vertical</div><div class="mx-cov">'+mxCoverage(m.verticals)+'</div></div>'+
+    '</div>'+
+    '<div class="mx-grid3">'+
+      '<div class="mx-panel mx-center"><div class="mx-panel-h">AI translation coverage</div>'+
+        '<div class="mx-radial" style="background:conic-gradient(var(--gold) '+(m.translationPct*3.6)+'deg, rgba(255,255,255,.09) 0)"><div class="mx-radial-in"><span class="mx-radial-num">'+m.translationPct+'%</span><span class="mx-radial-lbl">FR · AR</span></div></div>'+
+        '<div class="mx-mini">'+m.languages+' languages live</div>'+
+      '</div>'+
+      '<div class="mx-panel"><div class="mx-panel-h">Live wire</div>'+
+        '<div class="mx-stat-line"><span>Active sources</span><span class="mx-stat-v">'+(m.sourcesActive==null?dash:m.sourcesActive)+'</span></div>'+
+        '<div class="mx-stat-line"><span>Wire stories</span><span class="mx-stat-v">'+m.wire+'</span></div>'+
+        '<div class="mx-stat-line"><span>Last pull</span><span class="mx-stat-v">'+esc(lastPull)+'</span></div>'+
+        '<div class="mx-stat-line"><span>Verticals active</span><span class="mx-stat-v">'+m.verticalsActive+' / 9</span></div>'+
+      '</div>'+
+      '<div class="mx-panel"><div class="mx-panel-h">Regions covered · '+m.regionsActive+'/6</div><div class="mx-regs">'+regHTML+'</div></div>'+
+    '</div>'+
+    '<div class="mx-panel"><div class="mx-panel-h">Most read</div><div class="mx-top">'+topHTML+'</div></div>'+
+    '<div class="mx-foot">Figures are live from the production database. “Nations Active” is a live count against AfriPulse’s 54-nation coverage goal.</div>'+
+  '</div>';
+}
+function viewAdminMetrics(){
+  if(METRICS===null && !METRICS_LOADING) refreshMetrics();
+  return adminShell(null, adminMetrics(), 'metrics');
+}
+
 // ── VIEW: NEWSLETTER ──────────────────────────────────────────
 function viewNewsletter(){
   const pub=published();
@@ -2673,6 +2898,7 @@ function route(){
       else if(!isAuthed()) html=viewAdminLogin('#'+hash);
       else if(parts[1]==='new') html=viewNewArticle();
       else if(parts[1]==='leads') html=viewAdminLeads();
+      else if(parts[1]==='metrics') html=viewAdminMetrics();
       else if(parts[1]==='edit' && parts[2]) html=viewAdmin(decodeURIComponent(parts[2]));
       else html=viewAdmin(null);
     }
@@ -2713,9 +2939,9 @@ function updateDevbarPath(){
 
 // ── EVENT BINDING (delegated) ─────────────────────────────────
 function bindView(){
-  // Animate the investor stat numbers up when they scroll into view (once each).
+  // Animate stat numbers up when they scroll into view (investor section + dashboard KPIs).
   (function(){
-    const nums=document.querySelectorAll('.investor-stat .num[data-count]');
+    const nums=document.querySelectorAll('.js-count[data-count]');
     if(!nums.length || !('IntersectionObserver' in window)) return; // fallback: static numbers stay
     const io=new IntersectionObserver(function(entries){
       entries.forEach(function(en){
@@ -2723,17 +2949,32 @@ function bindView(){
         const el=en.target; io.unobserve(el);
         const target=parseInt(el.getAttribute('data-count'),10)||0;
         if(target<=0){ el.textContent=String(target); return; }
+        const fmt=function(n){ try{ return n.toLocaleString('en-US'); }catch(e){ return String(n); } };
         const dur=1000; let start=null;
         function step(ts){ if(start===null) start=ts;
           const p=Math.min((ts-start)/dur,1);
-          el.textContent=String(Math.round(target*(1-Math.pow(1-p,3)))); // easeOutCubic
-          if(p<1) requestAnimationFrame(step); else el.textContent=String(target);
+          el.textContent=fmt(Math.round(target*(1-Math.pow(1-p,3)))); // easeOutCubic
+          if(p<1) requestAnimationFrame(step); else el.textContent=fmt(target);
         }
         requestAnimationFrame(step);
       });
     },{threshold:0.4});
     nums.forEach(function(n){ n.textContent='0'; io.observe(n); });
   })();
+
+  // Record a page view when an article is open (first-party counter).
+  (function(){
+    const h=location.hash||'';
+    if(h.indexOf('#/article/')===0){ try{ recordView(decodeURIComponent(h.slice('#/article/'.length))); }catch(e){} }
+  })();
+
+  // Traction dashboard: refresh button + auto-refresh every 30s while on the page.
+  if(METRICS_TIMER){ clearInterval(METRICS_TIMER); METRICS_TIMER=null; }
+  const metricsRefresh=document.getElementById('metrics-refresh');
+  if(metricsRefresh) metricsRefresh.addEventListener('click',function(){ toast('Refreshing metrics…'); refreshMetrics(); });
+  if((location.hash||'').indexOf('#/admin/metrics')===0){
+    METRICS_TIMER=setInterval(function(){ if(!document.hidden) refreshMetrics(); },30000);
+  }
 
   // Copy-link share button (article pages)
   document.querySelectorAll('[data-share-url]').forEach(function(btn){
