@@ -268,6 +268,12 @@ html[dir="rtl"] .art-body{padding:8px 0 24px 24px}
 .art-body p{font-size:15px;line-height:1.75;color:var(--ink);margin-bottom:14px}
 .art-source{margin-top:18px;padding:14px 16px;background:rgba(229,72,77,.08);border-left:3px solid #E5484D;font-size:13px;line-height:1.5}
 .art-source a{color:var(--accent);font-weight:500}
+.art-tldr{background:linear-gradient(135deg,rgba(30,107,58,.07),rgba(201,162,39,.07));border:1px solid var(--border);border-left:3px solid var(--gold);border-radius:8px;padding:14px 18px;margin:4px 0 20px}
+.art-tldr-h{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--green);font-weight:700;font-family:'JetBrains Mono',monospace;margin-bottom:8px}
+.art-tldr ul{margin:0;padding-left:18px}
+.art-tldr[dir="rtl"] ul{padding-left:0;padding-right:18px}
+.art-tldr li{font-size:14px;line-height:1.55;color:var(--ink);margin-bottom:5px}
+.art-tldr li::marker{color:var(--gold)}
 .art-listen{display:inline-flex;align-items:center;gap:6px;background:var(--green);color:#fff;border:none;border-radius:999px;padding:8px 16px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;margin:2px 0 14px;transition:background .15s,transform .1s}
 .art-listen:hover{background:#17572f}
 .art-listen.on{background:var(--accent);animation:listenPulse 1.4s ease-in-out infinite}
@@ -2602,6 +2608,16 @@ function toggleListen(slug){
   }catch(e){ TTS_STATE.speaking=false; updateListenBtns(); toast('Could not start audio.'); }
 }
 
+// AI "Key points" — a 3-bullet summary produced during the Translate pass and
+// stored in translations.summaries per language (falls back to English).
+function tldrLabel(){ return ({en:'Key points',fr:'Points clés',ar:'أبرز النقاط',sw:'Mambo muhimu',pt:'Pontos-chave'})[CURRENT_LANG] || 'Key points'; }
+function articleSummary(a){
+  const s = a && a.translations && a.translations.summaries;
+  if(!s) return null;
+  const arr = s[CURRENT_LANG] || s.en;
+  return (Array.isArray(arr) && arr.length) ? arr.slice(0,4) : null;
+}
+
 // Social share row for an article. Uses the full hash URL so the link resolves
 // straight to the story. Copy-link is wired in bindView().
 function shareRow(a){
@@ -2709,6 +2725,14 @@ function viewArticle(slug){
         '<button class="art-listen" type="button" data-listen-slug="'+esc(a.slug)+'">🔊 '+esc(listenLabel('play'))+'</button>'+
         shareRow(a)+
         '<p class="art-lead">'+esc(a.standfirst)+'</p>'+
+        (function(){
+          const sum=articleSummary(a);
+          if(!sum) return '';
+          return '<div class="art-tldr" dir="'+(CURRENT_LANG==='ar'?'rtl':'ltr')+'">'+
+            '<div class="art-tldr-h">✦ '+esc(tldrLabel())+'</div>'+
+            '<ul>'+sum.map(function(b){ return '<li>'+esc(b)+'</li>'; }).join('')+'</ul>'+
+          '</div>';
+        })()+
         bodyHTML+
         sourceBlock+
         tagsHTML+

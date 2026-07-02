@@ -25,15 +25,16 @@ const MAX_PER_RUN = 8;            // bound cost/time per invocation
 export async function translateArticle(anthropic, article){
   const body = Array.isArray(article.body) ? article.body : (article.body ? [String(article.body)] : []);
   const prompt =
-`You are a professional translator for a pan-African news service. Translate the article below into French (fr), Modern Standard Arabic (ar), Swahili (sw) and European Portuguese (pt).
+`You are a professional translator + editor for a pan-African news service. Translate the article below into French (fr), Modern Standard Arabic (ar), Swahili (sw) and European Portuguese (pt), AND write a 3-bullet "key points" summary in each of five languages (English en, plus fr, ar, sw, pt).
 
 Return ONLY a JSON object — no preamble, no markdown fences — with exactly this shape:
-{"fr":{"headline":"...","standfirst":"...","body":["paragraph 1", "..."]},"ar":{...},"sw":{...},"pt":{...}}
+{"fr":{"headline":"...","standfirst":"...","body":["paragraph 1","..."]},"ar":{...},"sw":{...},"pt":{...},"summaries":{"en":["point 1","point 2","point 3"],"fr":[...],"ar":[...],"sw":[...],"pt":[...]}}
 
 Rules:
 - Keep a neutral journalistic tone. Preserve proper nouns, place names, and figures.
-- Every language object must have "headline", "standfirst" and a "body" array.
+- Every language object (fr/ar/sw/pt) must have "headline", "standfirst" and a "body" array.
 - Each "body" array must contain exactly ${body.length} paragraph(s), translating each in order.
+- Each "summaries" array must contain exactly 3 short, punchy bullet points (one clause each), faithful to the article.
 
 Article:
 Headline: ${article.headline || ''}
@@ -43,7 +44,7 @@ ${body.map((p, i) => `[${i + 1}] ${p}`).join('\n')}`;
 
   const res = await anthropic.messages.create({
     model: MODEL,
-    max_tokens: 8192,
+    max_tokens: 12000,
     messages: [{ role: 'user', content: prompt }]
   });
 
@@ -53,7 +54,9 @@ ${body.map((p, i) => `[${i + 1}] ${p}`).join('\n')}`;
   if(start === -1 || end === -1) throw new Error('no JSON in model reply');
   const parsed = JSON.parse(text.slice(start, end + 1));
   if(!parsed.fr || !parsed.ar || !parsed.sw || !parsed.pt) throw new Error('reply missing a language (fr/ar/sw/pt)');
-  return { fr: parsed.fr, ar: parsed.ar, sw: parsed.sw, pt: parsed.pt };
+  const out = { fr: parsed.fr, ar: parsed.ar, sw: parsed.sw, pt: parsed.pt };
+  if(parsed.summaries && typeof parsed.summaries === 'object') out.summaries = parsed.summaries; // optional — "Key points" box
+  return out;
 }
 
 async function isAuthorized(req, admin){

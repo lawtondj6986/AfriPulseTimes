@@ -64,6 +64,19 @@ Swahili — the article rewrites itself live. "Our AI just did that in real time
 
 ---
 
+## ✦ AI "Key points" (TL;DR)
+
+Articles can show a highlighted **"Key points"** box — a 3-bullet AI summary — in
+the reader's language. The summaries are generated **during the ✦ Translate pass**
+(cached in the article, in all five languages), so they appear instantly for every
+reader with no per-view cost.
+
+- **To populate them:** run ✦ Translate (admin). New articles get translations +
+  key points together. Articles without a translation simply don't show the box.
+- **Label per language** is in `tldrLabel()`; the box styling is `.art-tldr` in CSS.
+
+---
+
 ## 🌐 Language switcher
 
 Top bar: **EN · FR · AR · SW · PT**. The whole interface (nav, labels, dates,
