@@ -66,8 +66,64 @@ function clean(s){ return (s||'').replace(/<[^>]+>/g,'').trim(); }
 
 const parser = new Parser({
   timeout: 10000,
-  headers: { 'User-Agent': 'AfriPulseTimes/1.0 (+https://afripulsetimes.com)' }
+  headers: { 'User-Agent': 'AfriPulseTimes/1.0 (+https://afripulsetimes.com)' },
+  // Capture the standard image-bearing fields most news feeds ship.
+  customFields: {
+    item: [
+      ['media:content', 'mediaContent', { keepArray: true }],
+      ['media:thumbnail', 'mediaThumbnail', { keepArray: true }],
+      ['content:encoded', 'contentEncoded'],
+      ['itunes:image', 'itunesImage']
+    ]
+  }
 });
+
+const IMG_EXT_RE = /\.(jpe?g|png|webp|gif|avif)(\?|#|$)/i;
+// Upgrade http→https so images aren't blocked as mixed content on our https site.
+// If a host doesn't serve https the <img> simply fails and the branded
+// placeholder shows instead — so this is always safe.
+function httpsify(u){ return (typeof u === 'string' ? u : '').trim().replace(/^http:\/\//i, 'https://'); }
+function attrUrl(node, keys){
+  const n = Array.isArray(node) ? node[0] : node;
+  if(!n) return '';
+  const a = n.$ || n;
+  for(const k of keys){ if(a && a[k]) return a[k]; }
+  return typeof n === 'string' ? n : '';
+}
+function firstImgInHtml(html){
+  const m = /<img[^>]+src=["']([^"'>]+)["']/i.exec(html || '');
+  return m ? m[1] : '';
+}
+
+// Best representative image for a feed item, checked in priority order. Returns
+// an https URL or null. Pure + exported for tests.
+export function extractImage(it){
+  if(!it) return null;
+  // 1) <media:content medium="image"> (MRSS)
+  const mc = it.mediaContent;
+  const mcArr = Array.isArray(mc) ? mc : (mc ? [mc] : []);
+  for(const m of mcArr){
+    const a = (m && m.$) || {};
+    if(a.url && (a.medium === 'image' || String(a.type || '').indexOf('image') === 0 || IMG_EXT_RE.test(a.url))) {
+      return httpsify(a.url);
+    }
+  }
+  // 2) <media:thumbnail url="...">
+  const mt = attrUrl(it.mediaThumbnail, ['url']);
+  if(mt) return httpsify(mt);
+  // 3) <enclosure type="image/..." url="...">
+  const enc = it.enclosure;
+  if(enc && enc.url && (String(enc.type || '').indexOf('image') === 0 || IMG_EXT_RE.test(enc.url))) {
+    return httpsify(enc.url);
+  }
+  // 4) <itunes:image href="..."> (podcasts)
+  const ii = attrUrl(it.itunesImage, ['href', 'url']);
+  if(ii) return httpsify(ii);
+  // 5) first <img> inside the article HTML
+  const img = firstImgInHtml(it.contentEncoded || it['content:encoded'] || it.content);
+  if(img) return httpsify(img);
+  return null;
+}
 
 // Turn parsed feed items into article rows, skipping anything already seen (by
 // source URL) and adding newly used URLs to `seen`. Pure + exported for tests.
@@ -90,6 +146,10 @@ export function buildRows(items, src, seen){
       || (it.pubDate ? new Date(it.pubDate).toISOString() : new Date().toISOString());
     const slug = 'wire-' + slugify(title).slice(0,56) + '-' + shortHash(link);
 
+    // Relevant photo from the source feed (null → branded placeholder in the UI).
+    const image = extractImage(it);
+    const media = image ? { type:'image', src: image, caption: '', credit: label } : null;
+
     // Full front-end article object → lossless render via articles.payload.
     const payload = {
       slug, vertical:vert, kicker: vlabel + ' · ' + label, headline:title,
@@ -97,11 +157,11 @@ export function buildRows(items, src, seen){
       readingMin: Math.max(2, Math.ceil((desc.length || 200) / 600)),
       emoji: def.emoji, color: def.color, status:'published', publishedAt,
       tags: [label, 'Live wire', vlabel], body: [desc || 'Full story at source.'],
-      source:'rss', sourceUrl: link, sourceLabel: label
+      media, source:'rss', sourceUrl: link, sourceLabel: label
     };
     rows.push({
       slug, headline:title, dek: desc || title, body: desc || 'Full story at source.',
-      vertical:vert, region:null, author_slug:null, hero_image:null, video_url:null,
+      vertical:vert, region:null, author_slug:null, hero_image: image || null, video_url:null,
       status:'published', source:'rss', source_url: link, published_at: publishedAt, payload
     });
   }

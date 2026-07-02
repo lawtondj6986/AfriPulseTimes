@@ -228,7 +228,9 @@ html[dir="rtl"] .lr-region-head .flag{margin-right:0;margin-left:6px}
 .feed-head{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);padding-bottom:10px;border-bottom:1px solid var(--border);margin-bottom:4px;font-weight:700;display:flex;justify-content:space-between}
 .card{display:grid;grid-template-columns:80px 1fr;gap:14px;padding:14px 0;border-bottom:0.5px solid var(--border);cursor:pointer}
 .card:hover{opacity:.72}
-.card-thumb{width:80px;height:64px;display:flex;align-items:center;justify-content:center;font-size:30px;opacity:.6}
+.card-thumb{width:80px;height:64px;display:flex;align-items:center;justify-content:center;font-size:30px;position:relative;overflow:hidden;border-radius:3px}
+.card-thumb .ct-emoji{opacity:.6}
+.thumb-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1}
 .card-cat{font-size:10px;color:var(--accent);text-transform:uppercase;letter-spacing:.12em;font-weight:700;margin-bottom:4px;display:flex;justify-content:space-between}
 .card-cat .r{color:var(--muted);font-weight:400;font-family:'JetBrains Mono',monospace}
 .card-title{font-family:'Fraunces',serif;font-size:14px;font-weight:700;line-height:1.3;margin-bottom:3px}
@@ -291,7 +293,7 @@ html[dir="rtl"] .art-side{padding:8px 22px 0 0;border-left:none;border-right:0.5
 .vert-card:hover{transform:translateY(-2px);transition:transform .2s}
 .vc-thumb{height:110px;display:flex;align-items:flex-end;padding:12px;position:relative;overflow:hidden}
 .vc-thumb::after{content:attr(data-emoji);position:absolute;right:-15px;top:-25px;font-size:120px;opacity:.12}
-.vc-cat{background:var(--accent);color:#fff;font-size:9px;letter-spacing:.14em;text-transform:uppercase;padding:3px 8px;font-weight:700;position:relative;z-index:1}
+.vc-cat{background:var(--accent);color:#fff;font-size:9px;letter-spacing:.14em;text-transform:uppercase;padding:3px 8px;font-weight:700;position:relative;z-index:2}
 .vc-body{padding:14px 16px}
 .vc-title{font-family:'Fraunces',serif;font-size:15px;font-weight:700;line-height:1.25;margin-bottom:8px}
 .vc-meta{font-size:11px;color:var(--muted);font-family:'JetBrains Mono',monospace}
@@ -1490,6 +1492,14 @@ function renderArticleMedia(a){
       ((caption||credit) ? '<figcaption class="art-media-caption"><span>'+esc(caption)+'</span>'+(credit?'<span class="credit">'+esc(credit)+'</span>':'')+'</figcaption>' : '')+
     '</figure>';
 }
+// A cover photo for a card: the article's own image when it has one, else '' so
+// the branded colour/emoji tile shows through. If the source URL is dead the
+// <img> removes itself on error, revealing the tile — no broken-image icon.
+function thumbImg(a){
+  const m = a && a.media;
+  if(m && m.type==='image' && m.src) return '<img class="thumb-img" src="'+esc(m.src)+'" alt="" loading="lazy" onerror="this.remove()">';
+  return '';
+}
 function published(){ return ARTICLES.filter(a=>a.status==='published').sort((a,b)=>new Date(b.publishedAt)-new Date(a.publishedAt)).map(localizeArticle); }
 function byVertical(v){ return published().filter(a=>a.vertical===v); }
 
@@ -1794,7 +1804,7 @@ function viewHome(){
   html += '<section class="hero">'+
     '<div class="hero-grid">'+
       '<a class="hero-main" href="#/article/'+esc(hero.slug)+'">'+
-        '<div class="hero-img" data-emoji="" style="background:linear-gradient(to top, rgba(0,0,0,.5), rgba(0,0,0,0) 55%), url(\'/images/ai-rss-agents.jpg\') center/cover no-repeat, '+esc(hero.color||'#0e2818')+'">'+
+        '<div class="hero-img" data-emoji="" style="background:linear-gradient(to top, rgba(0,0,0,.55), rgba(0,0,0,0) 55%), url(\''+esc((hero.media&&hero.media.type==='image'&&hero.media.src)?hero.media.src:'/images/ai-rss-agents.jpg')+'\') center/cover no-repeat, '+esc(hero.color||'#0e2818')+'">'+
           '<span class="hero-cat">'+esc(vlabel(hero.vertical))+'</span>'+
         '</div>'+
         '<div class="hero-body">'+
@@ -1817,7 +1827,7 @@ function viewHome(){
   let feedHTML='';
   for(const a of feed){
     feedHTML += '<a class="card" href="#/article/'+esc(a.slug)+'">'+
-      '<div class="card-thumb" style="background:'+esc(a.color||'#2a2a0a')+'">'+esc(a.emoji||'📰')+'</div>'+
+      '<div class="card-thumb" style="background:'+esc(a.color||'#2a2a0a')+'">'+thumbImg(a)+'<span class="ct-emoji">'+esc(a.emoji||'📰')+'</span></div>'+
       '<div>'+
         '<div class="card-cat">'+esc(vlabel(a.vertical))+' <span class="r">'+esc(a.readingMin||4)+' '+esc(t('min_read'))+'</span></div>'+
         '<div class="card-title">'+esc(a.headline)+'</div>'+
@@ -1913,6 +1923,7 @@ function viewVertical(v){
   for(const a of stories){
     cardsHTML += '<a class="vert-card" href="#/article/'+esc(a.slug)+'">'+
       '<div class="vc-thumb" data-emoji="'+esc(a.emoji||'📰')+'" style="background:'+esc(a.color||'#2a2a0a')+'">'+
+        thumbImg(a)+
         '<span class="vc-cat">'+esc(vlabel(v))+'</span>'+
       '</div>'+
       '<div class="vc-body">'+
@@ -1939,6 +1950,7 @@ function viewRegion(slug){
   for(const a of stories){
     cardsHTML += '<a class="vert-card" href="#/article/'+esc(a.slug)+'">'+
       '<div class="vc-thumb" data-emoji="'+esc(a.emoji||'📰')+'" style="background:'+esc(a.color||'#2a2a0a')+'">'+
+        thumbImg(a)+
         '<span class="vc-cat">'+esc(vlabel(a.vertical))+'</span>'+
       '</div>'+
       '<div class="vc-body">'+
@@ -1982,6 +1994,7 @@ function viewSearch(rawQuery){
   for(const a of hits){
     cardsHTML += '<a class="vert-card" href="#/article/'+esc(a.slug)+'">'+
       '<div class="vc-thumb" data-emoji="'+esc(a.emoji||'📰')+'" style="background:'+esc(a.color||'#2a2a0a')+'">'+
+        thumbImg(a)+
         '<span class="vc-cat">'+esc(vlabel(a.vertical))+'</span>'+
       '</div>'+
       '<div class="vc-body">'+
@@ -2057,6 +2070,7 @@ function viewJournalist(slug){
   for(const a of stories){
     storiesHTML += '<a class="vert-card" href="#/article/'+esc(a.slug)+'">'+
       '<div class="vc-thumb" data-emoji="'+esc(a.emoji||'📰')+'" style="background:'+esc(a.color||'#2a2a0a')+'">'+
+        thumbImg(a)+
         '<span class="vc-cat">'+esc(vlabel(a.vertical))+'</span>'+
       '</div>'+
       '<div class="vc-body">'+
