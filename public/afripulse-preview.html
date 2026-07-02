@@ -268,6 +268,11 @@ html[dir="rtl"] .art-body{padding:8px 0 24px 24px}
 .art-body p{font-size:15px;line-height:1.75;color:var(--ink);margin-bottom:14px}
 .art-source{margin-top:18px;padding:14px 16px;background:rgba(229,72,77,.08);border-left:3px solid #E5484D;font-size:13px;line-height:1.5}
 .art-source a{color:var(--accent);font-weight:500}
+.art-share{display:flex;align-items:center;gap:8px;margin:2px 0 20px;padding-bottom:18px;border-bottom:1px solid var(--border)}
+.art-share-label{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-family:'JetBrains Mono',monospace;margin-right:2px}
+.art-share .sh{width:34px;height:34px;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--border);border-radius:50%;color:var(--ink);background:var(--card);cursor:pointer;transition:all .15s;padding:0}
+.art-share .sh:hover{background:var(--green);border-color:var(--green);color:#fff}
+.art-share .sh svg{width:15px;height:15px;fill:currentColor}
 .art-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:20px;padding-top:16px;border-top:1px solid var(--border)}
 .art-tag{font-size:10px;letter-spacing:.1em;text-transform:uppercase;background:var(--bg-2);padding:5px 10px;font-weight:500}
 .art-note{margin-top:22px;padding:14px 16px;background:var(--bg-2);border-left:3px solid var(--gold);font-size:12px;color:var(--muted);line-height:1.5}
@@ -515,6 +520,16 @@ html[dir="rtl"] .art-side{padding:8px 22px 0 0;border-left:none;border-right:0.5
 .footer a{display:block;font-size:13px;color:#B0ABA5;margin-bottom:6px;cursor:pointer}
 .footer a:hover{color:#F7F4EE}
 .footer-bot{max-width:1100px;margin:0 auto;border-top:1px solid #1A1A1A;padding-top:14px;font-size:11px;color:#8B857C;font-family:'JetBrains Mono',monospace;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.footer-legal{display:flex;gap:16px}
+.footer-legal a{color:#8B857C;text-decoration:none}
+.footer-legal a:hover{color:#F7F4EE}
+.legal-page{max-width:760px;margin:0 auto;padding:48px 22px 64px}
+.legal-page h1{font-family:'Fraunces',serif;font-size:34px;font-weight:900;letter-spacing:-.5px;margin-bottom:6px}
+.legal-page .updated{font-size:12px;color:var(--muted);font-family:'JetBrains Mono',monospace;margin-bottom:24px}
+.legal-page h2{font-family:'Fraunces',serif;font-size:20px;font-weight:700;margin:26px 0 8px}
+.legal-page p{font-size:14.5px;line-height:1.7;color:var(--ink);margin-bottom:12px}
+.legal-page a{color:var(--accent)}
+.legal-note{background:var(--bg-2);border-left:3px solid var(--gold);padding:12px 16px;font-size:12.5px;color:var(--muted);margin-top:24px;line-height:1.6}
 
 /* TOAST */
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(160%);background:var(--ink);color:#F7F4EE;padding:13px 20px;font-size:13px;z-index:300;border-left:3px solid var(--accent);box-shadow:0 12px 40px rgba(0,0,0,.35);transition:transform .35s ease;max-width:90vw}
@@ -605,6 +620,9 @@ const LANG = {
     search_none:'No stories match',
     search_none_hint:'Try a country, a topic, or a byline — or browse the verticals above.',
     search_empty:'Type a word above to search across every vertical.',
+    share:'Share', contact:'Contact', legal_privacy:'Privacy', legal_terms:'Terms',
+    legal_updated:'Last updated',
+    legal_note:'This is a plain-language summary for our MVP, not a substitute for formal legal advice. Full policies reviewed by counsel will be published before public launch.',
     latest_stories:'Latest Stories', manage:'Manage →',
     browse_by_vertical:'Browse Archive', archive_total:'total', view_all:'View all',
     expand_all:'Expand all', collapse_all:'Collapse all', no_articles:'No articles yet.',
@@ -685,6 +703,9 @@ const LANG = {
     search_none:'Aucun article ne correspond à',
     search_none_hint:'Essayez un pays, un thème ou une signature — ou parcourez les rubriques ci-dessus.',
     search_empty:'Saisissez un mot ci-dessus pour chercher dans toutes les rubriques.',
+    share:'Partager', contact:'Contact', legal_privacy:'Confidentialité', legal_terms:'Conditions',
+    legal_updated:'Dernière mise à jour',
+    legal_note:'Ceci est un résumé en langage clair pour notre MVP, et non un avis juridique formel. Des politiques complètes revues par un conseil seront publiées avant le lancement public.',
     latest_stories:'Dernières actualités', manage:'Gérer →',
     browse_by_vertical:'Parcourir les archives', archive_total:'au total', view_all:'Tout voir',
     expand_all:'Tout déplier', collapse_all:'Tout replier', no_articles:'Aucun article pour le moment.',
@@ -765,6 +786,9 @@ const LANG = {
     search_none:'لا توجد قصص مطابقة لـ',
     search_none_hint:'جرّب دولة أو موضوعاً أو اسم كاتب — أو تصفّح الأقسام أعلاه.',
     search_empty:'اكتب كلمة في الأعلى للبحث في جميع الأقسام.',
+    share:'مشاركة', contact:'اتصل بنا', legal_privacy:'الخصوصية', legal_terms:'الشروط',
+    legal_updated:'آخر تحديث',
+    legal_note:'هذا ملخّص بلغة مبسّطة لنسختنا التجريبية، وليس بديلاً عن استشارة قانونية رسمية. سننشر سياسات كاملة راجعها مستشار قانوني قبل الإطلاق العام.',
     latest_stories:'أحدث القصص', manage:'إدارة ←',
     browse_by_vertical:'تصفّح الأرشيف', archive_total:'إجمالاً', view_all:'عرض الكل',
     expand_all:'فتح الكل', collapse_all:'طيّ الكل', no_articles:'لا مقالات بعد.',
@@ -1798,6 +1822,11 @@ function renderFooter(){
     '</div>'+
     '<div class="footer-bot">'+
       '<span>© 2026 AfriPulse Times Media Limited · Mauritius</span>'+
+      '<span class="footer-legal">'+
+        '<a href="#/privacy">'+esc(t('legal_privacy'))+'</a>'+
+        '<a href="#/terms">'+esc(t('legal_terms'))+'</a>'+
+        '<a href="mailto:hello@afripulsetimes.com">'+esc(t('contact'))+'</a>'+
+      '</span>'+
       '<span style="color:var(--accent)">afripulsetimes.com</span>'+
     '</div>'+
   '</footer>';
@@ -2134,6 +2163,64 @@ function viewJournalist(slug){
 }
 
 // ── VIEW: ARTICLE ─────────────────────────────────────────────
+// Social share row for an article. Uses the full hash URL so the link resolves
+// straight to the story. Copy-link is wired in bindView().
+function shareRow(a){
+  const url = location.origin + location.pathname + '#/article/' + a.slug;
+  const U = encodeURIComponent(url);
+  const T = encodeURIComponent(a.headline || 'AfriPulse Times');
+  return '<div class="art-share">'+
+    '<span class="art-share-label">'+esc(t('share'))+'</span>'+
+    '<a class="sh" href="https://twitter.com/intent/tweet?text='+T+'&url='+U+'" target="_blank" rel="noopener" aria-label="Share on X">'+
+      '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231 5.45-6.231zm-1.161 17.52h1.833L7.084 4.126H5.117l11.966 15.644z"/></svg>'+
+    '</a>'+
+    '<a class="sh" href="https://www.facebook.com/sharer/sharer.php?u='+U+'" target="_blank" rel="noopener" aria-label="Share on Facebook">'+
+      '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22.675 0H1.325C.593 0 0 .593 0 1.325v21.351C0 23.408.593 24 1.325 24H12.82v-9.294H9.692v-3.622h3.128V8.413c0-3.1 1.893-4.788 4.659-4.788 1.325 0 2.463.099 2.795.143v3.24l-1.918.001c-1.504 0-1.795.715-1.795 1.763v2.313h3.587l-.467 3.622h-3.12V24h6.116c.73 0 1.323-.593 1.323-1.325V1.325C24 .593 23.407 0 22.675 0z"/></svg>'+
+    '</a>'+
+    '<a class="sh" href="https://www.linkedin.com/sharing/share-offsite/?url='+U+'" target="_blank" rel="noopener" aria-label="Share on LinkedIn">'+
+      '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.063 2.063 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>'+
+    '</a>'+
+    '<a class="sh" href="https://wa.me/?text='+T+'%20'+U+'" target="_blank" rel="noopener" aria-label="Share on WhatsApp">'+
+      '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51l-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.885-9.885 9.885M20.52 3.449C18.24 1.245 15.24.044 12.045.044 5.463.044.104 5.402.101 11.986c0 2.096.549 4.14 1.595 5.945L0 24l6.335-1.652a11.9 11.9 0 005.71 1.454h.006c6.585 0 11.946-5.359 11.949-11.945a11.9 11.9 0 00-3.48-8.418Z"/></svg>'+
+    '</a>'+
+    '<button class="sh" type="button" data-share-url="'+esc(url)+'" aria-label="Copy link">'+
+      '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.9 12a3.1 3.1 0 013.1-3.1h4V7h-4a5 5 0 000 10h4v-1.9h-4A3.1 3.1 0 013.9 12zM8 13h8v-2H8v2zm9-6h-4v1.9h4a3.1 3.1 0 010 6.2h-4V17h4a5 5 0 000-10z"/></svg>'+
+    '</button>'+
+  '</div>';
+}
+
+// ── VIEW: LEGAL (Privacy / Terms) ─────────────────────────────
+function viewLegal(kind){
+  const contact = 'hello@afripulsetimes.com';
+  let title, blocks;
+  if(kind==='terms'){
+    title = t('legal_terms');
+    blocks =
+      '<h2>1. Acceptance</h2><p>By accessing AfriPulse Times you agree to these terms. If you do not agree, please do not use the service.</p>'+
+      '<h2>2. Use of content</h2><p>Articles, images, and data are provided for personal, non-commercial reading. Aggregated "live wire" items link to and remain the property of their original publishers. Do not republish our original content without written permission.</p>'+
+      '<h2>3. Accounts</h2><p>Editorial accounts are restricted to authorised staff. You are responsible for activity under your account and for keeping your sign-in link private.</p>'+
+      '<h2>4. Disclaimer</h2><p>Content is provided "as is" for information only and is not professional, financial, or legal advice. We work to be accurate but do not warrant that every item is complete or error-free.</p>'+
+      '<h2>5. Contact</h2><p>Questions about these terms: <a href="mailto:'+contact+'">'+contact+'</a>.</p>';
+  }else{
+    title = t('legal_privacy');
+    blocks =
+      '<h2>Overview</h2><p>AfriPulse Times respects your privacy. This page explains what we collect and why.</p>'+
+      '<h2>What we collect</h2><p><strong>Newsletter &amp; enquiries:</strong> if you subscribe or contact us, we store the email address and details you provide, to send the newsletter or respond to you. <strong>Nothing else is required to read the site.</strong></p>'+
+      '<h2>How we use it</h2><p>Only to deliver the newsletter, answer investor/partner enquiries, and operate the service. We do not sell your personal data.</p>'+
+      '<h2>Storage</h2><p>Data is stored securely with our infrastructure providers (Supabase) and, for the newsletter, our email provider. You can ask us to delete your data at any time.</p>'+
+      '<h2>Your choices</h2><p>Unsubscribe from any newsletter email, or email <a href="mailto:'+contact+'">'+contact+'</a> to access or delete your data.</p>';
+  }
+  return renderHeader(null)+
+    '<a class="art-back" href="#/" style="padding:14px 22px">← '+esc(t('back_to_site'))+'</a>'+
+    '<div class="legal-page">'+
+      '<h1>'+esc(title)+'</h1>'+
+      '<div class="updated">'+esc(t('legal_updated'))+' · July 2026</div>'+
+      blocks+
+      '<div class="legal-note">'+esc(t('legal_note'))+'</div>'+
+    '</div>'+
+    renderFooter();
+}
+
 function viewArticle(slug){
   const a=localizeArticle(getArticle(slug));   // reader page → translated when available
   if(!a) return view404();
@@ -2180,6 +2267,7 @@ function viewArticle(slug){
             return '<span class="by">By '+bylineEl+'</span>';
           })()+' · '+esc(a.dateline)+' · '+esc(timeAgo(a.publishedAt))+' · '+esc(a.readingMin||4)+' min read'+
         '</div>'+
+        shareRow(a)+
         '<p class="art-lead">'+esc(a.standfirst)+'</p>'+
         bodyHTML+
         sourceBlock+
@@ -2578,6 +2666,8 @@ function route(){
       else html=viewAdmin(null);
     }
     else if(parts[0]==='newsletter') html=viewNewsletter();
+    else if(parts[0]==='privacy') html=viewLegal('privacy');
+    else if(parts[0]==='terms') html=viewLegal('terms');
     else html=view404();
 
     app.innerHTML=html;
@@ -2612,6 +2702,17 @@ function updateDevbarPath(){
 
 // ── EVENT BINDING (delegated) ─────────────────────────────────
 function bindView(){
+  // Copy-link share button (article pages)
+  document.querySelectorAll('[data-share-url]').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      const url=btn.getAttribute('data-share-url');
+      const done=function(){ toast(CURRENT_LANG==='fr'?'Lien copié':CURRENT_LANG==='ar'?'تم نسخ الرابط':'Link copied'); };
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(url).then(done).catch(function(){ window.prompt('Copy this link:', url); });
+      }else{ window.prompt('Copy this link:', url); }
+    });
+  });
+
   // data-link → set hash
   document.querySelectorAll('[data-link]').forEach(el=>{
     el.addEventListener('click',function(e){
