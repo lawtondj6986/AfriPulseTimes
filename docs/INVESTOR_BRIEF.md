@@ -159,3 +159,53 @@ advertising revenue] within [N] months._
 10. **Roadmap** — SSR/URLs → editorial → growth (tie to use of funds).
 11. **Team** — you + planned first hires.
 12. **The ask** — amount, use of funds, milestones, contact.
+
+---
+
+## Slide 7 — Revenue model (drop-in sketch)
+
+_A ready-to-build layout for the business-model slide. Build it in
+Keynote/Slides/Pitch; every word below is copy you can lift. Keep it to one slide —
+this is the "how it pays for itself" moment._
+
+**Headline (top, large):**
+> We don't sell banners. We sell **a language and a region.**
+
+**Sub-headline (one line, muted):**
+> One premium, brand-safe surface across 54 nations — inventory no pan-African brand can buy anywhere else.
+
+**Center visual — the rate-card ladder** (4 cards left→right, ascending; highlight
+"Continental Anchor" as the hero tier):
+
+```
+  NATIVE IN-READ  →  LANGUAGE & REGION  →  COVERAGE-MAP SPONSOR  →  CONTINENTAL ANCHOR
+  Always-on          Sponsor 1 of 5          Founding sponsor of      Full-site takeover,
+  unit woven         editions, or 1 of        Africa's live map —      all 5 languages,
+  mid-story          5 regions                the brand halo           one advertiser / day
+  ───────────        ───────────              ───────────              ───────────
+  Awareness +        Market-specific          Pan-African              Continent-wide
+  performance        campaigns                champions                brands & institutions
+  $  volume          $$ targeted              $$$ prestige             $$$$ takeover
+```
+
+**Three proof points (bottom row, icon + one line each):**
+1. **Scarce by design** — one advertiser per surface, one native unit per story. Restraint keeps inventory premium.
+2. **Brand-safe by default** — curated, editor-reviewed journalism. No toxic feeds, no junk beside the logo.
+3. **First-party & measurable** — our own audience data and view counter; honest delivery reporting, post-cookie.
+
+**Footer strip (the economics line, small):**
+> Revenue scales with **audience × inventory sold**; infra stays ≈ cents/day. _(Live demo: the placements and media kit are already at `/advertise`.)_
+
+**Speaker notes (say this):**
+> _"Everyone monetises attention with banners and gets commoditised. Our edge is
+> structural: because we're pan-African and multilingual, we can sell the same
+> audience by language and by region — a global brand buys the Anchor, a regional
+> bank buys East Africa, a Lusophone telco buys the Portuguese edition. That's
+> inventory that literally doesn't exist anywhere else, and it's already built —
+> let me show you."_ → (cut to the live `/advertise` page).
+
+**Design cues:** deep-green / gold palette to match the product; the four cards
+ascend in height or emphasis left→right so the eye lands on Continental Anchor;
+use a faint glowing Africa map (the site's coverage map) as the slide background at
+low opacity to tie the revenue story to the brand. Avoid fake CPM/revenue numbers —
+lead with the *structure*, add real quotes/LOIs only once you have them.
