@@ -10,16 +10,18 @@ present._
 ## 1. Executive summary
 
 AfriPulse Times is a pan-African digital newsroom covering 54 nations across 9
-verticals, in three languages (English, French, Arabic). The product is a fast
-single-page site backed by Supabase (Postgres + auth + row-level security) and
-deployed on Vercel, with serverless jobs for wire ingestion, newsletter signup,
-AI translation, and investor-lead capture.
+verticals, in five languages (English, French, Arabic, Swahili, Portuguese). The
+product is a fast single-page site backed by Supabase (Postgres + auth +
+row-level security) and deployed on Vercel, with serverless jobs for wire
+ingestion, newsletter signup, AI translation, and investor-lead capture.
 
 Going into the pitch it is: **bug-free on the core reader journey, visually
-premium, fully trilingual in the interface, and wired end-to-end to a real
+premium, fully multilingual in the interface, and wired end-to-end to a real
 database** — searches return real results, the newsletter and investor forms
 write to Supabase, and the admin desk performs live CRUD against the same store
-the public site reads.
+the public site reads. There is also a working **advertising product** — premium
+placements in the pages plus a media kit at `/advertise` — so the revenue model
+is something you can click, not just claim.
 
 ---
 
@@ -44,10 +46,19 @@ overflow at a 390 px mobile viewport.
 
 ## 3. Enhancements delivered
 
-- **Trilingual interface** (EN / FR / AR) with right-to-left handling for Arabic.
+- **Multilingual interface** (EN / FR / AR / SW / PT) with right-to-left handling
+  for Arabic, and a one-click admin **Translate** button.
 - **AI article translation** pipeline (`/api/translate`, Claude) — populates
-  French + Arabic headline/standfirst/body per article on a daily cron. Built and
-  tested; goes live once the API key is set (see §5).
+  headline/standfirst/body in French, Arabic, Swahili and Portuguese per article
+  (plus AI "key points" summaries) on a daily cron or on demand. Built and tested;
+  goes live once the API key is set (see §5).
+- **Advertising product** — real, high-value inventory plus an advertiser-facing
+  media kit at `/advertise`. Placements are sold by **language and region**
+  (the non-obvious, defensible insight): a native in-read unit woven mid-story, a
+  coverage-map prestige sponsor line, homepage/right-rail slots, and four signature
+  packages (Continental Anchor, Coverage-Map Sponsor, Language & Region, Native
+  In-Read). Restrained by design — one advertiser per surface — so inventory stays
+  premium and brand-safe. Full model in [`INVESTOR_BRIEF.md`](./INVESTOR_BRIEF.md).
 - **Server-side wire aggregation** (`/api/pull-wire`, daily cron) pulling from
   vetted African RSS sources into the same article store.
 - **Live African FX ticker** (`/api/market-data`): real, auto-refreshing USD
@@ -88,7 +99,7 @@ leads(
   organisation text,
   interest     text  check in (investor|advertiser|partner|other),
   message      text,
-  language     text  check in (en|fr|ar),
+  language     text  check in (en|fr|ar|sw|pt),
   status       text  check in (new|contacted|closed)  default 'new',
   created_at   timestamptz
 )
@@ -147,12 +158,18 @@ form fully live on stage.
    verticals, and the **live FX ticker** (real African currency rates, marked LIVE).
 2. **Click a vertical, then a story.** "Every story is a real record in our
    database, filed by bureau, tagged by country and topic."
-3. **Switch to Français, then العربية.** "The whole product is trilingual — and
-   our AI translation layer is rendering the articles themselves into French and
-   Arabic." (The ribbon honestly signals rollout if a piece isn't translated yet.)
+3. **Switch to Français, then العربية** (and, if asked, Kiswahili / Português).
+   "The whole product is in five languages — and our AI translation layer renders
+   the articles themselves across all of them." (The ribbon honestly signals
+   rollout if a piece isn't translated yet.)
 4. **Search a country** (e.g. "Nigeria"). "Full-text search across every
    vertical, instantly."
-5. **Scroll to the Series Seed section and submit the form.** "And this is live —
+5. **Open a story and point at the native ad unit, then click "Advertise."**
+   "Here's how it pays for itself. Notice the ad reads as part of the story — not
+   spam. And our real edge: we don't just sell banners, we sell a **language** or a
+   **region**. A pan-African brand can't buy 'all of Africa, in five languages, on
+   one premium surface' anywhere else — that's us." (Show the media-kit packages.)
+6. **Scroll to the Series Seed section and submit the form.** "And this is live —
    your enquiry just landed in our database." (Then, if you like, show the row in
    Supabase.)
 
@@ -161,9 +178,9 @@ story, watch it appear on the public site; open the **Enquiries tab** to show th
 lead you just captured and mark it "contacted") and the wire aggregator (explain
 the daily cron pulling vetted African sources).
 
-**One-liner close:** "A production newsroom platform, trilingual, AI-assisted,
-running on infrastructure that costs us cents a day and scales to the whole
-continent."
+**One-liner close:** "A production newsroom platform in five languages,
+AI-assisted, with a real advertising model built in — running on infrastructure
+that costs us cents a day and scales to the whole continent."
 
 ---
 
@@ -185,7 +202,8 @@ continent."
 **Long term (9–18 months)**
 - "AfriPulse Broadcast": short-form video/audio section.
 - Native mobile apps; offline reading for low-bandwidth regions.
-- Advertiser self-serve portal against the reserved ad slots already in the design.
+- Advertiser self-serve booking + ad-serving against the placements and media kit
+  already live at `/advertise` (rotation, scheduling, first-party delivery reports).
 - Paid tiers / membership.
 
 ---

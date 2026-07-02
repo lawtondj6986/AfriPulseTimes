@@ -27,9 +27,11 @@ Do these in order, then **don't touch the site again** until you present.
    instantly. _(One-time: for the **Pageviews** tile to fill, run
    `supabase/migrations/20260703120000_article_views.sql` in Supabase → SQL Editor.
    Everything else on the dashboard works without it.)_
-7. **Set language back to EN**, scroll to the top, and leave the **home page**
+7. **Open the media kit** at `#/advertise` in its own tab and glance over it, so
+   you can flip to it instantly when you hit the revenue beat.
+8. **Set language back to EN**, scroll to the top, and leave the **home page**
    loaded in a tab, ready to go.
-8. **Start your backup screen recording** (see below) if you haven't already.
+9. **Start your backup screen recording** (see below) if you haven't already.
 
 > ⚠️ **Do NOT click "⟲ Reset"** in the top bar during the demo — it wipes the site
 > back to seed data. It's a maintenance tool, not a demo control.
@@ -43,26 +45,35 @@ Keep it to ~2 minutes. Narrate the *story*, not the features.
 1. **Home page.** _"This is AfriPulse Times — one masthead for 54 African nations,
    updating in real time."_ Point to the **live story count**, the photo-rich
    grid, and the **live FX ticker** (real African currency rates, marked LIVE).
-2. **Switch language: EN → Français → العربية.** _"The entire product is
-   trilingual — and our AI translation layer carries each story into French and
-   Arabic. Most of the continent, in their own language."_
+2. **Switch language: EN → Français → العربية.** _"The entire product is in five
+   languages — English, French, Arabic, Swahili, Portuguese — and our AI
+   translation layer carries each story across all of them. The continent, in its
+   own languages."_
 3. **Open a marquee story** (one you uploaded a photo to). _"Every story is a real
-   record in our database — filed by bureau, tagged by country and topic."_
-4. **Search a country** (e.g. "Nigeria"). _"Full-text search across every vertical,
+   record in our database — filed by bureau, tagged by country and topic."_ As you
+   scroll, point at the **native ad unit** woven into the story: _"and notice how
+   an ad looks here — part of the story, brand-safe, not spam."_
+4. **Click "Advertise" (the revenue beat).** Open `#/advertise`. _"Here's how it
+   pays for itself — and here's our real edge. We don't just sell banners; we sell
+   a **language** or a **region**. A pan-African brand can't buy 'all of Africa, in
+   five languages, on one premium surface' anywhere else. That's us."_ Point at the
+   signature packages (Continental Anchor, Coverage-Map Sponsor, Language & Region).
+5. **Search a country** (e.g. "Nigeria"). _"Full-text search across every vertical,
    instantly."_
-5. **Scroll to the Series Seed section → submit the enquiry form.** _"And this is
+6. **Scroll to the Series Seed section → submit the enquiry form.** _"And this is
    live — your interest just landed in our database, and pinged our inbox."_
    (Optional flourish: open **admin → Enquiries** and show the row appear.)
-6. **Flip to the Traction dashboard** (admin → **Dashboard**). _"And this is our
+7. **Flip to the Traction dashboard** (admin → **Dashboard**). _"And this is our
    newsroom command center — every number here is live from production: stories
    published, nations covered, subscribers, enquiries, page views, our wire
    sources, translation coverage."_ Let the KPIs count up; point at the live pulse.
    **This is your "we can operate and measure this" moment — investors love a real
    dashboard.**
 
-**Close:** _"A production newsroom — trilingual, AI-assisted, real-time, measured —
-running on infrastructure that costs us cents a day and scales to the whole
-continent. We're raising our Series Seed to turn this into the continent's newsroom."_
+**Close:** _"A production newsroom — five languages, AI-assisted, real-time,
+measured, with a real advertising model built in — running on infrastructure that
+costs us cents a day and scales to the whole continent. We're raising our Series
+Seed to turn this into the continent's newsroom."_
 
 ### If you have 3–4 minutes, add:
 - **Admin desk:** publish a story live and watch it appear on the site.
@@ -97,12 +108,16 @@ continent. We're raising our Series Seed to turn this into the continent's newsr
 
 - **Traction?** _"Live proof-of-concept; the raise funds real editorial and growth."_
   (Add any real numbers you have.)
-- **How do you make money?** _"Advertising — the placements are already designed in —
-  plus membership, syndication, and advertiser insights."_
+- **How do you make money?** _"Advertising is the lead line — and it's already
+  built: a media kit and real placements are live at /advertise. Our edge is that
+  we sell by **language and region** — one premium, brand-safe surface no
+  pan-African brand can buy anywhere else — plus membership, syndication, and
+  first-party advertiser insights."_
 - **Why you?** _"I'm not a career engineer — I cared enough about putting the
   continent's story in its own hands that I shipped a live product myself."_
 - **Competition / moat?** _"Incumbents are single-country or single-language, or
-  foreign-owned. Our moat is pan-African aggregation + trilingual AI + brand."_
+  foreign-owned. Our moat is pan-African aggregation + five-language AI + brand —
+  and an ad model that monetises the same audience by language and region."_
 - **Team?** _"Solo today; first hires with funding are an editorial lead and an engineer."_
 - **Tech scale?** _"MVP architecture; the first funded engineering work is
   server-rendering and per-article URLs. The codebase is tested and documented."_
@@ -118,7 +133,8 @@ continent. We're raising our Series Seed to turn this into the continent's newsr
 - [ ] Pull live wire done → fresh photos showing
 - [ ] Marquee stories have uploaded photos
 - [ ] Test enquiry submitted + email received
-- [ ] Language switch works (EN/FR/AR)
+- [ ] Language switch works (EN/FR/AR/SW/PT)
+- [ ] Media kit opens at `#/advertise`; native ad unit shows inside a story
 - [ ] Backup recording saved and playable offline
 - [ ] Hotspot ready
 
