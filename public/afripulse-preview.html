@@ -588,6 +588,65 @@ html[dir="rtl"] .art-side{padding:8px 22px 0 0;border-left:none;border-right:0.5
 .ad-slot-mini .ad-cta{display:inline-block;background:transparent;color:var(--accent);padding:0;font-size:10px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;cursor:pointer;text-decoration:none;border:none;font-family:'JetBrains Mono',monospace}
 .ad-slot-mini .ad-cta:hover{text-decoration:underline}
 
+/* NATIVE IN-ARTICLE PLACEMENT (premium, restrained) */
+.ad-native{position:relative;margin:26px 0;padding:20px 22px;border:1px solid var(--border);border-radius:10px;background:linear-gradient(135deg,rgba(201,162,39,.05),rgba(30,107,58,.04));display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.ad-native-label{position:absolute;top:-8px;left:16px;background:var(--bg);color:var(--muted);padding:0 8px;font-size:9px;letter-spacing:.16em;text-transform:uppercase;font-weight:700;font-family:'JetBrains Mono',monospace}
+.ad-native-body{flex:1;min-width:220px}
+.ad-native-title{font-family:'Fraunces',serif;font-size:19px;font-weight:900;font-style:italic;letter-spacing:-.4px;color:var(--ink);line-height:1.2}
+.ad-native-sub{font-size:12.5px;color:var(--muted);line-height:1.55;margin-top:5px}
+.ad-native-cta{background:var(--ink);color:#fff;padding:11px 20px;font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;text-decoration:none;white-space:nowrap;border-radius:6px;transition:background .15s}
+.ad-native-cta:hover{background:var(--accent)}
+
+/* COVERAGE-MAP PRESTIGE SPONSOR LINE */
+.cmap-sponsor{position:relative;z-index:2;max-width:1100px;margin:26px auto 0;padding-top:16px;border-top:1px solid rgba(255,255,255,.12);font-size:11px;letter-spacing:.06em;color:rgba(239,234,224,.6);font-family:'JetBrains Mono',monospace;text-transform:uppercase;text-align:center}
+.cmap-sponsor a{color:#EFEAE0;text-decoration:none;border-bottom:1px solid rgba(255,255,255,.35);transition:border-color .15s}
+.cmap-sponsor a:hover{border-color:#EFEAE0}
+
+/* ADVERTISE / MEDIA KIT PAGE */
+.adv-hero{background:radial-gradient(120% 140% at 15% 0%, #1a1a1a 0%, #0d0d0d 60%, #000 100%);color:#F7F4EE;padding:64px 22px 56px;text-align:center;position:relative;overflow:hidden}
+.adv-hero-eyebrow{font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--gold);font-weight:700;font-family:'JetBrains Mono',monospace;margin-bottom:16px}
+.adv-hero h1{font-family:'Fraunces',serif;font-size:clamp(34px,6vw,58px);font-weight:900;letter-spacing:-1.5px;line-height:1.02;max-width:840px;margin:0 auto 18px}
+.adv-hero h1 em{color:var(--gold);font-style:italic}
+.adv-hero p{font-size:16px;line-height:1.6;color:rgba(247,244,238,.78);max-width:600px;margin:0 auto 28px}
+.adv-hero-cta{display:inline-flex;gap:14px;flex-wrap:wrap;justify-content:center}
+.adv-btn{background:var(--gold);color:#111;padding:14px 26px;font-size:12px;letter-spacing:.1em;text-transform:uppercase;font-weight:800;text-decoration:none;border-radius:7px;transition:transform .12s,box-shadow .12s}
+.adv-btn:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(201,162,39,.35)}
+.adv-btn.ghost{background:transparent;color:#F7F4EE;border:1px solid rgba(255,255,255,.3)}
+.adv-btn.ghost:hover{border-color:#fff;box-shadow:none}
+.adv-wrap{max-width:1060px;margin:0 auto;padding:0 22px}
+.adv-reach{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;background:var(--border);border:1px solid var(--border);margin:-32px auto 56px;max-width:1010px;position:relative;z-index:3;border-radius:10px;overflow:hidden;box-shadow:0 20px 50px rgba(0,0,0,.18)}
+.adv-reach .cell{background:var(--bg);padding:24px 18px;text-align:center}
+.adv-reach .n{font-family:'Fraunces',serif;font-size:34px;font-weight:900;color:var(--green);line-height:1;letter-spacing:-1px}
+.adv-reach .l{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-top:8px;font-weight:600}
+.adv-section{padding:16px 0 40px}
+.adv-section-h{font-family:'Fraunces',serif;font-size:28px;font-weight:900;letter-spacing:-.6px;color:var(--ink);margin-bottom:6px}
+.adv-section-p{font-size:14px;color:var(--muted);line-height:1.6;max-width:640px;margin-bottom:26px}
+.adv-pkgs{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+.adv-pkg{border:1px solid var(--border);border-radius:12px;padding:26px 24px;background:var(--bg);position:relative;transition:transform .15s,box-shadow .15s,border-color .15s}
+.adv-pkg:hover{transform:translateY(-3px);box-shadow:0 16px 40px rgba(0,0,0,.1);border-color:var(--gold)}
+.adv-pkg.feat{border-color:var(--gold);background:linear-gradient(160deg,rgba(201,162,39,.06),var(--bg) 60%)}
+.adv-pkg-tag{position:absolute;top:16px;right:18px;font-size:9px;letter-spacing:.14em;text-transform:uppercase;font-weight:800;color:var(--gold);font-family:'JetBrains Mono',monospace}
+.adv-pkg h3{font-family:'Fraunces',serif;font-size:21px;font-weight:900;letter-spacing:-.4px;color:var(--ink);margin-bottom:6px;padding-right:70px}
+.adv-pkg .who{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--green);font-weight:700;font-family:'JetBrains Mono',monospace;margin-bottom:12px}
+.adv-pkg p{font-size:13.5px;color:var(--ink);line-height:1.6;margin-bottom:14px}
+.adv-pkg ul{list-style:none;padding:0;margin:0}
+.adv-pkg li{font-size:13px;color:var(--muted);line-height:1.5;padding-left:20px;position:relative;margin-bottom:7px}
+.adv-pkg li::before{content:'✦';position:absolute;left:0;color:var(--gold);font-size:11px;top:1px}
+.adv-inv{display:grid;grid-template-columns:1fr;gap:0;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.adv-inv-row{display:grid;grid-template-columns:180px 1fr;gap:20px;padding:18px 22px;border-bottom:1px solid var(--border);align-items:baseline}
+.adv-inv-row:last-child{border-bottom:none}
+.adv-inv-row .slot{font-family:'Fraunces',serif;font-size:16px;font-weight:800;font-style:italic;color:var(--ink)}
+.adv-inv-row .desc{font-size:13px;color:var(--muted);line-height:1.55}
+.adv-trust{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:6px}
+.adv-trust .t{border-left:2px solid var(--gold);padding:2px 0 2px 16px}
+.adv-trust .t h4{font-family:'Fraunces',serif;font-size:16px;font-weight:800;color:var(--ink);margin-bottom:5px}
+.adv-trust .t p{font-size:12.5px;color:var(--muted);line-height:1.55}
+.adv-final{background:var(--ink);color:#F7F4EE;text-align:center;padding:54px 22px;margin-top:48px;border-radius:14px}
+.adv-final h2{font-family:'Fraunces',serif;font-size:32px;font-weight:900;letter-spacing:-.8px;margin-bottom:10px}
+.adv-final h2 em{color:var(--gold);font-style:italic}
+.adv-final p{font-size:14px;color:rgba(247,244,238,.72);max-width:500px;margin:0 auto 24px;line-height:1.6}
+@media (max-width:820px){.adv-reach{grid-template-columns:repeat(2,1fr)}.adv-pkgs{grid-template-columns:1fr}.adv-trust{grid-template-columns:1fr}.adv-inv-row{grid-template-columns:1fr;gap:4px}}
+
 /* FOOTER */
 .footer{background:var(--ink);color:#A09890;padding:38px 22px 18px;margin-top:0;border-top:1px solid #1A1A1A}
 .footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr;gap:32px;max-width:1100px;margin:0 auto 24px}
@@ -2136,6 +2195,7 @@ function renderCoverageMap(){
         '</svg>'+
       '</div>'+
     '</div>'+
+    '<div class="cmap-sponsor">Presented in partnership with — <a href="#/advertise">become the founding sponsor of Africa’s live map →</a></div>'+
   '</section>';
 }
 
@@ -2191,7 +2251,7 @@ function renderAdSlotBanner(){
       '<div class="ad-title">'+esc(t('ad_banner_title'))+'</div>'+
       '<div class="ad-sub">'+esc(t('ad_banner_sub'))+'</div>'+
     '</div>'+
-    '<a class="ad-cta" href="mailto:advertise@afripulsetimes.com?subject=Banner%20placement%20%E2%80%93%20AfriPulse%20Times">'+esc(t('ad_cta'))+'</a>'+
+    '<a class="ad-cta" href="#/advertise">'+esc(t('ad_cta'))+'</a>'+
   '</aside>';
 }
 
@@ -2201,8 +2261,23 @@ function renderAdSlotMini(){
     '<div class="ad-label">'+esc(t('ad_label'))+'</div>'+
     '<div class="ad-title">'+esc(t('ad_panel_title'))+'</div>'+
     '<div class="ad-sub">'+esc(t('ad_panel_sub'))+'</div>'+
-    '<a class="ad-cta" href="mailto:advertise@afripulsetimes.com?subject=Right-rail%20panel%20%E2%80%93%20AfriPulse%20Times">'+esc(t('ad_cta'))+'</a>'+
+    '<a class="ad-cta" href="#/advertise">'+esc(t('ad_cta'))+'</a>'+
   '</div>';
+}
+
+// Native in-read placement — the premium unit, woven into a story mid-body.
+// Restrained by design: one per article, only on longer reads. Funnels to the
+// media kit rather than a raw mailto so we can qualify and package the buyer.
+function renderAdSlotInArticle(){
+  return ''+
+  '<aside class="ad-native" role="complementary" aria-label="Sponsored placement">'+
+    '<span class="ad-native-label">Sponsored · Premium in-read</span>'+
+    '<div class="ad-native-body">'+
+      '<div class="ad-native-title">Your brand, in the flow of the story.</div>'+
+      '<div class="ad-native-sub">Reach decision-makers across 54 nations, in five languages, inside AfriPulse Times’ most-read coverage.</div>'+
+    '</div>'+
+    '<a class="ad-native-cta" href="#/advertise">Advertise with us →</a>'+
+  '</aside>';
 }
 
 function renderFooter(){
@@ -2223,6 +2298,7 @@ function renderFooter(){
         '<a href="#/admin">'+esc(t('cms'))+'</a>'+
         '<a href="#/admin/new">'+esc(t('new_article'))+'</a>'+
         '<a href="#/newsletter">'+esc(t('daily_briefing'))+'</a>'+
+        '<a href="#/advertise">Advertise</a>'+
       '</div>'+
     '</div>'+
     '<div class="footer-bot">'+
@@ -2676,6 +2752,106 @@ function viewLegal(kind){
     renderFooter();
 }
 
+// ── VIEW: ADVERTISE / MEDIA KIT ───────────────────────────────
+// The advertiser-facing product. The insight behind it: AfriPulse's scarcest,
+// highest-value inventory isn't a banner — it's the ability to sell a brand a
+// language, a region, or the coverage-map halo. English B2B copy (advertisers
+// read English); no new t() keys, so localization stays fully covered.
+function viewAdvertise(){
+  const pub=published();
+  const bureaux=new Set(JOURNALISTS.map(j=>j.bureau)).size;
+  const nations=(function(){ const s=new Set(); pub.forEach(function(a){ const hay=((a.tags||[]).join(' ')+' '+(a.dateline||'')).toLowerCase(); ALL_COUNTRIES.forEach(function(c){ if(hay.indexOf(c)>-1) s.add(c); }); }); return s.size; })();
+  const reach=[
+    {n:'54', l:'Nations in reach'},
+    {n:'5', l:'Languages (EN·FR·AR·SW·PT)'},
+    {n:String(bureaux), l:'Live bureaux'},
+    {n:'1.4B', l:'People across the continent'}
+  ];
+  let reachHTML='';
+  reach.forEach(function(r){ reachHTML+='<div class="cell"><div class="n">'+esc(r.n)+'</div><div class="l">'+esc(r.l)+'</div></div>'; });
+
+  const packages=[
+    {feat:true, tag:'Signature', name:'Continental Anchor', who:'For continent-wide brands & institutions',
+     desc:'Own AfriPulse for a day. Homepage roadblock, ticker presenting tag, and the first native in-read unit across every story — in all five languages.',
+     items:['Homepage hero roadblock','“Presented by” across the live ticker','First native in-read on every article','Full share-of-voice, one advertiser']},
+    {feat:false, tag:'Prestige', name:'Coverage-Map Sponsor', who:'For pan-African champions',
+     desc:'Put your name under Africa’s live pulse. The glowing coverage map is our strongest visual — sponsor it and your brand sits beside real-time journalism from Dakar to Nairobi.',
+     items:['Founding sponsor line on the coverage map','Brand halo beside live, on-the-ground reporting','Ideal for airlines, telcos, development banks']},
+    {feat:false, tag:'Targeted', name:'Language & Region', who:'For market-specific campaigns',
+     desc:'Buy a single language or region rather than the whole site. Reach Francophone West Africa, Lusophone Africa, Swahili East Africa, or the Arabic-reading north — precisely.',
+     items:['Sponsor one of five language editions','Or one region: West · East · North · South · Central','Native units + right-rail panels in that segment']},
+    {feat:false, tag:'Always-on', name:'Native In-Read', who:'For performance & awareness',
+     desc:'The premium unit woven into the middle of our most-read stories — restrained, brand-safe, and impossible to scroll past. Sold by share-of-voice, never cluttered.',
+     items:['One unit per article, mid-body','Rotates by vertical or runs continent-wide','Right-rail sponsored panels available']}
+  ];
+  let pkgHTML='';
+  packages.forEach(function(p){
+    let li=''; p.items.forEach(function(x){ li+='<li>'+esc(x)+'</li>'; });
+    pkgHTML+='<div class="adv-pkg'+(p.feat?' feat':'')+'">'+
+      '<span class="adv-pkg-tag">'+esc(p.tag)+'</span>'+
+      '<h3>'+esc(p.name)+'</h3>'+
+      '<div class="who">'+esc(p.who)+'</div>'+
+      '<p>'+esc(p.desc)+'</p>'+
+      '<ul>'+li+'</ul>'+
+    '</div>';
+  });
+
+  const inventory=[
+    {slot:'Homepage roadblock', desc:'Top-of-page banner on the highest-traffic screen — the first thing every reader sees.'},
+    {slot:'Native in-read', desc:'Woven into the body of a story after the opening. Reads as part of the flow; unmissable.'},
+    {slot:'Coverage-map sponsor', desc:'Your name beneath the glowing live map of Africa — the site’s signature brand moment.'},
+    {slot:'Ticker presenting tag', desc:'A “presented by” credit on the always-on live market & headlines ticker.'},
+    {slot:'Right-rail panel', desc:'Persistent sponsored panel alongside article and section pages.'},
+    {slot:'Newsletter placement', desc:'A single sponsor slot in the Daily Briefing that lands in every subscriber’s inbox.'}
+  ];
+  let invHTML='';
+  inventory.forEach(function(r){ invHTML+='<div class="adv-inv-row"><div class="slot">'+esc(r.slot)+'</div><div class="desc">'+esc(r.desc)+'</div></div>'; });
+
+  const trust=[
+    {h:'Brand-safe by default', p:'Curated, editor-reviewed journalism. No auto-generated feeds beside your logo, no toxic comment sections.'},
+    {h:'One voice, not clutter', p:'Placements are sold by share-of-voice. Restraint is the product — your message isn’t buried in a wall of ads.'},
+    {h:'First-party & measurable', p:'Our own audience data and view counter. You get honest, first-party reporting on delivery and reach.'}
+  ];
+  let trustHTML='';
+  trust.forEach(function(x){ trustHTML+='<div class="t"><h4>'+esc(x.h)+'</h4><p>'+esc(x.p)+'</p></div>'; });
+
+  const mailto='mailto:advertise@afripulsetimes.com?subject=Advertising%20%E2%80%93%20AfriPulse%20Times&body=Tell%20us%20about%20your%20brand%2C%20markets%2C%20and%20timing.';
+
+  return renderHeader(null)+renderTicker()+
+    '<section class="adv-hero">'+
+      '<div class="adv-hero-eyebrow">Advertise · Media kit 2026</div>'+
+      '<h1>Reach a continent, <em>in its own languages.</em></h1>'+
+      '<p>AfriPulse Times is real-time, pan-African journalism read across 54 nations in five languages. Put your brand beside coverage people trust — precisely, and at scale.</p>'+
+      '<div class="adv-hero-cta">'+
+        '<a class="adv-btn" href="'+mailto+'">Book a placement →</a>'+
+        '<a class="adv-btn ghost" href="#/">See the newsroom</a>'+
+      '</div>'+
+    '</section>'+
+    '<div class="adv-reach">'+reachHTML+'</div>'+
+    '<div class="adv-wrap">'+
+      '<div class="adv-section">'+
+        '<div class="adv-section-h">Signature packages</div>'+
+        '<div class="adv-section-p">Four ways to own AfriPulse — from a full-site takeover to a single language or region. Every package is exclusive and sold by share-of-voice, never crowded.</div>'+
+        '<div class="adv-pkgs">'+pkgHTML+'</div>'+
+      '</div>'+
+      '<div class="adv-section">'+
+        '<div class="adv-section-h">The inventory</div>'+
+        '<div class="adv-section-p">High-value placements, each designed to feel premium rather than intrusive.</div>'+
+        '<div class="adv-inv">'+invHTML+'</div>'+
+      '</div>'+
+      '<div class="adv-section">'+
+        '<div class="adv-section-h">Why brands trust the placement</div>'+
+        '<div class="adv-trust">'+trustHTML+'</div>'+
+      '</div>'+
+      '<div class="adv-final">'+
+        '<h2>Let’s put your brand <em>on the pulse.</em></h2>'+
+        '<p>Tell us your markets, languages, and timing — we’ll build a package around them, from a single region to the whole continent.</p>'+
+        '<a class="adv-btn" href="'+mailto+'">advertise@afripulsetimes.com →</a>'+
+      '</div>'+
+    '</div>'+
+    renderFooter();
+}
+
 function viewArticle(slug){
   const a=localizeArticle(getArticle(slug));   // reader page → translated when available
   if(!a) return view404();
@@ -2691,7 +2867,13 @@ function viewArticle(slug){
   if(!relHTML) relHTML='<div style="color:var(--muted);font-size:13px;font-style:italic">·</div>';
 
   let bodyHTML='';
-  for(const p of (a.body||[])) bodyHTML += '<p>'+esc(p)+'</p>';
+  const paras=(a.body||[]);
+  paras.forEach(function(p,i){
+    bodyHTML += '<p>'+esc(p)+'</p>';
+    // One tasteful native unit, after the 2nd paragraph, when there's a
+    // paragraph left to follow it (keeps it mid-body, never trailing).
+    if(i===1 && paras.length>=3) bodyHTML += renderAdSlotInArticle();
+  });
 
   let tagsHTML='';
   if(a.tags && a.tags.length){
@@ -3226,6 +3408,7 @@ function route(){
     else if(parts[0]==='newsletter') html=viewNewsletter();
     else if(parts[0]==='privacy') html=viewLegal('privacy');
     else if(parts[0]==='terms') html=viewLegal('terms');
+    else if(parts[0]==='advertise') html=viewAdvertise();
     else html=view404();
 
     app.innerHTML=html;

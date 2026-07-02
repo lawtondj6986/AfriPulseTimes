@@ -99,6 +99,35 @@ most-read. Auto-refreshes every 30s. Details in `INVESTOR_READINESS.md`.
 
 ---
 
+## 💼 Advertising & the media kit (`#/advertise`)
+
+A polished, advertiser-facing **media kit** at `#/advertise` (linked from the
+footer "Advertise" and from every ad slot). It sells the placements large
+brands actually want — not just banners:
+
+- **Signature packages:** Continental Anchor (full takeover), Coverage-Map
+  Sponsor (the prestige brand halo), Language & Region (sell one of the five
+  editions or one region), and Native In-Read (always-on).
+- **The insight:** AfriPulse's scarcest inventory is the ability to sell a brand
+  a *language* or a *region* and the coverage-map halo — that's what the page leads with.
+
+Where the placements live in the site:
+- **Native in-read unit** — woven into the middle of every article ≥3 paragraphs
+  (search `renderAdSlotInArticle`). Tasteful by design: one per story.
+- **Coverage-map sponsor line** — under the live map (search `cmap-sponsor`).
+- **Homepage banner / right-rail panel** — `renderAdSlotBanner` / `renderAdSlotMini`.
+
+**To edit packages, reach numbers, or copy:** all English B2B copy is in
+`viewAdvertise()` (search `function viewAdvertise`) — edit the `packages`,
+`inventory`, `reach`, and `trust` arrays. The reach stats (nations, bureaux) are
+computed live where possible. Styling is the `.adv-*` / `.ad-native` CSS. The
+booking button points to `advertise@afripulsetimes.com`.
+
+**Demo tip:** open a story to show the native unit reads as premium (not spammy),
+then click "Advertise" to reveal the media kit — proof there's a real revenue model.
+
+---
+
 ## Editing content in general
 
 - **Stories:** Admin → Articles (create / edit / publish / delete, upload images).
