@@ -163,6 +163,8 @@ html[dir="rtl"] .nav a.nav-journalists::before{margin-right:0;margin-left:6px}
 .com-name{color:#9A938B}
 .com-chg.up{color:#5BC97F}
 .com-chg.dn{color:#FF6B5C}
+.com-chg.flat{color:#8A837B}
+.com-live{color:#0E2818;font-weight:800;letter-spacing:.1em;margin-left:5px}
 
 /* HOME */
 .hero{padding:30px 22px 14px;background:var(--bg)}
@@ -968,6 +970,13 @@ const COMMODITY_PANEL = [
   {n:'Brent',v:'$81.30',c:'▼ 0.9%',d:'dn'}
 ];
 
+// Live African FX rates, fetched from /api/market-data (free, no key). Null until
+// loaded; when present, these lead the markets ticker ahead of the curated
+// commodities above. The site always renders instantly from the curated values,
+// then upgrades to live FX in the background — so a slow/absent feed never breaks.
+let MARKET_FX = null;
+let MARKET_UPDATED = null;
+
 const SEED = [
   {slug:'au-food-fund-addis',vertical:'front',kicker:'AU Emergency Summit · Addis Ababa',
    headline:'Heads of state pledge $2.4B continental food fund as drought grips Horn of Africa',
@@ -1583,6 +1592,51 @@ function renderHeader(activeVertical){
   '<nav class="nav">'+navHTML+'</nav>';
 }
 
+// ── MARKETS BAR (live African FX + curated commodities) ───────
+// Live FX pairs (when loaded) lead, followed by the curated commodities list.
+function marketBarItems(){
+  const fx = (MARKET_FX && MARKET_FX.length) ? MARKET_FX : [];
+  return fx.concat(COMMODITIES);
+}
+function buildComTrackHTML(){
+  let h='';
+  for(const c of marketBarItems()){
+    h += '<div class="com-item">'+
+      '<span class="com-name">'+esc(c.n)+'</span>'+
+      '<span>'+esc(c.v)+'</span>'+
+      '<span class="com-chg '+esc(c.d||'flat')+'">'+esc(c.c||'')+'</span>'+
+    '</div>';
+  }
+  return h;
+}
+// Fetch live FX in the background and update the ticker in place (no full
+// re-render, so the scrolling news ticker isn't disrupted). Silent on failure.
+async function refreshMarket(){
+  try{
+    const res=await fetch('/api/market-data',{headers:{'Accept':'application/json'}});
+    if(!res.ok) return;
+    const data=await res.json().catch(function(){return null;});
+    if(!data || !data.ok || !Array.isArray(data.fx) || !data.fx.length) return;
+    MARKET_FX=data.fx;
+    MARKET_UPDATED=data.updated||null;
+    updateMarketDom();
+  }catch(e){ /* keep curated fallback silently */ }
+}
+function updateMarketDom(){
+  const tracks=document.querySelectorAll('.com-track');
+  tracks.forEach(function(tr){ tr.innerHTML=buildComTrackHTML()+buildComTrackHTML(); });
+  // Mark the bar LIVE once, so investors see it's real-time.
+  if(MARKET_FX){
+    document.querySelectorAll('.com-bar .com-label').forEach(function(l){
+      if(!l.querySelector('.com-live')){
+        const s=document.createElement('span');
+        s.className='com-live'; s.textContent='· LIVE';
+        l.appendChild(s);
+      }
+    });
+  }
+}
+
 // ── TICKER + COMMODITIES (under verticals on reader views) ────
 function renderTicker(){
   const items = published().slice(0,12);
@@ -1604,28 +1658,17 @@ function renderTicker(){
   };
   tickerInner = buildTickerItems() + buildTickerItems();
 
-  // Build commodities (doubled)
-  let comInner='';
-  const buildCom = ()=>{
-    let h='';
-    for(const c of COMMODITIES){
-      h += '<div class="com-item">'+
-        '<span class="com-name">'+esc(c.n)+'</span>'+
-        '<span>'+esc(c.v)+'</span>'+
-        '<span class="com-chg '+c.d+'">'+esc(c.c)+'</span>'+
-      '</div>';
-    }
-    return h;
-  };
-  comInner = buildCom() + buildCom();
+  // Build markets bar (live FX + curated commodities, doubled for seamless scroll)
+  const comInner = buildComTrackHTML() + buildComTrackHTML();
+  const liveMark = MARKET_FX ? ' <span class="com-live">· LIVE</span>' : '';
 
   return ''+
   '<section class="ticker" aria-label="Live news ticker">'+
     '<div class="ticker-badge"><span class="d"></span>'+esc(t('live'))+'</div>'+
     '<div class="ticker-wrap"><div class="ticker-track">'+tickerInner+'</div></div>'+
   '</section>'+
-  '<aside class="com-bar" aria-label="Commodities">'+
-    '<div class="com-label">⛏ '+esc(t('commodities'))+'</div>'+
+  '<aside class="com-bar" aria-label="Markets and commodities">'+
+    '<div class="com-label">⛏ '+esc(t('commodities'))+liveMark+'</div>'+
     '<div class="com-wrap"><div class="com-track">'+comInner+'</div></div>'+
   '</aside>';
 }
@@ -3065,6 +3108,11 @@ function boot(){
   // first load if we've never synced or the cache is stale.
   updateSyncStatus();
   startAutoRefresh();
+
+  // Live African FX for the markets ticker: fetch shortly after first paint,
+  // then refresh periodically (rates are daily, so a light cadence is plenty).
+  setTimeout(function(){ refreshMarket(); },1500);
+  setInterval(function(){ if(!document.hidden) refreshMarket(); },15*60*1000);
   try{
     const raw=localStorage.getItem('afripulse_mvp_v2_synced');
     const stale=!raw || (Date.now()-parseInt(raw,10))>AUTO_REFRESH_MS;

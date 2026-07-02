@@ -50,7 +50,8 @@ privileges (RSS ingestion and newsletter signup).
 | `/api/pull-wire.js` | Vercel function | service-role key / CRON_SECRET | Fetch + parse RSS, dedupe, insert articles |
 | `/api/subscribe.js` | Vercel function | service-role key | Validate email, insert subscriber, push to Buttondown |
 | `/api/translate.js` | Vercel function | service-role key / CRON_SECRET | Translate published articles into FR + AR via Claude |
-| `/api/contact.js` | Vercel function | service-role key | Validate + insert investor/partner enquiries into `leads` |
+| `/api/contact.js` | Vercel function | service-role key | Validate + insert investor/partner enquiries into `leads`; email the team (Resend) |
+| `/api/market-data.js` | Vercel function | none (public data) | Fetch live African FX rates (free currency-api) for the markets ticker |
 | Supabase | Managed | — | Postgres, RLS, magic-link auth, Storage (`article-media` bucket) |
 | Vercel Cron | Vercel | CRON_SECRET | Daily: `/api/pull-wire` 06:00 UTC, `/api/translate` 06:30 UTC |
 | Buttondown | Managed | API key | Newsletter list / delivery |

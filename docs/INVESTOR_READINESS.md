@@ -50,6 +50,10 @@ overflow at a 390 px mobile viewport.
   tested; goes live once the API key is set (see §5).
 - **Server-side wire aggregation** (`/api/pull-wire`, daily cron) pulling from
   vetted African RSS sources into the same article store.
+- **Live African FX ticker** (`/api/market-data`): real, auto-refreshing USD
+  rates for NGN, KES, ZAR, EGP, GHS, MAD, XOF, ETB (free source, no key), with
+  day-over-day change. Leads the markets bar ahead of curated commodities, and
+  silently falls back to curated values if the feed is ever unavailable.
 - **Newsletter** capture to Supabase + Buttondown (`/api/subscribe`).
 - **Investor lead capture** to Supabase (`/api/contact` → `leads` table), with an
   optional **email notification to the team** on every new enquiry (via Resend) so
@@ -139,8 +143,8 @@ form fully live on stage.
 **The 60-second version:**
 
 1. **Land on the homepage.** "This is AfriPulse Times — one masthead for 54
-   African nations, updating in real time." Point at the live story count and the
-   verticals.
+   African nations, updating in real time." Point at the live story count, the
+   verticals, and the **live FX ticker** (real African currency rates, marked LIVE).
 2. **Click a vertical, then a story.** "Every story is a real record in our
    database, filed by bureau, tagged by country and topic."
 3. **Switch to Français, then العربية.** "The whole product is trilingual — and
