@@ -57,6 +57,18 @@ vercel dev
 `vercel dev` runs the front end **and** the `/api` functions. For a front-end-only
 preview without the API, use `npm run dev` (Vite, http://localhost:5173).
 
+## Tests
+
+```bash
+npm test          # fast, dependency-free unit tests (Node's built-in runner)
+```
+
+Covers the serverless functions (FX parsing, email notification, newsletter,
+RSS classification) and the SPA (inline JS parses; every translation key exists
+in EN/FR/AR). These run automatically in CI (`.github/workflows/ci.yml`) on every
+push and pull request. There's also an optional end-to-end browser audit — see
+[`tests/README.md`](tests/README.md).
+
 > The browser Supabase client (`public/supabase-config.js`) is **generated** from
 > `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` by `npm run gen:config`, which
 > runs automatically on `predev` / `prebuild`. Set those vars once; don't edit the
@@ -68,6 +80,10 @@ preview without the API, use `npm run dev` (Vite, http://localhost:5173).
 api/                     Vercel serverless functions
   pull-wire.js           RSS aggregator (cron + admin-triggered)
   subscribe.js           Newsletter signup (Supabase + Buttondown)
+  contact.js             Investor enquiry -> leads table + email (Resend)
+  translate.js           AI article translation to FR/AR (cron, Claude)
+  market-data.js         Live African FX rates for the ticker
+tests/                   Unit tests (npm test) + optional browser audit
 public/
   afripulse-preview.html The SPA (UI, router, store, admin, auth, newsletter)
   supabase-config.js     Browser Supabase client (GENERATED — do not edit)
