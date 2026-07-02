@@ -25,7 +25,7 @@ const RESEND_URL = process.env.RESEND_API_URL || 'https://api.resend.com/emails'
 const NOTIFY_TO = process.env.LEADS_NOTIFY_TO || '';
 const NOTIFY_FROM = process.env.LEADS_NOTIFY_FROM || 'AfriPulse Times <onboarding@resend.dev>';
 
-const LANGUAGES = ['en', 'fr', 'ar'];
+const LANGUAGES = ['en', 'fr', 'ar', 'sw', 'pt'];
 const INTERESTS = ['investor', 'advertiser', 'partner', 'other'];
 const INTEREST_LABEL = { investor:'Investor', advertiser:'Advertiser', partner:'Partner', other:'Other' };
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

@@ -36,7 +36,7 @@ test('every translation key resolves in EN, FR, and AR', () => {
   vm.runInContext(src + '\n; this.LANG = LANG;', ctx);
   LANG = ctx.LANG;
 
-  const langs = ['en', 'fr', 'ar'];
+  const langs = ['en', 'fr', 'ar', 'sw', 'pt'];
   for (const l of langs) assert.ok(LANG[l], `missing language block: ${l}`);
 
   const keyRe = /\bt\('([a-z0-9_]+)'\)/g;

@@ -15,7 +15,7 @@ const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const BUTTONDOWN_API_KEY = process.env.BUTTONDOWN_API_KEY;
 const BUTTONDOWN_URL = process.env.BUTTONDOWN_API_URL || 'https://api.buttondown.email/v1/subscribers';
 
-const LANGUAGES = ['en', 'fr', 'ar'];
+const LANGUAGES = ['en', 'fr', 'ar', 'sw', 'pt'];
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 // Record the subscriber in Supabase. Returns 'inserted' | 'duplicate' | throws.
