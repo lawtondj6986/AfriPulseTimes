@@ -578,9 +578,16 @@ html[dir="rtl"] .art-side{padding:8px 22px 0 0;border-left:none;border-right:0.5
 .nl-modal-btn:disabled{opacity:.6;cursor:default}
 .nl-modal-note{font-size:11px;color:var(--muted);margin-top:12px;display:flex;align-items:center;gap:6px}
 html[dir="rtl"] .nl-modal-x{right:auto;left:14px}
+.skip-link{position:absolute;left:-9999px;top:0;z-index:2000;background:var(--green);color:#fff;padding:11px 18px;font-size:13px;font-weight:600;text-decoration:none;border-radius:0 0 6px 0}
+.skip-link:focus{left:0}
 </style>
+<!-- Vercel Web Analytics (privacy-friendly). Enable it in Vercel → project →
+     Analytics; until then this 404s harmlessly. -->
+<script defer src="/_vercel/insights/script.js"></script>
 </head>
 <body>
+
+<a class="skip-link" id="skip-link" href="#main">Skip to content</a>
 
 <div class="devbar" role="navigation" aria-label="Site navigation">
   <span class="devbar-tag"><span class="live-dot" aria-hidden="true"></span>LIVE</span>
@@ -3218,6 +3225,14 @@ function boot(){
     const saved=localStorage.getItem('afripulse_lang');
     if(saved && LANG[saved]) applyLang(saved);
   }catch(e){}
+
+  // Skip-to-content (a11y): focus the main app region without touching the hash router.
+  const skip=document.getElementById('skip-link');
+  if(skip) skip.addEventListener('click',function(e){
+    e.preventDefault();
+    const app=document.getElementById('app');
+    if(app){ app.setAttribute('tabindex','-1'); app.focus(); app.scrollIntoView(); }
+  });
 
   const resetBtn=document.getElementById('btn-reset');
   if(resetBtn){

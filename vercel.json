@@ -7,5 +7,19 @@
   "crons": [
     { "path": "/api/pull-wire", "schedule": "0 6 * * *" },
     { "path": "/api/translate", "schedule": "30 6 * * *" }
+  ],
+  "headers": [
+    {
+      "source": "/(afripulse-preview.html|supabase-config.js)",
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }]
+    },
+    {
+      "source": "/",
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }]
+    },
+    {
+      "source": "/images/(.*)",
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=604800" }]
+    }
   ]
 }
