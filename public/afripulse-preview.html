@@ -580,6 +580,9 @@ html[dir="rtl"] .art-side{padding:8px 22px 0 0;border-left:none;border-right:0.5
 html[dir="rtl"] .nl-modal-x{right:auto;left:14px}
 .skip-link{position:absolute;left:-9999px;top:0;z-index:2000;background:var(--green);color:#fff;padding:11px 18px;font-size:13px;font-weight:600;text-decoration:none;border-radius:0 0 6px 0}
 .skip-link:focus{left:0}
+.read-progress{position:fixed;top:0;left:0;height:3px;width:0;background:linear-gradient(90deg,var(--green),var(--gold));z-index:2500;opacity:0;transition:opacity .2s}
+.read-progress.on{opacity:1}
+.investor-stat .num{font-variant-numeric:tabular-nums}
 </style>
 <!-- Vercel Web Analytics (privacy-friendly). Enable it in Vercel → project →
      Analytics; until then this 404s harmlessly. -->
@@ -588,6 +591,7 @@ html[dir="rtl"] .nl-modal-x{right:auto;left:14px}
 <body>
 
 <a class="skip-link" id="skip-link" href="#main">Skip to content</a>
+<div class="read-progress" id="read-progress" aria-hidden="true"></div>
 
 <div class="devbar" role="navigation" aria-label="Site navigation">
   <span class="devbar-tag"><span class="live-dot" aria-hidden="true"></span>LIVE</span>
@@ -1751,9 +1755,9 @@ function renderInvestorCTA(){
         '<h2 class="investor-h" id="invest-h">'+esc(t('invest_h1'))+'<em>'+esc(t('invest_h2'))+'</em></h2>'+
         '<p class="investor-lead">'+esc(t('invest_lead'))+'</p>'+
         '<div class="investor-stats">'+
-          '<div class="investor-stat"><div class="num">54</div><div class="label">'+esc(t('invest_stat1'))+'</div></div>'+
-          '<div class="investor-stat"><div class="num">'+bureauCount+'</div><div class="label">'+esc(t('invest_stat2'))+'</div></div>'+
-          '<div class="investor-stat"><div class="num">3</div><div class="label">'+esc(t('invest_stat3'))+'</div></div>'+
+          '<div class="investor-stat"><div class="num" data-count="54">54</div><div class="label">'+esc(t('invest_stat1'))+'</div></div>'+
+          '<div class="investor-stat"><div class="num" data-count="'+bureauCount+'">'+bureauCount+'</div><div class="label">'+esc(t('invest_stat2'))+'</div></div>'+
+          '<div class="investor-stat"><div class="num" data-count="3">3</div><div class="label">'+esc(t('invest_stat3'))+'</div></div>'+
         '</div>'+
         '<div class="investor-ctas">'+
           '<a class="investor-btn primary" href="mailto:invest@afripulsetimes.com?subject=Investor%20enquiry%20%E2%80%93%20AfriPulse%20Times">'+esc(t('invest_btn_invest'))+'</a>'+
@@ -2709,6 +2713,28 @@ function updateDevbarPath(){
 
 // ── EVENT BINDING (delegated) ─────────────────────────────────
 function bindView(){
+  // Animate the investor stat numbers up when they scroll into view (once each).
+  (function(){
+    const nums=document.querySelectorAll('.investor-stat .num[data-count]');
+    if(!nums.length || !('IntersectionObserver' in window)) return; // fallback: static numbers stay
+    const io=new IntersectionObserver(function(entries){
+      entries.forEach(function(en){
+        if(!en.isIntersecting) return;
+        const el=en.target; io.unobserve(el);
+        const target=parseInt(el.getAttribute('data-count'),10)||0;
+        if(target<=0){ el.textContent=String(target); return; }
+        const dur=1000; let start=null;
+        function step(ts){ if(start===null) start=ts;
+          const p=Math.min((ts-start)/dur,1);
+          el.textContent=String(Math.round(target*(1-Math.pow(1-p,3)))); // easeOutCubic
+          if(p<1) requestAnimationFrame(step); else el.textContent=String(target);
+        }
+        requestAnimationFrame(step);
+      });
+    },{threshold:0.4});
+    nums.forEach(function(n){ n.textContent='0'; io.observe(n); });
+  })();
+
   // Copy-link share button (article pages)
   document.querySelectorAll('[data-share-url]').forEach(function(btn){
     btn.addEventListener('click',function(){
@@ -3233,6 +3259,22 @@ function boot(){
     const app=document.getElementById('app');
     if(app){ app.setAttribute('tabindex','-1'); app.focus(); app.scrollIntoView(); }
   });
+
+  // Reading-progress bar — only on article pages.
+  const rp=document.getElementById('read-progress');
+  if(rp){
+    const updRp=function(){
+      const onArticle=(location.hash||'').indexOf('#/article/')===0;
+      if(!onArticle){ rp.classList.remove('on'); rp.style.width='0'; return; }
+      const max=document.documentElement.scrollHeight - window.innerHeight;
+      const p=max>0 ? Math.min(Math.max((window.scrollY||0)/max,0),1) : 0;
+      rp.classList.add('on'); rp.style.width=(p*100).toFixed(1)+'%';
+    };
+    window.addEventListener('scroll',updRp,{passive:true});
+    window.addEventListener('resize',updRp,{passive:true});
+    window.addEventListener('hashchange',function(){ setTimeout(updRp,0); });
+    updRp();
+  }
 
   const resetBtn=document.getElementById('btn-reset');
   if(resetBtn){
