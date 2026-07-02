@@ -102,6 +102,7 @@ vite.config.js           Vite config
 - [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) — deploy to Vercel + link Supabase
 - [`docs/ENV.md`](docs/ENV.md) — every environment variable, where it goes
 - [`docs/RUNBOOK.md`](docs/RUNBOOK.md) — operating the live site
+- [`docs/FEATURES.md`](docs/FEATURES.md) — how to use & edit the wow features (map, Listen, Translate…)
 - [`docs/QA_REPORT.md`](docs/QA_REPORT.md) — automated test-pass results + roadmap
 - [`LAUNCH_CHECKLIST.md`](LAUNCH_CHECKLIST.md) — go-live checklist
 

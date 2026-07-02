@@ -268,6 +268,10 @@ html[dir="rtl"] .art-body{padding:8px 0 24px 24px}
 .art-body p{font-size:15px;line-height:1.75;color:var(--ink);margin-bottom:14px}
 .art-source{margin-top:18px;padding:14px 16px;background:rgba(229,72,77,.08);border-left:3px solid #E5484D;font-size:13px;line-height:1.5}
 .art-source a{color:var(--accent);font-weight:500}
+.art-listen{display:inline-flex;align-items:center;gap:6px;background:var(--green);color:#fff;border:none;border-radius:999px;padding:8px 16px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;margin:2px 0 14px;transition:background .15s,transform .1s}
+.art-listen:hover{background:#17572f}
+.art-listen.on{background:var(--accent);animation:listenPulse 1.4s ease-in-out infinite}
+@keyframes listenPulse{0%,100%{box-shadow:0 0 0 0 rgba(200,64,26,.5)}50%{box-shadow:0 0 0 6px rgba(200,64,26,0)}}
 .art-share{display:flex;align-items:center;gap:8px;margin:2px 0 20px;padding-bottom:18px;border-bottom:1px solid var(--border)}
 .art-share-label{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-family:'JetBrains Mono',monospace;margin-right:2px}
 .art-share .sh{width:34px;height:34px;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--border);border-radius:50%;color:var(--ink);background:var(--card);cursor:pointer;transition:all .15s;padding:0}
@@ -498,6 +502,27 @@ html[dir="rtl"] .art-side{padding:8px 22px 0 0;border-left:none;border-right:0.5
 .nl-foot-b .pulse{color:var(--accent);font-style:italic}
 
 /* INVESTOR / FUNDER CTA */
+/* LIVE COVERAGE MAP */
+.cmap-section{background:radial-gradient(120% 120% at 50% 0%, #14402a 0%, #0c2419 55%, #091810 100%);padding:48px 22px 44px;color:#EFEAE0;position:relative;overflow:hidden}
+.cmap-inner{max-width:1040px;margin:0 auto;display:grid;grid-template-columns:1fr 340px;gap:36px;align-items:center}
+.cmap-eyebrow{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);font-weight:700;font-family:'JetBrains Mono',monospace;margin-bottom:12px}
+.cmap-h{font-family:'Fraunces',serif;font-size:38px;font-weight:900;letter-spacing:-1.2px;line-height:1.05;margin-bottom:12px;color:#fff}
+.cmap-p{font-size:14.5px;line-height:1.65;color:rgba(255,255,255,.82);max-width:400px;margin-bottom:22px}
+.cmap-stats{display:flex;gap:28px;flex-wrap:wrap}
+.cmap-stat .n{font-family:'Fraunces',serif;font-size:30px;font-weight:900;color:#fff;font-variant-numeric:tabular-nums;line-height:1}
+.cmap-stat .l{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.6);margin-top:5px}
+.cmap-map{position:relative}
+.cmap-svg{width:100%;height:auto;display:block;filter:drop-shadow(0 0 26px rgba(30,107,58,.45))}
+.cmap-silhouette{fill:rgba(201,162,39,.05);stroke:rgba(201,162,39,.28);stroke-width:.4;stroke-linejoin:round}
+.cmap-spoke{stroke:rgba(201,162,39,.16);stroke-width:.22}
+.cmap-node{fill:var(--gold)}
+.cmap-core{fill:#7BE3A0}
+.cmap-label{fill:rgba(255,255,255,.6);font-size:2.1px;font-family:'JetBrains Mono',monospace;letter-spacing:.02px}
+.cmap-glow{fill:rgba(123,227,160,.4);transform-box:fill-box;transform-origin:center;animation:cmapPulse 2.8s ease-out infinite}
+.cmap-core-glow{fill:rgba(123,227,160,.5)}
+@keyframes cmapPulse{0%{opacity:.7;transform:scale(.4)}70%{opacity:0;transform:scale(2.6)}100%{opacity:0;transform:scale(2.6)}}
+@media (prefers-reduced-motion: reduce){.cmap-glow{animation:none;opacity:.35}}
+@media (max-width:820px){.cmap-inner{grid-template-columns:1fr;gap:24px}.cmap-h{font-size:30px}.cmap-map{max-width:360px;margin:0 auto}}
 .investor-cta{background:var(--accent);color:#fff;padding:60px 22px 56px;position:relative;overflow:hidden;margin-top:24px}
 .investor-cta::before{content:'';position:absolute;top:-120px;right:-120px;width:420px;height:420px;border:1px solid rgba(255,255,255,.10);border-radius:50%;pointer-events:none}
 .investor-cta::after{content:'';position:absolute;top:-70px;right:-70px;width:300px;height:300px;border:1px solid rgba(255,255,255,.08);border-radius:50%;pointer-events:none}
@@ -2050,6 +2075,64 @@ function renderTicker(){
   '</aside>';
 }
 
+// ── LIVE COVERAGE MAP ("one pulse · 54 nations") ──────────────
+// Geographically-placed, glowing bureau nodes over a stylised Africa
+// silhouette. Pure inline SVG — no external map asset. Node counts are live
+// (matched by dateline). Edit COVERAGE_HUBS to add/move bureaux (see FEATURES.md).
+const COVERAGE_HUBS = [
+  {city:'Cairo', x:56, y:14}, {city:'Tunis', x:34, y:9}, {city:'Rabat', x:19, y:14},
+  {city:'Dakar', x:9, y:32}, {city:'Accra', x:25, y:49}, {city:'Lagos', x:31, y:47},
+  {city:'Abuja', x:34, y:42}, {city:'Kinshasa', x:41, y:57}, {city:'Addis Ababa', x:63, y:40},
+  {city:'Nairobi', x:60, y:52}, {city:'Dar es Salaam', x:61, y:60}, {city:'Luanda', x:37, y:63},
+  {city:'Harare', x:52, y:70}, {city:'Johannesburg', x:49, y:82}, {city:'Cape Town', x:43, y:93}
+];
+function renderCoverageMap(){
+  const pub=published();
+  const totalStories=pub.length;
+  const seen=new Set();
+  pub.forEach(function(a){ const hay=((a.tags||[]).join(' ')+' '+(a.dateline||'')).toLowerCase(); ALL_COUNTRIES.forEach(function(c){ if(hay.indexOf(c)>-1) seen.add(c); }); });
+  const nations=seen.size;
+  const cx=40, cy=54;
+  let spokes='', nodes='';
+  COVERAGE_HUBS.forEach(function(h,i){
+    const first=h.city.split(' ')[0].toLowerCase();
+    const cnt=pub.filter(function(a){ return (a.dateline||'').toLowerCase().indexOf(first)>-1; }).length;
+    const r=(1.5+Math.min(cnt,6)*0.35).toFixed(2);
+    const glowR=(Number(r)+1.5).toFixed(2);
+    const delay=(i*0.17).toFixed(2);
+    spokes+='<line class="cmap-spoke" x1="'+cx+'" y1="'+cy+'" x2="'+h.x+'" y2="'+h.y+'"/>';
+    nodes+='<g class="cmap-hub"><title>'+esc(h.city+' · '+cnt+' stor'+(cnt===1?'y':'ies'))+'</title>'+
+      '<circle class="cmap-glow" cx="'+h.x+'" cy="'+h.y+'" r="'+glowR+'" style="animation-delay:'+delay+'s"/>'+
+      '<circle class="cmap-node" cx="'+h.x+'" cy="'+h.y+'" r="'+r+'"/>'+
+      '<text class="cmap-label" x="'+(h.x+Number(r)+1)+'" y="'+(h.y+0.8)+'">'+esc(h.city)+'</text>'+
+    '</g>';
+  });
+  const africaPath='M18,12 L34,8 L46,12 L58,10 L60,20 L58,28 L64,30 L78,42 L66,44 L64,54 L62,66 L58,78 L52,92 L44,96 L36,86 L34,72 L36,60 L34,52 L34,48 L32,46 L26,48 L10,40 L6,34 L12,26 L16,20 Z';
+  return '<section class="cmap-section" aria-label="Live coverage across Africa">'+
+    '<div class="cmap-inner">'+
+      '<div class="cmap-copy">'+
+        '<div class="cmap-eyebrow">One pulse · 54 nations</div>'+
+        '<h2 class="cmap-h">Live across the continent.</h2>'+
+        '<p class="cmap-p">Every dot is a bureau on the ground — Dakar to Nairobi, Cairo to Cape Town — filing in real time into one pan-African newsroom.</p>'+
+        '<div class="cmap-stats">'+
+          '<div class="cmap-stat"><div class="n js-count" data-count="'+nations+'">'+nations+'</div><div class="l">Nations active</div></div>'+
+          '<div class="cmap-stat"><div class="n js-count" data-count="'+COVERAGE_HUBS.length+'">'+COVERAGE_HUBS.length+'</div><div class="l">Bureaux</div></div>'+
+          '<div class="cmap-stat"><div class="n js-count" data-count="'+totalStories+'">'+totalStories+'</div><div class="l">Stories live</div></div>'+
+        '</div>'+
+      '</div>'+
+      '<div class="cmap-map">'+
+        '<svg class="cmap-svg" viewBox="0 0 100 105" role="img" aria-label="Map of Africa with live news bureaux">'+
+          '<path class="cmap-silhouette" d="'+africaPath+'"/>'+
+          spokes+
+          '<circle class="cmap-glow cmap-core-glow" cx="'+cx+'" cy="'+cy+'" r="3.4"/>'+
+          '<circle class="cmap-core" cx="'+cx+'" cy="'+cy+'" r="1.9"/>'+
+          nodes+
+        '</svg>'+
+      '</div>'+
+    '</div>'+
+  '</section>';
+}
+
 function renderInvestorCTA(){
   const bureauCount = new Set(JOURNALISTS.map(j=>j.bureau)).size;
   return ''+
@@ -2283,7 +2366,7 @@ function viewHome(){
     '</aside>'+
   '</div>';
 
-  html += renderInvestorCTA() + renderFooter();
+  html += renderCoverageMap() + renderInvestorCTA() + renderFooter();
   return html;
 }
 
@@ -2479,6 +2562,46 @@ function viewJournalist(slug){
 }
 
 // ── VIEW: ARTICLE ─────────────────────────────────────────────
+// ── LISTEN (text-to-speech) ───────────────────────────────────
+// Reads the article aloud in the current language using the browser's built-in
+// speech synthesis (free, offline, no backend). Voice availability varies by
+// device; we set the language and let the browser pick the best match.
+let TTS_STATE = { speaking:false, slug:null };
+function ttsLangCode(){ return ({en:'en-GB',fr:'fr-FR',ar:'ar-SA',sw:'sw-KE',pt:'pt-PT'})[CURRENT_LANG] || 'en-GB'; }
+function listenLabel(kind){
+  const m={ en:{play:'Listen',stop:'Stop'}, fr:{play:'Écouter',stop:'Arrêter'},
+            ar:{play:'استماع',stop:'إيقاف'}, sw:{play:'Sikiliza',stop:'Simamisha'},
+            pt:{play:'Ouvir',stop:'Parar'} };
+  return (m[CURRENT_LANG]||m.en)[kind];
+}
+function updateListenBtns(){
+  document.querySelectorAll('[data-listen-slug]').forEach(function(b){
+    const on = TTS_STATE.speaking && TTS_STATE.slug===b.getAttribute('data-listen-slug');
+    b.innerHTML = (on?'⏹ ':'🔊 ')+esc(listenLabel(on?'stop':'play'));
+    b.classList.toggle('on', on);
+  });
+}
+function stopTTS(){
+  try{ if(window.speechSynthesis) window.speechSynthesis.cancel(); }catch(e){}
+  TTS_STATE.speaking=false; updateListenBtns();
+}
+function toggleListen(slug){
+  if(!('speechSynthesis' in window)){ toast('Listening isn’t supported on this browser.'); return; }
+  if(TTS_STATE.speaking && TTS_STATE.slug===slug){ stopTTS(); return; }
+  stopTTS();
+  const a=localizeArticle(getArticle(slug));
+  if(!a) return;
+  const text=[a.headline, a.standfirst].concat(a.body||[]).filter(Boolean).join('. ');
+  try{
+    const u=new SpeechSynthesisUtterance(text);
+    u.lang=ttsLangCode(); u.rate=1; u.pitch=1;
+    u.onend=function(){ TTS_STATE.speaking=false; updateListenBtns(); };
+    u.onerror=function(){ TTS_STATE.speaking=false; updateListenBtns(); };
+    TTS_STATE.speaking=true; TTS_STATE.slug=slug; updateListenBtns();
+    window.speechSynthesis.speak(u);
+  }catch(e){ TTS_STATE.speaking=false; updateListenBtns(); toast('Could not start audio.'); }
+}
+
 // Social share row for an article. Uses the full hash URL so the link resolves
 // straight to the story. Copy-link is wired in bindView().
 function shareRow(a){
@@ -2583,6 +2706,7 @@ function viewArticle(slug){
             return '<span class="by">By '+bylineEl+'</span>';
           })()+' · '+esc(a.dateline)+' · '+esc(timeAgo(a.publishedAt))+' · '+esc(a.readingMin||4)+' min read'+
         '</div>'+
+        '<button class="art-listen" type="button" data-listen-slug="'+esc(a.slug)+'">🔊 '+esc(listenLabel('play'))+'</button>'+
         shareRow(a)+
         '<p class="art-lead">'+esc(a.standfirst)+'</p>'+
         bodyHTML+
@@ -3139,7 +3263,13 @@ function bindView(){
   (function(){
     const h=location.hash||'';
     if(h.indexOf('#/article/')===0){ try{ recordView(decodeURIComponent(h.slice('#/article/'.length))); }catch(e){} }
+    else if(TTS_STATE.speaking){ stopTTS(); }   // stop reading when leaving an article
   })();
+
+  // Listen (text-to-speech)
+  document.querySelectorAll('[data-listen-slug]').forEach(function(b){
+    b.addEventListener('click',function(){ toggleListen(b.getAttribute('data-listen-slug')); });
+  });
 
   // Traction dashboard: refresh button + auto-refresh every 30s while on the page.
   if(METRICS_TIMER){ clearInterval(METRICS_TIMER); METRICS_TIMER=null; }
