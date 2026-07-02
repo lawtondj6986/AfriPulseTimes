@@ -22,9 +22,14 @@ Do these in order, then **don't touch the site again** until you present.
 5. **Submit one test enquiry** through the investor form (use your own email) so
    you know the form + email alert are working, and so you have a row to show in
    the **Enquiries** tab.
-6. **Set language back to EN**, scroll to the top, and leave the **home page**
+6. **Open your Traction dashboard** → admin → **Dashboard** tab (or `#/admin/metrics`).
+   Confirm the numbers load. Leave it open in its own tab so you can flip to it
+   instantly. _(One-time: for the **Pageviews** tile to fill, run
+   `supabase/migrations/20260703120000_article_views.sql` in Supabase → SQL Editor.
+   Everything else on the dashboard works without it.)_
+7. **Set language back to EN**, scroll to the top, and leave the **home page**
    loaded in a tab, ready to go.
-7. **Start your backup screen recording** (see below) if you haven't already.
+8. **Start your backup screen recording** (see below) if you haven't already.
 
 > ⚠️ **Do NOT click "⟲ Reset"** in the top bar during the demo — it wipes the site
 > back to seed data. It's a maintenance tool, not a demo control.
@@ -48,10 +53,16 @@ Keep it to ~2 minutes. Narrate the *story*, not the features.
 5. **Scroll to the Series Seed section → submit the enquiry form.** _"And this is
    live — your interest just landed in our database, and pinged our inbox."_
    (Optional flourish: open **admin → Enquiries** and show the row appear.)
+6. **Flip to the Traction dashboard** (admin → **Dashboard**). _"And this is our
+   newsroom command center — every number here is live from production: stories
+   published, nations covered, subscribers, enquiries, page views, our wire
+   sources, translation coverage."_ Let the KPIs count up; point at the live pulse.
+   **This is your "we can operate and measure this" moment — investors love a real
+   dashboard.**
 
-**Close:** _"A production newsroom — trilingual, AI-assisted, real-time — running
-on infrastructure that costs us cents a day and scales to the whole continent.
-We're raising our Series Seed to turn this into the continent's newsroom."_
+**Close:** _"A production newsroom — trilingual, AI-assisted, real-time, measured —
+running on infrastructure that costs us cents a day and scales to the whole
+continent. We're raising our Series Seed to turn this into the continent's newsroom."_
 
 ### If you have 3–4 minutes, add:
 - **Admin desk:** publish a story live and watch it appear on the site.
