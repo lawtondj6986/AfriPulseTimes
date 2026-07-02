@@ -1480,8 +1480,11 @@ function renderArticleMedia(a){
   const credit = hasImage ? (m.credit||'') : '';
   const wm = '<span class="ph-wm">AfriPulse<em>Times</em></span>';
   if(!hasImage){
+    // No source photo → show a topical fallback photo; if even that fails to
+    // load, reveal the branded placeholder (never a broken-image icon).
     return '<figure class="art-media">'+
-      '<div class="placeholder" data-emoji="'+esc(a.emoji||'📰')+'" style="display:flex;background:'+esc(a.color||'#0e2818')+'">'+wm+'</div>'+
+      '<img src="'+esc(defaultImageFor(a))+'" alt="'+esc(a.headline)+'" loading="lazy" onerror="this.style.display=&quot;none&quot;;this.parentElement.querySelector(&quot;.placeholder&quot;).style.display=&quot;flex&quot;">'+
+      '<div class="placeholder" data-emoji="'+esc(a.emoji||'📰')+'" style="display:none;background:'+esc(a.color||'#0e2818')+'">'+wm+'</div>'+
       (caption ? '<figcaption class="art-media-caption"><span>'+esc(caption)+'</span></figcaption>' : '')+
     '</figure>';
   }
@@ -1492,13 +1495,35 @@ function renderArticleMedia(a){
       ((caption||credit) ? '<figcaption class="art-media-caption"><span>'+esc(caption)+'</span>'+(credit?'<span class="credit">'+esc(credit)+'</span>':'')+'</figcaption>' : '')+
     '</figure>';
 }
-// A cover photo for a card: the article's own image when it has one, else '' so
-// the branded colour/emoji tile shows through. If the source URL is dead the
-// <img> removes itself on error, revealing the tile — no broken-image icon.
-function thumbImg(a){
+// Topical stock photo, by vertical, for articles that arrive without a source
+// image (hand-authored demo content, or feeds that ship no media). Deterministic
+// per article (stable image, not random-on-reload), https, and if the service is
+// ever unreachable the <img> errors out and the branded tile shows instead.
+const VERT_KEYWORDS = {
+  front:'africa,city', politics:'government,parliament', mining:'mining,industry',
+  markets:'business,finance', tech:'technology,innovation', culture:'music,art',
+  sports:'stadium,sport', opinions:'newspaper,writing', podcasts:'microphone,studio'
+};
+function slugHash(s){ let h=0; s=s||''; for(let i=0;i<s.length;i++){ h=(h*31+s.charCodeAt(i))>>>0; } return h; }
+function defaultImageFor(a){
+  const kw = (a && VERT_KEYWORDS[a.vertical]) || VERT_KEYWORDS.front;
+  const lock = (slugHash(a && a.slug) % 90) + 1;   // stable, distinct per article
+  return 'https://loremflickr.com/1200/800/' + encodeURIComponent(kw) + '?lock=' + lock;
+}
+// The best photo URL for an article: its own image, else a topical fallback.
+// (Video articles have no still, so cards fall back to the branded tile.)
+function articleImage(a){
   const m = a && a.media;
-  if(m && m.type==='image' && m.src) return '<img class="thumb-img" src="'+esc(m.src)+'" alt="" loading="lazy" onerror="this.remove()">';
-  return '';
+  if(m && m.type==='image' && m.src) return m.src;
+  if(m && m.type==='video') return null;
+  return defaultImageFor(a);
+}
+// A cover photo for a card. On load error the <img> removes itself, revealing the
+// branded colour/emoji tile — so a dead URL never leaves a broken-image icon.
+function thumbImg(a){
+  const src = articleImage(a);
+  if(!src) return '';
+  return '<img class="thumb-img" src="'+esc(src)+'" alt="" loading="lazy" onerror="this.remove()">';
 }
 function published(){ return ARTICLES.filter(a=>a.status==='published').sort((a,b)=>new Date(b.publishedAt)-new Date(a.publishedAt)).map(localizeArticle); }
 function byVertical(v){ return published().filter(a=>a.vertical===v); }
@@ -1804,7 +1829,7 @@ function viewHome(){
   html += '<section class="hero">'+
     '<div class="hero-grid">'+
       '<a class="hero-main" href="#/article/'+esc(hero.slug)+'">'+
-        '<div class="hero-img" data-emoji="" style="background:linear-gradient(to top, rgba(0,0,0,.55), rgba(0,0,0,0) 55%), url(\''+esc((hero.media&&hero.media.type==='image'&&hero.media.src)?hero.media.src:'/images/ai-rss-agents.jpg')+'\') center/cover no-repeat, '+esc(hero.color||'#0e2818')+'">'+
+        '<div class="hero-img" data-emoji="" style="background:linear-gradient(to top, rgba(0,0,0,.55), rgba(0,0,0,0) 55%), url(\''+esc(articleImage(hero)||'/images/ai-rss-agents.jpg')+'\') center/cover no-repeat, '+esc(hero.color||'#0e2818')+'">'+
           '<span class="hero-cat">'+esc(vlabel(hero.vertical))+'</span>'+
         '</div>'+
         '<div class="hero-body">'+
