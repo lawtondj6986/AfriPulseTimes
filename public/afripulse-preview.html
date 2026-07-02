@@ -2656,7 +2656,10 @@ function adminWelcome(){
   const wireCount=ARTICLES.filter(a=>a.source==='rss').length;
   const draftCount=ARTICLES.filter(a=>a.status!=='published').length;
   return ''+
-  '<div class="adm-bar"><span class="adm-crumb">Articles</span><div class="adm-actions"><a class="adm-btn primary" href="#/admin/new">'+esc(t('new_article'))+'</a></div></div>'+
+  '<div class="adm-bar"><span class="adm-crumb">Articles</span><div class="adm-actions">'+
+    '<button class="adm-btn" id="adm-translate-btn" type="button" title="Translate published articles into French, Arabic, Swahili and Portuguese">✦ Translate</button>'+
+    '<a class="adm-btn primary" href="#/admin/new">'+esc(t('new_article'))+'</a>'+
+  '</div></div>'+
   '<div class="adm-welcome">'+
     '<h2>'+esc(t('newsroom_dashboard'))+'</h2>'+
     '<p>'+esc(t('pick_story'))+'</p>'+
@@ -3372,6 +3375,8 @@ function bindView(){
   if(saveBtn) saveBtn.addEventListener('click',saveArticle);
   const delBtn=document.getElementById('delete-btn');
   if(delBtn) delBtn.addEventListener('click',deleteArticle);
+  const translateBtn=document.getElementById('adm-translate-btn');
+  if(translateBtn) translateBtn.addEventListener('click',runTranslate);
 
   // Auth: sign out + magic-link login form
   const signoutBtn=document.getElementById('signout-btn');
@@ -3617,6 +3622,36 @@ async function pullLiveWire(opts){
   const h=location.hash||'#/';
   if(h==='#/'||h==='#'||h===''||h.indexOf('#/v/')===0||h.indexOf('#/newsletter')===0){ route(); }
   return inserted;
+}
+
+// Admin: trigger /api/translate (batch translate published articles into
+// FR · AR · SW · PT via Claude), then refresh so the translations appear.
+async function runTranslate(){
+  const btn=document.getElementById('adm-translate-btn');
+  if(!isAuthed() || !SESSION || !SESSION.access_token){ toast('Sign in to run translations.'); return; }
+  if(btn){ btn.disabled=true; btn.textContent='Translating…'; }
+  let result=null, status=0;
+  try{
+    const res=await fetch('/api/translate',{ method:'POST', headers:{ 'Authorization':'Bearer '+SESSION.access_token } });
+    status=res.status;
+    result=await res.json().catch(function(){ return null; });
+    if(!res.ok || !result || !result.ok){
+      toast('Translation failed · '+((result && result.error) ? result.error : ('HTTP '+status)));
+      if(btn){ btn.disabled=false; btn.textContent='✦ Translate'; }
+      return;
+    }
+  }catch(e){
+    toast('Translation endpoint unavailable.');
+    if(btn){ btn.disabled=false; btn.textContent='✦ Translate'; }
+    return;
+  }
+  // Reload so freshly translated articles show immediately.
+  const remote=await loadStore();
+  if(remote){ ARTICLES=remote; saveCache(ARTICLES); }
+  if(btn){ btn.disabled=false; btn.textContent='✦ Translate'; }
+  const n=result.translated||0;
+  toast(n>0 ? ('Translated '+n+' article'+(n===1?'':'s')+' into FR · AR · SW · PT.') : 'All published articles are already translated.');
+  route();
 }
 
 function updateSyncStatus(){
