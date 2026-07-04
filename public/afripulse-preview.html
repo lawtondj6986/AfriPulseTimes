@@ -1661,20 +1661,51 @@ const REGIONS = {
   'central-africa': {label:'Central Africa',  flag:'🌍', countries:['DRC','Democratic Republic of Congo','Cameroon','Chad','CAR','Central African Republic','Republic of Congo','Gabon','Equatorial Guinea','Central Africa'], capitals:['Kinshasa','Yaoundé','N\'Djamena','Bangui']}
 };
 
+// Common wire phrasings that aren't the canonical country name in REGIONS.
+const REGION_ALIASES = {
+  'west-africa':    ['ivory coast','the gambia','gambia','cape verde','cabo verde','guinea-bissau','ecowas'],
+  'east-africa':    ['zanzibar','east african community'],
+  'southern-africa':['swaziland','mauritius','madagascar','sadc'],
+  'north-africa':   ['western sahara','maghreb'],
+  'central-africa': ['congo','dr congo','sao tome','são tomé']
+};
+// Geo-matching reads the story's actual TEXT (headline + lead + body + tags), not
+// just a dateline field — wire stories carry no dateline/country tags, so region
+// placement has to be inferred from content. Word-boundary matching avoids false
+// hits (e.g. "Mali" inside "normalisation", "Niger" inside "Nigeria").
+function articleGeoText(a){
+  if(a && a._geo != null) return a._geo;
+  const parts = [a.headline||'', a.standfirst||a.dek||'', a.kicker||'', a.dateline||''];
+  if(Array.isArray(a.tags)) parts.push(a.tags.join(' '));
+  if(Array.isArray(a.body)) parts.push(a.body.join(' ')); else if(typeof a.body==='string') parts.push(a.body);
+  const v = parts.join(' · ').toLowerCase();
+  try{ Object.defineProperty(a,'_geo',{value:v,enumerable:false,configurable:true}); }catch(e){ a._geo=v; }
+  return v;
+}
+const _termRe = {};
+function termRe(term){
+  const t = String(term||'').toLowerCase();
+  if(!_termRe[t]) _termRe[t] = new RegExp('(^|[^a-z])'+t.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'([^a-z]|$)','i');
+  return _termRe[t];
+}
+// True if `term` appears in `text` as a whole word (text already lowercased).
+function textHasTerm(text, term){ if(!term) return false; return termRe(term).test(text); }
+const _regionRe = {};
+function regionGeoRe(slug){
+  if(_regionRe[slug]) return _regionRe[slug];
+  const r = REGIONS[slug] || {};
+  const terms = [];
+  (r.countries||[]).forEach(function(c){ if(c && c!==r.label) terms.push(String(c).toLowerCase()); });
+  (r.capitals||[]).forEach(function(c){ terms.push(String(c).toLowerCase()); });
+  (REGION_ALIASES[slug]||[]).forEach(function(c){ terms.push(String(c).toLowerCase()); });
+  const esc = terms.map(function(t){ return t.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'); });
+  _regionRe[slug] = new RegExp('(^|[^a-z])('+esc.join('|')+')([^a-z]|$)','i');
+  return _regionRe[slug];
+}
 function articleMatchesRegion(article, regionSlug){
-  const r=REGIONS[regionSlug];
-  if(!r) return false;
-  const tags=(article.tags||[]).map(s=>String(s).toLowerCase());
-  const dl=String(article.dateline||'').toLowerCase();
-  for(const c of r.countries){
-    const cl=c.toLowerCase();
-    if(tags.indexOf(cl)>-1) return true;
-    if(dl===cl || dl.indexOf(cl)>-1) return true;
-  }
-  for(const cap of (r.capitals||[])){
-    if(dl.indexOf(cap.toLowerCase())>-1) return true;
-  }
-  return false;
+  if(!REGIONS[regionSlug]) return false;
+  if(article.region===regionSlug) return true;       // explicit tag wins (set at ingestion)
+  return regionGeoRe(regionSlug).test(articleGeoText(article));
 }
 function byRegion(slug){
   return published().filter(a=>articleMatchesRegion(a,slug));
@@ -1973,12 +2004,16 @@ function localizeArticle(a){
   if(!a || CURRENT_LANG==='en') return a;
   const t = a.translations && a.translations[CURRENT_LANG];
   if(!t) return a;
-  return Object.assign({}, a, {
+  const copy = Object.assign({}, a, {
     headline: t.headline || a.headline,
     standfirst: t.standfirst || a.standfirst,
     kicker: t.kicker || a.kicker,
     body: (Array.isArray(t.body) && t.body.length) ? t.body : a.body
   });
+  // Keep region/map matching language-stable: reuse the English geo text so a
+  // translated story is still placed by its (English) country/city names.
+  try{ Object.defineProperty(copy,'_geo',{value:articleGeoText(a),enumerable:false,configurable:true}); }catch(e){ copy._geo=articleGeoText(a); }
+  return copy;
 }
 
 // --- async store: reads/writes Supabase ---
@@ -2085,6 +2120,18 @@ const ALL_COUNTRIES=(function(){
   try{ for(const k in REGIONS){ (REGIONS[k].countries||[]).forEach(function(c){ if(c && c!==REGIONS[k].label) s.add(String(c).toLowerCase()); }); } }catch(e){}
   return s;
 })();
+// Distinct nations with live coverage: credited when a country name OR one of its
+// bureau cities is named in the story text (a wire story datelined a capital still
+// counts its country). Word-boundary matching via textHasTerm.
+function activeNationSet(pub){
+  const s=new Set();
+  (pub||[]).forEach(function(a){
+    const txt=articleGeoText(a);
+    ALL_COUNTRIES.forEach(function(c){ if(textHasTerm(txt,c)) s.add(c); });
+    try{ COVERAGE_HUBS.forEach(function(h){ if(h.country && textHasTerm(txt,h.city)) s.add(String(h.country).toLowerCase()); }); }catch(e){}
+  });
+  return s;
+}
 
 // Metrics derived purely from the loaded ARTICLES (no network).
 function metricsFromArticles(){
@@ -2101,11 +2148,7 @@ function metricsFromArticles(){
   const vert=[]; for(const vk of VERTICAL_KEYS){ vert.push({ key:vk, label:vlabel(vk), count:pub.filter(function(a){return a.vertical===vk;}).length }); }
   const regions=[]; for(const rk of REGION_KEYS){ regions.push({ key:rk, label:rlabel(rk), count:byRegion(rk).length }); }
 
-  const seen=new Set();
-  pub.forEach(function(a){
-    const hay=((a.tags||[]).join(' ')+' '+(a.dateline||'')).toLowerCase();
-    ALL_COUNTRIES.forEach(function(c){ if(hay.indexOf(c)>-1) seen.add(c); });
-  });
+  const seen=activeNationSet(pub);
 
   const translated=pub.filter(function(a){ return a.translations && (a.translations.fr||a.translations.ar); }).length;
 
@@ -2706,29 +2749,23 @@ function mapVertOK(a){ return !MAP_VERTICAL || a.vertical===MAP_VERTICAL; }
 // vertical filter). Drives node size + the count badge, so each pin reads its own heat.
 function hubLocalCount(hub){
   if(!hub) return 0;
-  const city=hub.city.split(' ')[0].toLowerCase();
-  const country=(hub.country||'').toLowerCase();
   return published().filter(function(a){
     if(!mapVertOK(a)) return false;
-    const dl=(a.dateline||'').toLowerCase();
-    const tags=(a.tags||[]).map(function(s){ return String(s).toLowerCase(); });
-    return (city && dl.indexOf(city)>-1) || (country && (tags.indexOf(country)>-1 || dl.indexOf(country)>-1));
+    const txt=articleGeoText(a);
+    return textHasTerm(txt, hub.city) || (hub.country && textHasTerm(txt, hub.country));
   }).length;
 }
 // Panel stories = the hub's REGION (canonical matcher, no cross-continent leak),
 // honouring the vertical filter, city/country floated to the top, most recent, top 10.
 function articlesForHub(hub){
   if(!hub) return [];
-  const city=hub.city.split(' ')[0].toLowerCase();
-  const country=(hub.country||'').toLowerCase();
   return published()
     .filter(function(a){ return mapVertOK(a) && articleMatchesRegion(a, hub.region); })
     .map(function(a){
-      const dl=(a.dateline||'').toLowerCase();
-      const tags=(a.tags||[]).map(function(s){ return String(s).toLowerCase(); });
+      const txt=articleGeoText(a);
       let score=0;
-      if(city && dl.indexOf(city)>-1) score+=3;
-      if(country && (tags.indexOf(country)>-1 || dl.indexOf(country)>-1)) score+=2;
+      if(textHasTerm(txt, hub.city)) score+=3;
+      if(hub.country && textHasTerm(txt, hub.country)) score+=2;
       return { a:a, score:score };
     })
     .sort(function(x,y){ return y.score-x.score || (new Date(y.a.publishedAt)-new Date(x.a.publishedAt)); })
@@ -2743,9 +2780,7 @@ function hottestHub(){
 function renderCoverageMap(){
   const pub=published();
   const totalStories=pub.length;
-  const seen=new Set();
-  pub.forEach(function(a){ const hay=((a.tags||[]).join(' ')+' '+(a.dateline||'')).toLowerCase(); ALL_COUNTRIES.forEach(function(c){ if(hay.indexOf(c)>-1) seen.add(c); }); });
-  const nations=seen.size;
+  const nations=activeNationSet(pub).size;
   const cx=42, cy=56;
   const hot=hottestHub();
   let spokes='', nodes='', pulses='';
@@ -3492,7 +3527,7 @@ function viewLegal(kind){
 function viewAdvertise(){
   const pub=published();
   const bureaux=new Set(JOURNALISTS.map(j=>j.bureau)).size;
-  const nations=(function(){ const s=new Set(); pub.forEach(function(a){ const hay=((a.tags||[]).join(' ')+' '+(a.dateline||'')).toLowerCase(); ALL_COUNTRIES.forEach(function(c){ if(hay.indexOf(c)>-1) s.add(c); }); }); return s.size; })();
+  const nations=activeNationSet(pub).size;
   const reach=[
     {n:'54', l:'Nations in reach'},
     {n:'5', l:'Languages (EN·FR·AR·SW·PT)'},

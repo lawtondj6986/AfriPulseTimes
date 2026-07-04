@@ -1,7 +1,7 @@
 // Tests for /api/pull-wire vertical classification.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { guessVertical, extractImage, decodeEntities, stripBoilerplate, htmlToParagraphs, smartTrim, cleanTitle, buildRows } from '../api/pull-wire.js';
+import { guessVertical, guessGeo, extractImage, decodeEntities, stripBoilerplate, htmlToParagraphs, smartTrim, cleanTitle, buildRows } from '../api/pull-wire.js';
 
 test('guessVertical routes headlines to the right vertical', () => {
   const cases = [
@@ -21,6 +21,44 @@ test('guessVertical always returns a non-empty string', () => {
   const v = guessVertical('Some entirely unclassifiable string 12345', '');
   assert.equal(typeof v, 'string');
   assert.ok(v.length > 0);
+});
+
+test('guessGeo infers region + country, with a capital dateline when named', () => {
+  assert.deepEqual(guessGeo('Lagos traders react to the new tariff'),
+    { region:'west-africa', country:'Nigeria', city:'Lagos' });
+  assert.deepEqual(guessGeo('Nairobi startup scene heats up'),
+    { region:'east-africa', country:'Kenya', city:'Nairobi' });
+  // Country named but no capital → region + country, no city dateline.
+  const g = guessGeo('Zambia copper output climbs this quarter');
+  assert.equal(g.region, 'southern-africa'); assert.equal(g.country, 'Zambia'); assert.equal(g.city, null);
+  // Multi-word capital.
+  assert.equal(guessGeo('Cape Town water crisis eases').city, 'Cape Town');
+  assert.equal(guessGeo('Addis Ababa hosts the AU summit').region, 'east-africa');
+});
+
+test('guessGeo uses word boundaries — no false hits inside longer words', () => {
+  assert.equal(guessGeo('Global normalisation of trade policy'), null);   // "mali" inside "normalisation"
+  assert.equal(guessGeo('A story about nothing geographic at all'), null);
+  // "Niger" must not be matched by "Nigeria".
+  assert.equal(guessGeo('Nigeria budget passes').country, 'Nigeria');
+});
+
+test('buildRows geo-tags wire stories: dateline, country tag, and region', () => {
+  const items = [{ title: 'Kinshasa cobalt exporters face new rules', link: 'https://x/1',
+    contentSnippet: 'Miners in the DRC capital weigh the impact.' }];
+  const rows = buildRows(items, { label: 'Wire Co' }, new Set());
+  assert.equal(rows.length, 1);
+  assert.equal(rows[0].region, 'central-africa');
+  assert.equal(rows[0].payload.dateline, 'Kinshasa');
+  assert.ok(rows[0].payload.tags.includes('DRC'), 'country added to tags');
+});
+
+test('buildRows leaves dateline "Wire" and region null when no geography is found', () => {
+  const items = [{ title: 'An abstract essay on productivity habits', link: 'https://x/2',
+    contentSnippet: 'No places are mentioned here whatsoever.' }];
+  const rows = buildRows(items, { label: 'Wire Co' }, new Set());
+  assert.equal(rows[0].region, null);
+  assert.equal(rows[0].payload.dateline, 'Wire');
 });
 
 test('extractImage reads media:content, thumbnail, enclosure, itunes, and inline <img>', () => {

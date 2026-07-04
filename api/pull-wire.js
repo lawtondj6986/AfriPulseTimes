@@ -53,6 +53,37 @@ export function guessVertical(title, desc, hint){
   const best = Object.keys(scores).sort((a,b)=> scores[b] - scores[a])[0];
   return scores[best] > 0 ? best : (hint || 'front');
 }
+
+// Geo classifier — infers a region + country (+ a capital dateline when named) from
+// the story text, so the coverage map and region archives can place wire stories.
+// Mirrors the sub-regional taxonomy the front end uses. capitals: city → country.
+const REGION_GEO = {
+  'north-africa':   { capitals:{ 'Cairo':'Egypt','Rabat':'Morocco','Algiers':'Algeria','Tunis':'Tunisia','Tripoli':'Libya','Khartoum':'Sudan' },
+                      countries:['Egypt','Morocco','Algeria','Tunisia','Libya','Sudan','Mauritania'] },
+  'west-africa':    { capitals:{ 'Lagos':'Nigeria','Abuja':'Nigeria','Accra':'Ghana','Dakar':'Senegal','Abidjan':"Côte d'Ivoire",'Bamako':'Mali','Freetown':'Sierra Leone','Monrovia':'Liberia','Conakry':'Guinea','Lomé':'Togo','Cotonou':'Benin' },
+                      countries:['Nigeria','Ghana','Senegal',"Côte d'Ivoire",'Ivory Coast','Mali','Burkina Faso','Niger','Sierra Leone','Liberia','Guinea','Togo','Benin','Gambia'] },
+  'east-africa':    { capitals:{ 'Nairobi':'Kenya','Addis Ababa':'Ethiopia','Dar es Salaam':'Tanzania','Dodoma':'Tanzania','Kampala':'Uganda','Kigali':'Rwanda','Bujumbura':'Burundi','Mogadishu':'Somalia','Juba':'South Sudan','Djibouti':'Djibouti','Asmara':'Eritrea' },
+                      countries:['Kenya','Ethiopia','Tanzania','Uganda','Rwanda','Burundi','South Sudan','Somalia','Djibouti','Eritrea','Zanzibar'] },
+  'central-africa': { capitals:{ 'Kinshasa':'DRC','Yaoundé':'Cameroon','Yaounde':'Cameroon','Libreville':'Gabon','Brazzaville':'Republic of Congo','Bangui':'CAR','N\'Djamena':'Chad','Luanda':'Angola' },
+                      countries:['DRC','Democratic Republic of Congo','DR Congo','Cameroon','Chad','Central African Republic','Republic of Congo','Congo','Gabon','Equatorial Guinea','Angola'] },
+  'southern-africa':{ capitals:{ 'Johannesburg':'South Africa','Pretoria':'South Africa','Cape Town':'South Africa','Harare':'Zimbabwe','Lusaka':'Zambia','Gaborone':'Botswana','Maputo':'Mozambique','Windhoek':'Namibia','Lilongwe':'Malawi' },
+                      countries:['South Africa','Zimbabwe','Zambia','Botswana','Mozambique','Namibia','Malawi','Lesotho','Eswatini','Swaziland','Mauritius','Madagascar'] }
+};
+function wordRe(term){ return new RegExp('(^|[^a-z])'+String(term).toLowerCase().replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'([^a-z]|$)','i'); }
+
+// Returns { region, country, city } or null. Capital match (most specific) wins and
+// yields a city dateline; otherwise a country match sets region + country only.
+export function guessGeo(text){
+  const t = ' ' + String(text||'').toLowerCase() + ' ';
+  for(const slug in REGION_GEO){
+    const caps = REGION_GEO[slug].capitals;
+    for(const city in caps){ if(wordRe(city).test(t)) return { region:slug, country:caps[city], city }; }
+  }
+  for(const slug in REGION_GEO){
+    for(const c of REGION_GEO[slug].countries){ if(wordRe(c).test(t)) return { region:slug, country:c, city:null }; }
+  }
+  return null;
+}
 function slugify(s){
   return (s||'').toLowerCase().trim().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,72) || 'story';
 }
@@ -221,6 +252,11 @@ export function buildRows(items, src, seen){
     const vert = guessVertical(title, bodyText.slice(0, 600), src.hint_vertical);
     const def = VDEF[vert] || VDEF.front;
     const vlabel = VLABEL[vert] || vert;
+
+    // Infer geography so the story lands on the coverage map + in its region archive.
+    const geo = guessGeo(title + ' · ' + bodyText.slice(0, 1200));
+    const dateline = (geo && geo.city) ? geo.city : 'Wire';
+    const geoTags = geo ? [geo.country] : [];
     const publishedAt = it.isoDate
       || (it.pubDate ? new Date(it.pubDate).toISOString() : new Date().toISOString());
     const slug = 'wire-' + slugify(title).slice(0,56) + '-' + shortHash(link);
@@ -232,15 +268,16 @@ export function buildRows(items, src, seen){
     // Full front-end article object → lossless render via articles.payload.
     const payload = {
       slug, vertical:vert, kicker: vlabel + ' · ' + label, headline:title,
-      standfirst, byline: label, dateline:'Wire',
+      standfirst, byline: label, dateline,
       readingMin: Math.max(2, Math.ceil((bodyText.length || 200) / 900)),
       emoji: def.emoji, color: def.color, status:'published', publishedAt,
-      tags: [label, 'Live wire', vlabel], body,
+      tags: [label, 'Live wire', vlabel].concat(geoTags), body,
+      region: geo ? geo.region : null,
       media, source:'rss', sourceUrl: link, sourceLabel: label
     };
     rows.push({
       slug, headline:title, dek: standfirst, body: body.join('\n\n'),
-      vertical:vert, region:null, author_slug:null, hero_image: image || null, video_url:null,
+      vertical:vert, region: geo ? geo.region : null, author_slug:null, hero_image: image || null, video_url:null,
       status:'published', source:'rss', source_url: link, published_at: publishedAt, payload
     });
   }
