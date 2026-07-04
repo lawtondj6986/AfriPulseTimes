@@ -538,6 +538,22 @@ html[dir="rtl"] .art-side{padding:8px 22px 0 0;border-left:none;border-right:0.5
 .cmap-hub:focus-visible .cmap-node{stroke:#fff;stroke-width:.5}
 .cmap-hub:hover .cmap-label,.cmap-hub.active .cmap-label{fill:#fff;font-weight:700}
 .cmap-hub.active .cmap-node{fill:#fff;stroke:var(--gold);stroke-width:.7;r:2.4}
+/* region glow when a city is selected */
+.cmap-hub.region-lit .cmap-node{fill:#A8E0BE}
+.cmap-hub.region-lit .cmap-label{fill:rgba(255,255,255,.82)}
+/* count badge */
+.cmap-badge{pointer-events:none}
+.cmap-badge circle{fill:#161200;stroke:var(--gold);stroke-width:.35}
+.cmap-badge text{fill:var(--gold-l);font-size:2.2px;font-weight:700;font-family:'JetBrains Mono',monospace}
+/* hottest bureau — brighter, faster pulse + gold node */
+.cmap-hub.hot .cmap-node{fill:var(--gold-l)}
+.cmap-hub.hot .cmap-glow{fill:rgba(201,162,39,.55);animation-duration:1.7s}
+.cmap-hub.hot .cmap-label{fill:#fff;font-weight:700}
+/* vertical filter chips */
+.cmap-filter{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;max-width:1040px;margin:26px auto 0;position:relative;z-index:2}
+.cmap-chip{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.16);color:rgba(255,255,255,.78);font-size:11.5px;font-weight:600;letter-spacing:.02em;padding:6px 13px;border-radius:20px;cursor:pointer;font-family:inherit;transition:background .12s,color .12s,border-color .12s}
+.cmap-chip:hover{background:rgba(255,255,255,.12);color:#fff}
+.cmap-chip.on{background:var(--gold);border-color:var(--gold);color:#161200}
 .cmap-hint{position:absolute;left:0;right:0;bottom:-4px;text-align:center;font-size:11.5px;letter-spacing:.04em;color:rgba(255,255,255,.55);font-family:'JetBrains Mono',monospace;pointer-events:none}
 /* region stories panel */
 .cmap-panel{position:absolute;top:72px;left:22px;width:min(380px,42%);max-height:min(64vh,440px);display:flex;flex-direction:column;background:rgba(9,24,16,.97);border:1px solid rgba(201,162,39,.4);border-radius:14px;box-shadow:0 20px 50px rgba(0,0,0,.5);overflow:hidden;z-index:6;animation:cmapPanelIn .22s ease-out}
@@ -549,9 +565,11 @@ html[dir="rtl"] .art-side{padding:8px 22px 0 0;border-left:none;border-right:0.5
 .cmap-panel-close{background:none;border:none;color:rgba(255,255,255,.6);font-size:18px;cursor:pointer;line-height:1;padding:2px 4px;flex:none}
 .cmap-panel-close:hover{color:#fff}
 .cmap-panel-list{overflow-y:auto;flex:1;padding:6px 0}
-.cmap-item{display:block;padding:11px 16px;text-decoration:none;border-bottom:1px solid rgba(255,255,255,.06);transition:background .12s}
+.cmap-item{display:flex;gap:11px;align-items:flex-start;padding:11px 16px;text-decoration:none;border-bottom:1px solid rgba(255,255,255,.06);transition:background .12s}
 .cmap-item:hover{background:rgba(255,255,255,.06)}
-.cmap-item-k{display:block;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold-l);font-family:'JetBrains Mono',monospace;margin-bottom:3px}
+.cmap-thumb{flex:none;width:54px;height:54px;border-radius:8px;background-size:cover;background-position:center;display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
+.cmap-item-body{flex:1;min-width:0}
+.cmap-item-k{display:block;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold-l);font-family:'JetBrains Mono',monospace;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .cmap-item-h{display:block;font-family:'Fraunces',serif;font-size:14.5px;font-weight:600;color:#fff;line-height:1.25}
 .cmap-item-t{display:block;font-size:10.5px;color:rgba(255,255,255,.45);margin-top:4px;font-family:'JetBrains Mono',monospace}
 .cmap-empty{padding:22px 18px;font-size:13px;color:rgba(255,255,255,.7);line-height:1.5}
@@ -2485,26 +2503,55 @@ const COVERAGE_HUBS = [
   {city:'Johannesburg', x:49, y:82, country:'South Africa', region:'southern-africa'},
   {city:'Cape Town', x:43, y:93, country:'South Africa', region:'southern-africa'}
 ];
-// Stories for a hub = stories from that hub's REGION (using the app's canonical
-// region matcher, so results match the #/region pages and never leak across the
-// continent), with the tapped city's own dateline/country floated to the top.
+// ── Interactive coverage map state + helpers ──────────────────
+let SELECTED_HUB=null;         // city name of the open panel, or null
+let MAP_VERTICAL=null;         // active vertical filter, or null (=all)
+let AUTO_MAP_SHOWN=false;      // gate the once-per-session "hottest bureau" auto-open
+const CMAP_FILTERS=['mining','markets','tech','politics','culture','sports'];
+
+function hubByCity(city){ for(const h of COVERAGE_HUBS){ if(h.city===city) return h; } return null; }
+function citySlug(city){ return (city||'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,''); }
+function hubBySlug(slug){ for(const h of COVERAGE_HUBS){ if(citySlug(h.city)===slug) return h; } return null; }
+function mapVertOK(a){ return !MAP_VERTICAL || a.vertical===MAP_VERTICAL; }
+
+// "Local" stories for a hub: datelined this city or tagged its country (honours the
+// vertical filter). Drives node size + the count badge, so each pin reads its own heat.
+function hubLocalCount(hub){
+  if(!hub) return 0;
+  const city=hub.city.split(' ')[0].toLowerCase();
+  const country=(hub.country||'').toLowerCase();
+  return published().filter(function(a){
+    if(!mapVertOK(a)) return false;
+    const dl=(a.dateline||'').toLowerCase();
+    const tags=(a.tags||[]).map(function(s){ return String(s).toLowerCase(); });
+    return (city && dl.indexOf(city)>-1) || (country && (tags.indexOf(country)>-1 || dl.indexOf(country)>-1));
+  }).length;
+}
+// Panel stories = the hub's REGION (canonical matcher, no cross-continent leak),
+// honouring the vertical filter, city/country floated to the top, most recent, top 10.
 function articlesForHub(hub){
   if(!hub) return [];
   const city=hub.city.split(' ')[0].toLowerCase();
   const country=(hub.country||'').toLowerCase();
   return published()
-    .filter(function(a){ return articleMatchesRegion(a, hub.region); })
+    .filter(function(a){ return mapVertOK(a) && articleMatchesRegion(a, hub.region); })
     .map(function(a){
       const dl=(a.dateline||'').toLowerCase();
       const tags=(a.tags||[]).map(function(s){ return String(s).toLowerCase(); });
       let score=0;
-      if(city && dl.indexOf(city)>-1) score+=3;                              // datelined this exact city
-      if(country && (tags.indexOf(country)>-1 || dl.indexOf(country)>-1)) score+=2;  // this country
+      if(city && dl.indexOf(city)>-1) score+=3;
+      if(country && (tags.indexOf(country)>-1 || dl.indexOf(country)>-1)) score+=2;
       return { a:a, score:score };
     })
     .sort(function(x,y){ return y.score-x.score || (new Date(y.a.publishedAt)-new Date(x.a.publishedAt)); })
     .slice(0,10).map(function(x){ return x.a; });
 }
+function hottestHub(){
+  let best=null, bestN=0;
+  COVERAGE_HUBS.forEach(function(h){ const n=hubLocalCount(h); if(n>bestN){ bestN=n; best=h; } });
+  return bestN>0 ? best : null;
+}
+
 function renderCoverageMap(){
   const pub=published();
   const totalStories=pub.length;
@@ -2512,23 +2559,29 @@ function renderCoverageMap(){
   pub.forEach(function(a){ const hay=((a.tags||[]).join(' ')+' '+(a.dateline||'')).toLowerCase(); ALL_COUNTRIES.forEach(function(c){ if(hay.indexOf(c)>-1) seen.add(c); }); });
   const nations=seen.size;
   const cx=40, cy=54;
+  const hot=hottestHub();
   let spokes='', nodes='';
   COVERAGE_HUBS.forEach(function(h,i){
-    const first=h.city.split(' ')[0].toLowerCase();
-    const cnt=pub.filter(function(a){ return (a.dateline||'').toLowerCase().indexOf(first)>-1; }).length;
+    const cnt=hubLocalCount(h);
     const r=(1.5+Math.min(cnt,6)*0.35).toFixed(2);
     const glowR=(Number(r)+1.5).toFixed(2);
     const delay=(i*0.17).toFixed(2);
+    const isHot=hot && hot.city===h.city;
     spokes+='<line class="cmap-spoke" x1="'+cx+'" y1="'+cy+'" x2="'+h.x+'" y2="'+h.y+'"/>';
     const aria=esc(h.city+', '+(h.country||'')+' — '+cnt+' stor'+(cnt===1?'y':'ies')+', tap to read');
-    nodes+='<g class="cmap-hub" data-hub="'+esc(h.city)+'" role="button" tabindex="0" aria-label="'+aria+'">'+
-      '<title>'+esc(h.city+' · '+cnt+' stor'+(cnt===1?'y':'ies'))+'</title>'+
+    const badge = cnt>0 ? '<g class="cmap-badge"><circle cx="'+h.x+'" cy="'+(h.y-Number(r)-1.9)+'" r="1.7"/><text x="'+h.x+'" y="'+(h.y-Number(r)-1.2)+'" text-anchor="middle">'+cnt+'</text></g>' : '';
+    nodes+='<g class="cmap-hub'+(isHot?' hot':'')+'" data-hub="'+esc(h.city)+'" data-region="'+esc(h.region)+'" role="button" tabindex="0" aria-label="'+aria+'">'+
+      '<title>'+esc(h.city+' · '+cnt+' stor'+(cnt===1?'y':'ies'))+(isHot?' · most active':'')+'</title>'+
       '<circle class="cmap-glow" cx="'+h.x+'" cy="'+h.y+'" r="'+glowR+'" style="animation-delay:'+delay+'s"/>'+
       '<circle class="cmap-node" cx="'+h.x+'" cy="'+h.y+'" r="'+r+'"/>'+
       '<text class="cmap-label" x="'+(h.x+Number(r)+1)+'" y="'+(h.y+0.8)+'">'+esc(h.city)+'</text>'+
+      badge+
       '<circle class="cmap-hit" cx="'+h.x+'" cy="'+h.y+'" r="4.6"/>'+   // touch-friendly hit area
     '</g>';
   });
+  // Vertical filter chips (re-weights the map by topic).
+  let chips='<button class="cmap-chip'+(MAP_VERTICAL?'':' on')+'" data-vert="all" type="button">All</button>';
+  CMAP_FILTERS.forEach(function(k){ chips+='<button class="cmap-chip'+(MAP_VERTICAL===k?' on':'')+'" data-vert="'+esc(k)+'" type="button">'+esc(vshort(k))+'</button>'; });
   const africaPath='M18,12 L34,8 L46,12 L58,10 L60,20 L58,28 L64,30 L78,42 L66,44 L64,54 L62,66 L58,78 L52,92 L44,96 L36,86 L34,72 L36,60 L34,52 L34,48 L32,46 L26,48 L10,40 L6,34 L12,26 L16,20 Z';
   return '<section class="cmap-section" aria-label="Live coverage across Africa">'+
     '<div class="cmap-inner">'+
@@ -2553,41 +2606,51 @@ function renderCoverageMap(){
         '<div class="cmap-hint" id="cmap-hint">👆 Tap a glowing city to read its stories</div>'+
       '</div>'+
     '</div>'+
+    '<div class="cmap-filter" role="group" aria-label="Filter the map by topic">'+chips+'</div>'+
     '<aside class="cmap-panel" id="cmap-panel" hidden aria-live="polite"></aside>'+
     '<div class="cmap-sponsor">Presented in partnership with — <a href="#/advertise">become the founding sponsor of Africa’s live map →</a></div>'+
   '</section>';
 }
 
-// ── Interactive coverage map: tap a city → its stories ────────
-let SELECTED_HUB=null;
-function hubByCity(city){ for(const h of COVERAGE_HUBS){ if(h.city===city) return h; } return null; }
-
+function cmapThumb(a){
+  const img=articleImage(a);
+  const bg=(a && a.color) || '#123f22';
+  return '<span class="cmap-thumb" style="background-color:'+esc(bg)+(img?';background-image:url('+esc(img)+')':'')+'" aria-hidden="true">'+(img?'':esc(a.emoji||'📰'))+'</span>';
+}
 function fillHubPanel(){
   const panel=document.getElementById('cmap-panel');
   const hint=document.getElementById('cmap-hint');
   if(!panel) return;
   const hub=hubByCity(SELECTED_HUB);
-  // Mark the active node.
-  document.querySelectorAll('.cmap-hub').forEach(function(g){ g.classList.toggle('active', g.getAttribute('data-hub')===SELECTED_HUB); });
+  // Highlight the active node + softly light its whole region.
+  document.querySelectorAll('.cmap-hub').forEach(function(g){
+    const isActive=g.getAttribute('data-hub')===SELECTED_HUB;
+    g.classList.toggle('active', isActive);
+    g.classList.toggle('region-lit', !!hub && g.getAttribute('data-region')===hub.region && !isActive);
+  });
   if(!hub){ panel.hidden=true; return; }
   const arts=articlesForHub(hub);
   const regionLabel=rlabel(hub.region);
+  const vertNote=MAP_VERTICAL?(' · '+esc(vshort(MAP_VERTICAL))):'';
   let list='';
   if(arts.length){
     arts.forEach(function(a){
       list+='<a class="cmap-item" href="#/article/'+esc(a.slug)+'">'+
-        '<span class="cmap-item-k">'+esc(vlabel(a.vertical))+' · '+esc(a.dateline||hub.city)+'</span>'+
-        '<span class="cmap-item-h">'+esc(a.headline)+'</span>'+
-        '<span class="cmap-item-t">'+esc(timeAgo(a.publishedAt))+'</span>'+
+        cmapThumb(a)+
+        '<span class="cmap-item-body">'+
+          '<span class="cmap-item-k">'+esc(vlabel(a.vertical))+' · '+esc(a.dateline||hub.city)+'</span>'+
+          '<span class="cmap-item-h">'+esc(a.headline)+'</span>'+
+          '<span class="cmap-item-t">'+esc(timeAgo(a.publishedAt))+'</span>'+
+        '</span>'+
       '</a>';
     });
   }else{
-    list='<div class="cmap-empty">No stories filed from '+esc(hub.city)+' just yet — our bureau is live and reporting. Explore the whole continent below.</div>';
+    list='<div class="cmap-empty">No '+(MAP_VERTICAL?esc(vshort(MAP_VERTICAL))+' ':'')+'stories from '+esc(hub.city)+' just yet — our bureau is live and reporting. Explore the whole continent.</div>';
   }
   panel.innerHTML=''+
     '<div class="cmap-panel-head">'+
       '<div class="cmap-panel-title"><span class="cmap-panel-dot"></span>'+esc(hub.city)+
-        '<span class="cmap-panel-sub">'+esc(regionLabel)+' · '+arts.length+' live stor'+(arts.length===1?'y':'ies')+'</span></div>'+
+        '<span class="cmap-panel-sub">'+esc(regionLabel)+vertNote+' · '+arts.length+' live stor'+(arts.length===1?'y':'ies')+'</span></div>'+
       '<button class="cmap-panel-close" id="cmap-panel-close" type="button" aria-label="Close">✕</button>'+
     '</div>'+
     '<div class="cmap-panel-list">'+list+'</div>'+
@@ -2597,12 +2660,25 @@ function fillHubPanel(){
   const close=document.getElementById('cmap-panel-close');
   if(close) close.addEventListener('click',closeHubPanel);
 }
-function openHubPanel(city){ SELECTED_HUB=city; fillHubPanel(); }
+function openHubPanel(city){
+  SELECTED_HUB=city; AUTO_MAP_SHOWN=true;
+  const h=hubByCity(city);
+  // Shareable deep link (silent — no re-route).
+  try{ if(h) history.replaceState(null,'','#/map/'+citySlug(city)); }catch(e){}
+  fillHubPanel();
+}
 function closeHubPanel(){
   SELECTED_HUB=null;
   const panel=document.getElementById('cmap-panel'); if(panel) panel.hidden=true;
   const hint=document.getElementById('cmap-hint'); if(hint) hint.style.display='';
-  document.querySelectorAll('.cmap-hub.active').forEach(function(g){ g.classList.remove('active'); });
+  document.querySelectorAll('.cmap-hub.active, .cmap-hub.region-lit').forEach(function(g){ g.classList.remove('active','region-lit'); });
+  try{ if((location.hash||'').indexOf('#/map/')===0) history.replaceState(null,'','#/'); }catch(e){}
+}
+function refreshMap(){
+  const sec=document.querySelector('.cmap-section'); if(!sec) return;
+  const wrap=document.createElement('div'); wrap.innerHTML=renderCoverageMap();
+  sec.replaceWith(wrap.firstChild);
+  bindCoverageMap();
 }
 function bindCoverageMap(){
   const svg=document.querySelector('.cmap-svg'); if(!svg) return;
@@ -2615,7 +2691,22 @@ function bindCoverageMap(){
     const g=e.target.closest('[data-hub]'); if(!g) return;
     e.preventDefault(); openHubPanel(g.getAttribute('data-hub'));
   });
-  if(SELECTED_HUB) fillHubPanel();   // restore panel across incidental re-renders
+  // Vertical filter chips → re-weight the map in place (no scroll jump).
+  const filter=document.querySelector('.cmap-filter');
+  if(filter) filter.addEventListener('click',function(e){
+    const b=e.target.closest('[data-vert]'); if(!b) return;
+    const v=b.getAttribute('data-vert');
+    MAP_VERTICAL = (v==='all') ? null : (MAP_VERTICAL===v ? null : v);
+    refreshMap();
+  });
+  if(SELECTED_HUB){ fillHubPanel(); return; }   // restore an open panel across re-renders
+  // "Hottest bureau" — gently auto-open once per session on a clean home view.
+  const h=location.hash||'#/';
+  if(!AUTO_MAP_SHOWN && (h==='#/' || h==='#/' || h==='')){
+    AUTO_MAP_SHOWN=true;
+    const hot=hottestHub();
+    if(hot) setTimeout(function(){ if(!SELECTED_HUB && document.querySelector('.cmap-svg')) openHubPanel(hot.city); }, 1300);
+  }
 }
 
 function renderInvestorCTA(){
@@ -4390,6 +4481,12 @@ function route(){
     else if(parts[0]==='search') html=viewSearch(decodeURIComponent(parts.slice(1).join('/')));
     else if(parts[0]==='journalists') html=viewJournalists();
     else if(parts[0]==='journalist' && parts[1]) html=viewJournalist(decodeURIComponent(parts[1]));
+    else if(parts[0]==='map'){
+      // Shareable deep link to the coverage map with a city pre-selected.
+      const h=parts[1]?hubBySlug(decodeURIComponent(parts[1])):null;
+      SELECTED_HUB=h?h.city:null; AUTO_MAP_SHOWN=true;
+      html=viewHome();
+    }
     else if(parts[0]==='join') html=viewJoin();
     else if(parts[0]==='me') html=viewMe();
     else if(parts[0]==='upgrade') html=viewUpgrade();

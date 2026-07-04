@@ -29,8 +29,21 @@ const COVERAGE_HUBS = [
   **dateline** starts with that city's first word (e.g. "Lagos", "Cape").
 - To recolour: the map's CSS classes start with `.cmap-` (search `LIVE COVERAGE MAP`).
 
-**Demo tip:** it's the strongest single visual you have — leave the home page
-scrolled to it, or screenshot it for the deck.
+**It's interactive (desktop + mobile):** tap a glowing city and a panel opens with
+up to 10 stories from that **region** (with the tapped city's own stories on top),
+each a thumbnail + link straight to the article, plus a "See all <region>
+coverage" link. Extras:
+- **Live count badges** on each city; node size scales with activity.
+- **Topic filter chips** (Mining, Markets, Tech…) re-weight the whole map.
+- **Region glow** — tapping a city softly lights its whole region.
+- **Hottest bureau** pulses brighter and gently auto-opens once per visit.
+- **Shareable deep links** — `#/map/nairobi` opens the map with Nairobi selected.
+
+To change what a city links to, edit `articlesForHub` / `hubLocalCount`; the panel
+is `fillHubPanel` and the styling is the `.cmap-*` CSS.
+
+**Demo tip:** it's the strongest single visual you have — tap through a few regions
+live, or leave the home page on it.
 
 ---
 
