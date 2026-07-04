@@ -168,6 +168,11 @@ _A ready-to-build layout for the business-model slide. Build it in
 Keynote/Slides/Pitch; every word below is copy you can lift. Keep it to one slide —
 this is the "how it pays for itself" moment._
 
+> **A finished, rendered version of this slide already exists** — open
+> [`deck/revenue-model-slide.html`](./deck/revenue-model-slide.html) in a browser
+> (16:9), or drop [`deck/revenue-model-slide.png`](./deck/revenue-model-slide.png)
+> straight into the deck. Edit the copy in the HTML and re-screenshot to tweak.
+
 **Headline (top, large):**
 > We don't sell banners. We sell **a language and a region.**
 
