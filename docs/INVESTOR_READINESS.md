@@ -52,6 +52,12 @@ overflow at a 390 px mobile viewport.
   headline/standfirst/body in French, Arabic, Swahili and Portuguese per article
   (plus AI "key points" summaries) on a daily cron or on demand. Built and tested;
   goes live once the API key is set (see §5).
+- **AI wire polish** (`/api/polish`, Claude) — RSS feeds ship truncated, choppy,
+  boilerplate-laden text; this rewrites them into clean, coherent AfriPulse briefs
+  (**facts only, nothing invented**), with a free deterministic cleanup layer
+  (paragraphs, entity decoding, boilerplate/truncation removal) running on every
+  wire pull. Non-destructive (original kept), attribution preserved, admin
+  **"Polish wire"** button + daily cron. Built and tested.
 - **Advertising product** — real, high-value inventory plus an advertiser-facing
   media kit at `/advertise`. Placements are sold by **language and region**
   (the non-obvious, defensible insight): a native in-read unit woven mid-story, a
@@ -126,6 +132,10 @@ These need YOUR accounts; they can't be done from the dev sandbox.
      `article-media` storage bucket + policies that power admin image upload.
      Without it, the editor's "Upload image" button returns a storage error (you
      can still paste an image URL).
+   - `supabase/migrations/20260704120000_articles_polished.sql` — adds the
+     `polished_at` column that lets the AI "Polish wire" pass track which wire
+     stories it has already cleaned up. Without it the Polish button reports an
+     error; the free deterministic cleanup on the wire still works regardless.
 2. **Confirm the site's env vars in Vercel** (Project → Settings → Environment
    Variables) — see [`ENV.md`](./ENV.md):
    - `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` (browser)
@@ -212,7 +222,8 @@ that costs us cents a day and scales to the whole continent."
 
 - **Deploy**: push to `main`; Vercel builds and ships automatically. Full runbook
   in [`DEPLOYMENT.md`](./DEPLOYMENT.md) and [`RUNBOOK.md`](./RUNBOOK.md).
-- **Crons** (`vercel.json`): `/api/pull-wire` daily 06:00 UTC, `/api/translate`
-  daily 06:30 UTC. (Hobby plan = daily; upgrading unlocks more frequent wire pulls.)
+- **Crons** (`vercel.json`): `/api/pull-wire` 06:00 → `/api/polish` 06:15 →
+  `/api/translate` 06:30 UTC (pull, then clean up the wire, then translate the clean
+  text). Hobby plan = daily; upgrading unlocks more frequent wire pulls.
 - **Secrets** live only in Vercel env vars; the service-role and Anthropic keys
   are never exposed to the browser. Details in [`ENV.md`](./ENV.md).

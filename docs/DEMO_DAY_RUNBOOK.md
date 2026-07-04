@@ -16,6 +16,9 @@ Do these in order, then **don't touch the site again** until you present.
 2. **Log into admin** → the site → `#/admin` → magic-link email → click the link.
 3. **Pull live wire** — in the top bar, click **"Pull live wire ↻"**. Wait for it
    to say it pulled/refreshed. Fresh headlines now carry real source photos.
+   _(Optional, if `ANTHROPIC_API_KEY` is set + the polish migration is run: go to
+   Admin → Articles → **✦ Polish wire** so sourced stories read as clean AfriPulse
+   briefs instead of choppy feed snippets. Click again to polish more.)_
 4. **Upload great photos to your 3–5 marquee stories** — the exact ones you'll
    open on stage. Admin → open the story → **Upload image** → pick a strong photo →
    Save. (This is the difference between "fine" and "wow" on the screen.)

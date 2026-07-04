@@ -50,6 +50,34 @@ offline). Click again to stop; it also stops when you leave the article.
 
 ---
 
+## ✦ Polish wire (admin) — clean up sourced stories with AI
+
+RSS feeds often give us **truncated, choppy, boilerplate-laden** text. Two layers
+fix this:
+
+1. **Free cleanup (automatic, no AI).** Every time the wire is pulled, we now
+   prefer the fuller article text a feed ships, strip boilerplate ("The post …
+   appeared first on …", "Read more"), decode HTML entities, split into real
+   paragraphs, and stop cutting mid-sentence. This happens for free in
+   `api/pull-wire.js`.
+2. **AI polish (on demand or daily).** **Admin → Articles → "✦ Polish wire"**
+   rewrites choppy wire stories into clean, coherent **AfriPulse briefs** via
+   Claude — **facts only, nothing invented** — in the house voice.
+
+- Polishes up to **8 wire stories per click** — click again for more.
+- **Non-destructive:** the original wire text is kept (in `payload.wire_original`),
+  and every story keeps its "Read at source ↗" link. Polished stories show a small
+  "Summarised for clarity by AfriPulse AI" note for honesty.
+- Runs **before** translation (daily crons: wire 06:00 → polish 06:15 →
+  translate 06:30 UTC), so the five-language versions are built from the clean text.
+- Needs `ANTHROPIC_API_KEY` in Vercel (same key as Translate) and the
+  `20260704120000_articles_polished.sql` migration. Clear error toast if not set.
+
+**Demo gold:** open a raw wire story, hit ✦ Polish wire, and watch the choppy
+snippet become a clean two-paragraph brief — "our AI desk just sub-edited that."
+
+---
+
 ## ✦ One-click Translate (admin)
 
 **Admin → Articles → "✦ Translate"** batch-translates published articles into

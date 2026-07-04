@@ -81,7 +81,8 @@ api/                     Vercel serverless functions
   pull-wire.js           RSS aggregator (cron + admin-triggered)
   subscribe.js           Newsletter signup (Supabase + Buttondown)
   contact.js             Investor enquiry -> leads table + email (Resend)
-  translate.js           AI article translation to FR/AR (cron, Claude)
+  translate.js           AI article translation to FR/AR/SW/PT (cron, Claude)
+  polish.js              AI cleanup of choppy RSS text -> clean briefs (cron, Claude)
   market-data.js         Live African FX rates for the ticker
 tests/                   Unit tests (npm test) + optional browser audit
 public/

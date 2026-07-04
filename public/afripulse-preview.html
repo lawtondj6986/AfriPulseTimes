@@ -2882,8 +2882,11 @@ function viewArticle(slug){
     tagsHTML+='</div>';
   }
 
+  const clarifyNote = a.polished
+    ? ' <span style="color:var(--muted)">· Summarised for clarity by AfriPulse AI from the source report.</span>'
+    : '';
   const sourceBlock = (a.source==='rss' && a.sourceUrl)
-    ? '<div class="art-source"><strong style="color:#E5484D">Live wire from '+esc(a.sourceLabel||a.byline)+'.</strong> <a href="'+esc(a.sourceUrl)+'" target="_blank" rel="noopener">Read at source ↗</a></div>'
+    ? '<div class="art-source"><strong style="color:#E5484D">Live wire from '+esc(a.sourceLabel||a.byline)+'.</strong> <a href="'+esc(a.sourceUrl)+'" target="_blank" rel="noopener">Read at source ↗</a>'+clarifyNote+'</div>'
     : '';
 
   const langNote = CURRENT_LANG !== 'en'
@@ -2987,6 +2990,7 @@ function adminWelcome(){
   const draftCount=ARTICLES.filter(a=>a.status!=='published').length;
   return ''+
   '<div class="adm-bar"><span class="adm-crumb">Articles</span><div class="adm-actions">'+
+    '<button class="adm-btn" id="adm-polish-btn" type="button" title="Rewrite choppy wire (RSS) stories into clean AfriPulse briefs with AI — facts only, original kept">✦ Polish wire</button>'+
     '<button class="adm-btn" id="adm-translate-btn" type="button" title="Translate published articles into French, Arabic, Swahili and Portuguese">✦ Translate</button>'+
     '<a class="adm-btn primary" href="#/admin/new">'+esc(t('new_article'))+'</a>'+
   '</div></div>'+
@@ -3714,6 +3718,8 @@ function bindView(){
   if(delBtn) delBtn.addEventListener('click',deleteArticle);
   const translateBtn=document.getElementById('adm-translate-btn');
   if(translateBtn) translateBtn.addEventListener('click',runTranslate);
+  const polishBtn=document.getElementById('adm-polish-btn');
+  if(polishBtn) polishBtn.addEventListener('click',runPolish);
 
   // Auth: sign out + magic-link login form
   const signoutBtn=document.getElementById('signout-btn');
@@ -3988,6 +3994,34 @@ async function runTranslate(){
   if(btn){ btn.disabled=false; btn.textContent='✦ Translate'; }
   const n=result.translated||0;
   toast(n>0 ? ('Translated '+n+' article'+(n===1?'':'s')+' into FR · AR · SW · PT.') : 'All published articles are already translated.');
+  route();
+}
+
+async function runPolish(){
+  const btn=document.getElementById('adm-polish-btn');
+  if(!isAuthed() || !SESSION || !SESSION.access_token){ toast('Sign in to polish the wire.'); return; }
+  if(btn){ btn.disabled=true; btn.textContent='Polishing…'; }
+  let result=null, status=0;
+  try{
+    const res=await fetch('/api/polish',{ method:'POST', headers:{ 'Authorization':'Bearer '+SESSION.access_token } });
+    status=res.status;
+    result=await res.json().catch(function(){ return null; });
+    if(!res.ok || !result || !result.ok){
+      toast('Polish failed · '+((result && result.error) ? result.error : ('HTTP '+status)));
+      if(btn){ btn.disabled=false; btn.textContent='✦ Polish wire'; }
+      return;
+    }
+  }catch(e){
+    toast('Polish endpoint unavailable.');
+    if(btn){ btn.disabled=false; btn.textContent='✦ Polish wire'; }
+    return;
+  }
+  // Reload so freshly polished stories show their clean text immediately.
+  const remote=await loadStore();
+  if(remote){ ARTICLES=remote; saveCache(ARTICLES); }
+  if(btn){ btn.disabled=false; btn.textContent='✦ Polish wire'; }
+  const n=result.polished||0;
+  toast(n>0 ? ('Polished '+n+' wire stor'+(n===1?'y':'ies')+' into clean AfriPulse briefs.') : 'All wire stories are already polished.');
   route();
 }
 

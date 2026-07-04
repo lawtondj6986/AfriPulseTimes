@@ -64,6 +64,74 @@ function shortHash(s){
 }
 function clean(s){ return (s||'').replace(/<[^>]+>/g,'').trim(); }
 
+// ── Wire text cleanup (deterministic, free — improves readability before the
+// optional AI polish pass in /api/polish, and stands alone if AI is off). ──
+
+// Decode the handful of HTML entities that survive feed text.
+export function decodeEntities(s){
+  return String(s||'')
+    .replace(/&nbsp;/gi,' ')
+    .replace(/&amp;/gi,'&')
+    .replace(/&lt;/gi,'<')
+    .replace(/&gt;/gi,'>')
+    .replace(/&quot;/gi,'"')
+    .replace(/&#0*39;|&#x0*27;|&apos;/gi,"'")
+    .replace(/&#8217;|&#x2019;/gi,'’').replace(/&#8216;|&#x2018;/gi,'‘')
+    .replace(/&#8220;|&#x201c;/gi,'“').replace(/&#8221;|&#x201d;/gi,'”')
+    .replace(/&#8211;|&ndash;/gi,'–').replace(/&#8212;|&mdash;/gi,'—')
+    .replace(/&hellip;|&#8230;/gi,'…')
+    .replace(/&#(\d+);/g,(m,d)=>{ try{ return String.fromCodePoint(parseInt(d,10)); }catch(e){ return ''; } })
+    .replace(/&#x([0-9a-f]+);/gi,(m,h)=>{ try{ return String.fromCodePoint(parseInt(h,16)); }catch(e){ return ''; } });
+}
+
+// Strip common RSS/blog boilerplate tails and share/subscribe cruft.
+export function stripBoilerplate(s){
+  let t = String(s||'');
+  t = t.replace(/The post\b[\s\S]*?appeared first on[\s\S]*$/i,'');
+  t = t.replace(/\b(continue reading|read more|read the full (story|article)|full story)\b[\s\S]*$/i,'');
+  t = t.replace(/\[[….]{1,3}\]/g,'');                                  // [...] / […]
+  t = t.replace(/\bshare this\b[:.]?[\s\S]*$/i,'');
+  t = t.replace(/\b(subscribe|sign up)\b( to| for)?( our)? (newsletter|updates)\b[\s\S]*$/i,'');
+  return t.replace(/\s+/g,' ').trim();
+}
+
+// Turn feed HTML (or plain text) into clean paragraphs.
+export function htmlToParagraphs(html){
+  let s = String(html||'');
+  if(!s) return [];
+  s = s.replace(/<\/(p|div|li|h[1-6]|blockquote)\s*>/gi,'\u2029')          // block ends → break
+       .replace(/(<br\s*\/?>\s*){2,}/gi,'\u2029')                          // double <br> → break
+       .replace(/<[^>]+>/g,' ');                                           // drop remaining tags
+  s = decodeEntities(s);
+  return s.split('\u2029')
+    .map(p => stripBoilerplate(p.replace(/\s+/g,' ').replace(/\s+([.,;:!?])/g,'$1').trim()))
+    .filter(p => p.length > 0);
+}
+
+// Trim to a length without cutting a word or sentence mid-way.
+export function smartTrim(s, max){
+  const t = String(s||'').replace(/\s+/g,' ').trim();
+  if(t.length <= max) return t;
+  const cut = t.slice(0, max);
+  const stop = Math.max(cut.lastIndexOf('. '), cut.lastIndexOf('! '), cut.lastIndexOf('? '));
+  if(stop > max*0.6) return cut.slice(0, stop+1).trim();
+  const sp = cut.lastIndexOf(' ');
+  return (sp > 0 ? cut.slice(0, sp) : cut).trim() + '…';
+}
+
+// Strip a trailing " | Source" / " - Source" suffix that matches the feed's name.
+export function cleanTitle(title, label){
+  const t = decodeEntities(clean(title));
+  const lab = clean(label);
+  if(lab && !/^https?:/i.test(lab)){
+    const esc = lab.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+    const re = new RegExp('\\s*[\\|\\u2013\\u2014-]\\s*' + esc + '\\s*$','i');
+    const stripped = t.replace(re,'').trim();
+    if(stripped.length >= 10) return stripped;
+  }
+  return t;
+}
+
 const parser = new Parser({
   timeout: 10000,
   headers: { 'User-Agent': 'AfriPulseTimes/1.0 (+https://afripulsetimes.com)' },
@@ -133,13 +201,24 @@ export function buildRows(items, src, seen){
   for(const it of (items || [])){
     const link = clean(it.link || it.guid || '');
     if(!link || seen.has(link)) continue;            // dedupe by source URL
-    const title = clean(it.title);
+    const title = cleanTitle(it.title, label);       // drop trailing " | Source"
     if(title.length < 10) continue;
     seen.add(link);
 
-    let desc = clean(it.contentSnippet || it.summary || it.content || '');
-    if(desc.length > 500) desc = desc.slice(0,497) + '…';
-    const vert = guessVertical(title, desc, src.hint_vertical);
+    // Prefer the fuller content:encoded when a feed ships it; fall back to the
+    // snippet/summary. Deterministic cleanup (paragraphs, entities, boilerplate)
+    // runs here for free; the optional AI pass (/api/polish) refines it later.
+    const fullHtml = it.contentEncoded || it['content:encoded'] || it.content || '';
+    let paras = htmlToParagraphs(fullHtml);
+    if(!paras.length){
+      const snip = stripBoilerplate(decodeEntities(clean(it.contentSnippet || it.summary || '')));
+      if(snip) paras = [snip];
+    }
+    const standfirst = paras.length ? smartTrim(paras[0], 280) : title;
+    const body = paras.length ? paras : ['Full story at source.'];
+    const bodyText = body.join(' ');
+
+    const vert = guessVertical(title, bodyText.slice(0, 600), src.hint_vertical);
     const def = VDEF[vert] || VDEF.front;
     const vlabel = VLABEL[vert] || vert;
     const publishedAt = it.isoDate
@@ -153,14 +232,14 @@ export function buildRows(items, src, seen){
     // Full front-end article object → lossless render via articles.payload.
     const payload = {
       slug, vertical:vert, kicker: vlabel + ' · ' + label, headline:title,
-      standfirst: desc || title, byline: label, dateline:'Wire',
-      readingMin: Math.max(2, Math.ceil((desc.length || 200) / 600)),
+      standfirst, byline: label, dateline:'Wire',
+      readingMin: Math.max(2, Math.ceil((bodyText.length || 200) / 900)),
       emoji: def.emoji, color: def.color, status:'published', publishedAt,
-      tags: [label, 'Live wire', vlabel], body: [desc || 'Full story at source.'],
+      tags: [label, 'Live wire', vlabel], body,
       media, source:'rss', sourceUrl: link, sourceLabel: label
     };
     rows.push({
-      slug, headline:title, dek: desc || title, body: desc || 'Full story at source.',
+      slug, headline:title, dek: standfirst, body: body.join('\n\n'),
       vertical:vert, region:null, author_slug:null, hero_image: image || null, video_url:null,
       status:'published', source:'rss', source_url: link, published_at: publishedAt, payload
     });

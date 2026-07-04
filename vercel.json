@@ -6,6 +6,7 @@
   "framework": "vite",
   "crons": [
     { "path": "/api/pull-wire", "schedule": "0 6 * * *" },
+    { "path": "/api/polish", "schedule": "15 6 * * *" },
     { "path": "/api/translate", "schedule": "30 6 * * *" }
   ],
   "headers": [
