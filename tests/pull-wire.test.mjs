@@ -53,6 +53,14 @@ test('buildRows geo-tags wire stories: dateline, country tag, and region', () =>
   assert.ok(rows[0].payload.tags.includes('DRC'), 'country added to tags');
 });
 
+test('buildRows sends wire stories to the review gate (not straight to the front page)', () => {
+  const items = [{ title: 'Any wire story headline here', link: 'https://x/gate',
+    contentSnippet: 'Some body text.' }];
+  const rows = buildRows(items, { label: 'Wire Co' }, new Set());
+  assert.equal(rows[0].status, 'review', 'row status must be review');
+  assert.equal(rows[0].payload.status, 'review', 'payload status must be review');
+});
+
 test('buildRows leaves dateline "Wire" and region null when no geography is found', () => {
   const items = [{ title: 'An abstract essay on productivity habits', link: 'https://x/2',
     contentSnippet: 'No places are mentioned here whatsoever.' }];

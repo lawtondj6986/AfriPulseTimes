@@ -266,11 +266,13 @@ export function buildRows(items, src, seen){
     const media = image ? { type:'image', src: image, caption: '', credit: label } : null;
 
     // Full front-end article object → lossless render via articles.payload.
+    // Editorial gate: wire stories arrive as 'review' and wait in the Newsroom
+    // Command Center for an editor to approve (→published) before the front page.
     const payload = {
       slug, vertical:vert, kicker: vlabel + ' · ' + label, headline:title,
       standfirst, byline: label, dateline,
       readingMin: Math.max(2, Math.ceil((bodyText.length || 200) / 900)),
-      emoji: def.emoji, color: def.color, status:'published', publishedAt,
+      emoji: def.emoji, color: def.color, status:'review', publishedAt,
       tags: [label, 'Live wire', vlabel].concat(geoTags), body,
       region: geo ? geo.region : null,
       media, source:'rss', sourceUrl: link, sourceLabel: label
@@ -278,7 +280,7 @@ export function buildRows(items, src, seen){
     rows.push({
       slug, headline:title, dek: standfirst, body: body.join('\n\n'),
       vertical:vert, region: geo ? geo.region : null, author_slug:null, hero_image: image || null, video_url:null,
-      status:'published', source:'rss', source_url: link, published_at: publishedAt, payload
+      status:'review', source:'rss', source_url: link, published_at: publishedAt, payload
     });
   }
   return rows;

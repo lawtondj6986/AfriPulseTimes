@@ -176,6 +176,21 @@ then click "Advertise" to reveal the media kit — proof there's a real revenue 
 
 ---
 
+## ⌖ Newsroom Command Center (editorial approval gate)
+
+**Admin → ⌖ Command** (`#/admin/command`) — the mission‑ops desk where incoming
+wire is verified before it can hit the front page. Wire stories now arrive as
+**`review`** (not auto‑published); an editor approves each to the front page or
+rejects it, on a dark tactical map spanning the continent **and the island
+nations** (Cabo Verde, São Tomé, Comoros, Seychelles, Madagascar, Mauritius).
+Tap a bureau to filter the queue by place, use the vertical chips to filter by
+topic, and approve one‑by‑one or in bulk. The public only ever sees approved
+stories (enforced in the database). **Requires the one‑time
+`20260708120000_article_review_status.sql` migration** — full setup, usage, and
+the how‑to‑revert note are in [`COMMAND_CENTER.md`](./COMMAND_CENTER.md).
+
+---
+
 ## 👤 Reader accounts & profiles (Phase 1)
 
 Readers can create a free account and a public profile (photo, bio, country,

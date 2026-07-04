@@ -931,6 +931,101 @@ html[dir="rtl"] .nl-modal-x{right:auto;left:14px}
 .read-progress{position:fixed;top:0;left:0;height:3px;width:0;background:linear-gradient(90deg,var(--green),var(--gold));z-index:2500;opacity:0;transition:opacity .2s}
 .read-progress.on{opacity:1}
 .investor-stat .num{font-variant-numeric:tabular-nums}
+
+/* ── NEWSROOM COMMAND CENTER (editor ops room) ───────────────── */
+.cc{--cc-bg:#070B0A;--cc-panel:#0C1211;--cc-line:rgba(120,200,150,.14);--cc-phos:#6EE7A8;--cc-phos-dim:rgba(110,231,168,.55);--cc-gold:#E3C766;--cc-red:#F0787B;--cc-ink:#D6E4DC;
+  background:var(--cc-bg);color:var(--cc-ink);min-height:100vh;font-family:'JetBrains Mono',monospace}
+.cc-top{display:flex;align-items:center;gap:16px;padding:12px 20px;border-bottom:1px solid var(--cc-line);background:linear-gradient(180deg,#0C1211,#080D0C);position:sticky;top:0;z-index:20}
+.cc-badge{display:flex;align-items:center;gap:9px;font-weight:700;letter-spacing:.14em;font-size:12.5px;color:var(--cc-ink);text-transform:uppercase}
+.cc-badge .tgt{color:var(--cc-gold);font-size:15px;line-height:1}
+.cc-live{display:inline-flex;align-items:center;gap:6px;font-size:10.5px;letter-spacing:.12em;color:var(--cc-phos);text-transform:uppercase}
+.cc-live .blip{width:7px;height:7px;border-radius:50%;background:var(--cc-phos);box-shadow:0 0 8px var(--cc-phos);animation:cc-blink 1.4s infinite}
+@keyframes cc-blink{0%,100%{opacity:1}50%{opacity:.25}}
+.cc-clock{margin-left:auto;font-size:11px;letter-spacing:.1em;color:var(--cc-phos-dim)}
+.cc-top-links a{color:var(--cc-phos-dim);text-decoration:none;font-size:11px;letter-spacing:.08em;margin-left:14px;text-transform:uppercase}
+.cc-top-links a:hover{color:var(--cc-phos)}
+.cc-nav{display:flex;gap:2px;padding:0 20px;border-bottom:1px solid var(--cc-line);background:#080D0C;overflow-x:auto}
+.cc-nav a{padding:11px 16px;font-size:11.5px;letter-spacing:.08em;color:#7C8A83;text-decoration:none;text-transform:uppercase;border-bottom:2px solid transparent;white-space:nowrap}
+.cc-nav a:hover{color:var(--cc-ink)}
+.cc-nav a.active{color:var(--cc-gold);border-bottom-color:var(--cc-gold)}
+.cc-stats{display:flex;gap:0;border-bottom:1px solid var(--cc-line)}
+.cc-stat{flex:1;padding:12px 20px;border-right:1px solid var(--cc-line);display:flex;flex-direction:column;gap:3px}
+.cc-stat:last-child{border-right:0}
+.cc-stat .n{font-size:26px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums}
+.cc-stat .l{font-size:9.5px;letter-spacing:.14em;color:#7C8A83;text-transform:uppercase}
+.cc-stat.hot .n{color:var(--cc-gold)}
+.cc-stat.ok .n{color:var(--cc-phos)}
+.cc-stat.no .n{color:var(--cc-red)}
+.cc-body{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:0}
+.cc-mapwrap{position:relative;border-right:1px solid var(--cc-line);background:
+  radial-gradient(circle at 46% 42%, rgba(30,107,58,.16), transparent 62%),
+  repeating-linear-gradient(0deg,transparent 0 27px,var(--cc-line) 27px 28px),
+  repeating-linear-gradient(90deg,transparent 0 27px,var(--cc-line) 27px 28px),
+  var(--cc-bg);
+  overflow:hidden;min-height:520px}
+.cc-mapwrap::after{content:'';position:absolute;left:0;right:0;top:0;height:120px;pointer-events:none;
+  background:linear-gradient(180deg,rgba(110,231,168,.10),transparent);animation:cc-scan 6s linear infinite}
+@keyframes cc-scan{0%{transform:translateY(-120px)}100%{transform:translateY(560px)}}
+@media (prefers-reduced-motion:reduce){.cc-mapwrap::after{animation:none;opacity:.4}.cc-live .blip{animation:none}}
+.cc-map-h{position:absolute;top:12px;left:16px;z-index:3;font-size:10px;letter-spacing:.16em;color:var(--cc-phos-dim);text-transform:uppercase;pointer-events:none}
+.cc-map-h b{color:var(--cc-gold)}
+.cc-corner{position:absolute;width:16px;height:16px;border:1px solid var(--cc-phos-dim);z-index:3;pointer-events:none;opacity:.6}
+.cc-corner.tl{top:8px;left:8px;border-right:0;border-bottom:0}
+.cc-corner.tr{top:8px;right:8px;border-left:0;border-bottom:0}
+.cc-corner.bl{bottom:8px;left:8px;border-right:0;border-top:0}
+.cc-corner.br{bottom:8px;right:8px;border-left:0;border-top:0}
+.cc-svg{display:block;width:100%;height:auto;position:relative;z-index:2}
+.cc-cont{fill:rgba(30,107,58,.10);stroke:rgba(110,231,168,.35);stroke-width:.35}
+.cc-spoke{stroke:rgba(110,231,168,.10);stroke-width:.18}
+.cc-node{cursor:pointer}
+.cc-node .ring{fill:none;stroke:var(--cc-phos);stroke-width:.3;opacity:.5}
+.cc-node .dot{fill:var(--cc-phos)}
+.cc-node.q .dot{fill:var(--cc-gold)}
+.cc-node.q .ring{stroke:var(--cc-gold);opacity:.8}
+.cc-node.island .dot{fill:var(--cc-phos)}
+.cc-node.sel .ring{stroke:var(--cc-gold);opacity:1;stroke-width:.5}
+.cc-node .lbl{fill:var(--cc-phos-dim);font-size:2.1px;font-family:'JetBrains Mono',monospace;letter-spacing:.02em}
+.cc-node.q .lbl{fill:var(--cc-ink)}
+.cc-node .cnt{fill:#080D0C;font-size:2px;font-weight:700;text-anchor:middle;font-family:'JetBrains Mono',monospace}
+.cc-pulse{fill:none;stroke:var(--cc-gold);stroke-width:.3;opacity:0}
+.cc-hit{fill:transparent;cursor:pointer}
+.cc-panel{display:flex;flex-direction:column;min-width:0;background:var(--cc-panel)}
+.cc-filter{display:flex;flex-wrap:wrap;gap:6px;padding:12px 16px;border-bottom:1px solid var(--cc-line);align-items:center}
+.cc-filter .fl{font-size:9.5px;letter-spacing:.14em;color:#7C8A83;text-transform:uppercase;margin-right:2px}
+.cc-chip{background:transparent;border:1px solid var(--cc-line);color:#9FB0A8;padding:5px 11px;border-radius:3px;font-size:10.5px;letter-spacing:.06em;cursor:pointer;text-transform:uppercase;font-family:inherit;transition:all .12s}
+.cc-chip:hover{border-color:var(--cc-phos-dim);color:var(--cc-ink)}
+.cc-chip.on{background:rgba(227,199,102,.14);border-color:var(--cc-gold);color:var(--cc-gold)}
+.cc-clear{margin-left:auto;background:none;border:0;color:var(--cc-phos-dim);font-size:10px;letter-spacing:.08em;cursor:pointer;text-transform:uppercase;font-family:inherit}
+.cc-clear:hover{color:var(--cc-red)}
+.cc-bulk{display:flex;align-items:center;gap:10px;padding:9px 16px;border-bottom:1px solid var(--cc-line);font-size:11px;color:#9FB0A8;background:#0A100E}
+.cc-bulk .sp{margin-left:auto}
+.cc-mini{background:transparent;border:1px solid var(--cc-line);color:#9FB0A8;padding:5px 10px;border-radius:3px;font-size:10.5px;letter-spacing:.05em;cursor:pointer;text-transform:uppercase;font-family:inherit}
+.cc-mini:hover{border-color:var(--cc-phos-dim);color:var(--cc-ink)}
+.cc-mini.go{border-color:rgba(110,231,168,.5);color:var(--cc-phos)}
+.cc-mini.go:hover{background:rgba(110,231,168,.14)}
+.cc-queue{flex:1;overflow-y:auto;max-height:calc(100vh - 240px);padding:8px}
+.cc-card{border:1px solid var(--cc-line);border-radius:4px;padding:11px 12px;margin-bottom:8px;background:#0A100E;position:relative;transition:border-color .12s}
+.cc-card:hover{border-color:var(--cc-phos-dim)}
+.cc-card.sel{border-color:var(--cc-gold);background:rgba(227,199,102,.05)}
+.cc-card-top{display:flex;align-items:center;gap:8px;font-size:9.5px;letter-spacing:.06em;color:#7C8A83;text-transform:uppercase;margin-bottom:6px}
+.cc-vtag{color:var(--cc-gold);border:1px solid rgba(227,199,102,.4);border-radius:3px;padding:1px 6px;font-size:9px}
+.cc-origin{color:var(--cc-phos-dim)}
+.cc-card-top .t{margin-left:auto;color:#5F6E67}
+.cc-h{font-family:'DM Sans',sans-serif;font-size:14.5px;line-height:1.35;color:var(--cc-ink);font-weight:600;margin-bottom:4px}
+.cc-s{font-family:'DM Sans',sans-serif;font-size:12px;line-height:1.5;color:#9FB0A8;margin-bottom:10px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.cc-acts{display:flex;align-items:center;gap:7px}
+.cc-chk{width:15px;height:15px;accent-color:var(--cc-gold);cursor:pointer;margin-right:2px}
+.cc-btn{border:1px solid var(--cc-line);background:transparent;color:#9FB0A8;padding:6px 12px;border-radius:3px;font-size:11px;letter-spacing:.05em;cursor:pointer;text-transform:uppercase;font-family:inherit;font-weight:600;transition:all .12s}
+.cc-btn.approve{border-color:rgba(110,231,168,.45);color:var(--cc-phos)}
+.cc-btn.approve:hover{background:var(--cc-phos);color:#04140C}
+.cc-btn.reject{border-color:rgba(240,120,123,.4);color:var(--cc-red)}
+.cc-btn.reject:hover{background:var(--cc-red);color:#150404}
+.cc-btn.edit{margin-left:auto;color:#7C8A83}
+.cc-btn.edit:hover{border-color:var(--cc-phos-dim);color:var(--cc-ink)}
+.cc-btn .src{}
+.cc-empty{padding:60px 24px;text-align:center;color:#5F6E67;font-size:12.5px;line-height:1.8;letter-spacing:.04em}
+.cc-empty b{color:var(--cc-phos);display:block;font-size:14px;margin-bottom:6px}
+@media (max-width:920px){.cc-body{grid-template-columns:1fr}.cc-mapwrap{border-right:0;border-bottom:1px solid var(--cc-line);min-height:380px}.cc-queue{max-height:none}.cc-stat .n{font-size:20px}}
 </style>
 <!-- Vercel Web Analytics (privacy-friendly). Enable it in Vercel → project →
      Analytics; until then this 404s harmlessly. -->
@@ -4232,7 +4327,10 @@ function adminShell(activeSlug, paneHTML, section){
   section=section||'articles';
   const newLeads=(LEADS||[]).filter(l=>l.status==='new').length;
   const leadsBadge='<span class="adm-nav-badge" id="adm-leads-badge"'+(newLeads?'':' style="display:none"')+'>'+(newLeads||'')+'</span>';
+  const reviewCount=ARTICLES.filter(a=>a.status==='review').length;
+  const reviewBadge=reviewCount?'<span class="adm-nav-badge">'+reviewCount+'</span>':'';
   const navHTML='<div class="adm-nav">'+
+    '<a class="adm-nav-tab'+(section==='command'?' active':'')+'" href="#/admin/command">⌖ Command'+reviewBadge+'</a>'+
     '<a class="adm-nav-tab'+(section==='articles'?' active':'')+'" href="#/admin">Articles</a>'+
     '<a class="adm-nav-tab'+(section==='leads'?' active':'')+'" href="#/admin/leads">Enquiries'+leadsBadge+'</a>'+
     '<a class="adm-nav-tab'+(section==='comments'?' active':'')+'" href="#/admin/comments">Comments</a>'+
@@ -4631,6 +4729,247 @@ function viewAdminMetrics(){
   return adminShell(null, adminMetrics(), 'metrics');
 }
 
+// ── NEWSROOM COMMAND CENTER (editorial approval gate) ─────────
+// Incoming wire lands as status='review'. Editors triage it here — approve to
+// the front page (→published) or reject (→rejected) — on a mission-ops map that
+// spans the continent AND the island nations. This is the business-critical gate
+// between the raw feed and what the public ever sees.
+const ISLAND_HUBS = [
+  {city:'Praia',        x:2,  y:31, country:'Cape Verde', region:'west-africa',     island:true},
+  {city:'São Tomé',     x:28, y:58, country:'São Tomé',   region:'central-africa',  island:true},
+  {city:'Moroni',       x:67, y:70, country:'Comoros',    region:'east-africa',     island:true},
+  {city:'Antananarivo', x:72, y:77, country:'Madagascar', region:'southern-africa', island:true},
+  {city:'Victoria',     x:83, y:55, country:'Seychelles', region:'east-africa',     island:true},
+  {city:'Port Louis',   x:84, y:83, country:'Mauritius',  region:'southern-africa', island:true}
+];
+const COMMAND_HUBS = COVERAGE_HUBS.concat(ISLAND_HUBS);
+let CC_VERT = null;        // vertical filter (null = all)
+let CC_HUB  = null;        // selected map hub (city), or null
+let CC_SEL  = null;        // Set of selected slugs for bulk actions (lazy)
+let CC_CLOCK_TIMER = null;
+
+function commandHubByCity(city){ for(const h of COMMAND_HUBS){ if(h.city===city) return h; } return null; }
+function reviewQueue(){
+  return ARTICLES.filter(function(a){ return a.status==='review'; })
+    .sort(function(a,b){ return new Date(b.publishedAt)-new Date(a.publishedAt); });
+}
+function ccHubMatch(a, hub){
+  const txt=articleGeoText(a);
+  return textHasTerm(txt, hub.city) || (hub.country && textHasTerm(txt, hub.country));
+}
+function ccFiltered(){
+  const hub = CC_HUB ? commandHubByCity(CC_HUB) : null;
+  return reviewQueue().filter(function(a){
+    if(CC_VERT && a.vertical!==CC_VERT) return false;
+    if(hub && !ccHubMatch(a,hub)) return false;
+    return true;
+  });
+}
+async function setArticleStatus(slug, status){
+  const a=ARTICLES.find(function(x){ return x.slug===slug; });
+  if(!a) return false;
+  a.status=status;
+  saveCache(ARTICLES);
+  return dbUpsert(a);
+}
+function commandClock(){
+  try{
+    const d=new Date();
+    const mon=['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'][d.getUTCMonth()];
+    const p=function(n){ return (n<10?'0':'')+n; };
+    return p(d.getUTCDate())+' '+mon+' '+d.getUTCFullYear()+' · '+p(d.getUTCHours())+':'+p(d.getUTCMinutes())+' UTC';
+  }catch(e){ return ''; }
+}
+function ccNav(active){
+  function tab(k,href,label){ return '<a class="'+(active===k?'active':'')+'" href="'+href+'">'+label+'</a>'; }
+  return '<div class="cc-nav">'+
+    tab('command','#/admin/command','⌖ Command Center')+
+    tab('articles','#/admin','Articles')+
+    tab('leads','#/admin/leads','Enquiries')+
+    tab('comments','#/admin/comments','Comments')+
+    tab('metrics','#/admin/metrics','Dashboard')+
+  '</div>';
+}
+function renderCommandMap(arts){
+  const africaPath='M16,12 Q24,7 33,9 Q48,9 60,11 L63,13 Q67,22 70,32 Q76,37 83,42 '+
+    'Q74,48 69,51 Q66,60 63,70 Q60,80 55,87 Q50,95 45,97 Q40,94 39,87 Q35,74 34,63 '+
+    'Q33,57 36,54 Q33,52 29,51 Q22,52 17,50 Q9,46 6,36 Q6,30 10,23 Q12,17 16,12 Z';
+  const madagascar='M71,70 Q75,72 74,78 Q72,85 69,83 Q66,76 71,70 Z';
+  const cx=42, cy=56;
+  const counts={};
+  arts.forEach(function(a){ COMMAND_HUBS.forEach(function(h){ if(ccHubMatch(a,h)){ counts[h.city]=(counts[h.city]||0)+1; } }); });
+  let spokes='', nodes='';
+  COMMAND_HUBS.forEach(function(h){
+    const cnt=counts[h.city]||0;
+    const sel=CC_HUB===h.city;
+    const r=(1.0+Math.min(cnt,6)*0.26).toFixed(2);
+    const ringR=(Number(r)+1.4).toFixed(2);
+    const label=h.island?h.country:h.city;
+    if(!h.island) spokes+='<line class="cc-spoke" x1="'+cx+'" y1="'+cy+'" x2="'+h.x+'" y2="'+h.y+'"/>';
+    const cls='cc-node'+(cnt>0?' q':'')+(h.island?' island':'')+(sel?' sel':'');
+    const pulse = cnt>0 ? '<circle class="cc-pulse" cx="'+h.x+'" cy="'+h.y+'" r="'+r+'">'+
+        '<animate attributeName="r" from="'+r+'" to="'+(Number(r)+3).toFixed(2)+'" dur="2.2s" repeatCount="indefinite"/>'+
+        '<animate attributeName="opacity" from="0.7" to="0" dur="2.2s" repeatCount="indefinite"/></circle>' : '';
+    const bx=(Number(h.x)+Number(r)+1.3).toFixed(2), by=(Number(h.y)-Number(r)-1.2).toFixed(2);
+    const badge = cnt>0 ? '<circle cx="'+bx+'" cy="'+by+'" r="1.6" fill="var(--cc-gold)"/><text class="cnt" x="'+bx+'" y="'+(Number(by)+0.7).toFixed(2)+'">'+cnt+'</text>' : '';
+    const shape = h.island
+      ? '<rect class="dot" x="'+(h.x-0.85)+'" y="'+(h.y-0.85)+'" width="1.7" height="1.7" transform="rotate(45 '+h.x+' '+h.y+')"/>'
+      : '<circle class="dot" cx="'+h.x+'" cy="'+h.y+'" r="'+r+'"/>';
+    nodes+='<g class="'+cls+'" data-cchub="'+esc(h.city)+'" role="button" tabindex="0" aria-label="'+esc(label+' — '+cnt+' incoming')+'">'+
+      pulse+
+      '<circle class="ring" cx="'+h.x+'" cy="'+h.y+'" r="'+ringR+'"/>'+
+      shape+
+      '<text class="lbl" x="'+(Number(h.x)+Number(r)+1).toFixed(2)+'" y="'+(Number(h.y)+0.7).toFixed(2)+'">'+esc(label)+'</text>'+
+      badge+
+      '<circle class="cc-hit" cx="'+h.x+'" cy="'+h.y+'" r="4.4"/>'+
+    '</g>';
+  });
+  return '<div class="cc-mapwrap">'+
+    '<div class="cc-corner tl"></div><div class="cc-corner tr"></div><div class="cc-corner bl"></div><div class="cc-corner br"></div>'+
+    '<div class="cc-map-h">◢ LIVE THEATRE · AFRICA + ISLAND STATES · <b>'+arts.length+' INCOMING</b></div>'+
+    '<svg class="cc-svg" viewBox="0 0 100 108" role="img" aria-label="Command map of Africa and island nations — tap a bureau to filter the queue">'+
+      '<path class="cc-cont" d="'+africaPath+'"/>'+
+      '<path class="cc-cont" d="'+madagascar+'"/>'+
+      spokes+
+      '<circle cx="'+cx+'" cy="'+cy+'" r="2.2" fill="none" stroke="var(--cc-gold)" stroke-width="0.3"/>'+
+      '<circle cx="'+cx+'" cy="'+cy+'" r="0.8" fill="var(--cc-gold)"/>'+
+      nodes+
+    '</svg>'+
+  '</div>';
+}
+function ccBulkHTML(arts){
+  const sel=CC_SEL?CC_SEL.size:0;
+  const q=reviewQueue().length;
+  return '<span>'+arts.length+' shown · '+q+' in queue</span>'+
+    (sel? '<span style="color:var(--cc-gold)"> · '+sel+' selected</span>':'')+
+    '<span class="sp"></span>'+
+    (sel? '<button class="cc-mini go" data-ccbulk="approve-sel">✓ Approve selected ('+sel+')</button><button class="cc-mini" data-ccbulk="reject-sel">✕ Reject selected</button>' :
+      (arts.length? '<button class="cc-mini go" data-ccbulk="approve-all">✓ Approve all '+arts.length+'</button>':''));
+}
+function commandQueueHTML(arts){
+  if(!arts.length){
+    const total=reviewQueue().length;
+    return '<div class="cc-empty"><b>'+(total? 'No stories match this filter' : 'Queue clear — nothing awaiting review')+'</b>'+
+      (total? 'Adjust the vertical or map filter to see the other '+total+' in the queue.' :
+              'New wire stories land here automatically. Pull the wire from Articles, or wait for the next scheduled fetch.')+'</div>';
+  }
+  let html='';
+  arts.forEach(function(a){
+    const sel=CC_SEL && CC_SEL.has(a.slug);
+    const rs=regionSlugFor(a);
+    const origin=(a.dateline && a.dateline!=='Wire') ? a.dateline : (rs?rlabel(rs):'Unplaced');
+    const src=(a.sourceLabel||a.byline||'wire');
+    const snip=(a.standfirst||(a.body&&a.body[0])||'').slice(0,190);
+    html+='<div class="cc-card'+(sel?' sel':'')+'" data-cccard="'+esc(a.slug)+'">'+
+      '<div class="cc-card-top">'+
+        '<input type="checkbox" class="cc-chk" data-ccsel="'+esc(a.slug)+'"'+(sel?' checked':'')+' aria-label="Select story">'+
+        '<span class="cc-vtag">'+esc(vshort(a.vertical))+'</span>'+
+        '<span class="cc-origin">◉ '+esc(origin)+'</span>'+
+        '<span class="t">'+esc(timeAgo(a.publishedAt))+' · '+esc(src)+'</span>'+
+      '</div>'+
+      '<div class="cc-h">'+esc(a.headline)+'</div>'+
+      '<div class="cc-s">'+esc(snip)+'</div>'+
+      '<div class="cc-acts">'+
+        '<button class="cc-btn approve" data-ccapprove="'+esc(a.slug)+'">✓ Approve → Front page</button>'+
+        '<button class="cc-btn reject" data-ccreject="'+esc(a.slug)+'">✕ Reject</button>'+
+        (a.sourceUrl?'<a class="cc-btn edit" href="'+esc(a.sourceUrl)+'" target="_blank" rel="noopener">Source ↗</a>':'')+
+        '<button class="cc-btn edit" data-ccedit="'+esc(a.slug)+'">✎ Open</button>'+
+      '</div>'+
+    '</div>';
+  });
+  return html;
+}
+function viewAdminCommand(){
+  if(CC_SEL===null) CC_SEL=new Set();
+  const arts=ccFiltered();
+  const q=reviewQueue();
+  const today=new Date(); today.setHours(0,0,0,0);
+  const approvedToday=ARTICLES.filter(function(a){ return a.status==='published' && a.source==='rss' && a.publishedAt && new Date(a.publishedAt)>=today; }).length;
+  const rejected=ARTICLES.filter(function(a){ return a.status==='rejected'; }).length;
+  const nations=activeNationSet(q).size;
+
+  let chips='<span class="fl">Filter</span>';
+  chips+='<button class="cc-chip'+(CC_VERT?'':' on')+'" data-ccvert="">All</button>';
+  CMAP_FILTERS.forEach(function(k){ chips+='<button class="cc-chip'+(CC_VERT===k?' on':'')+'" data-ccvert="'+esc(k)+'">'+esc(vshort(k))+'</button>'; });
+  const hubFilter = CC_HUB ? '<span class="cc-chip on" style="cursor:default">◉ '+esc(CC_HUB)+'</span>' : '';
+  const anyFilter = CC_VERT || CC_HUB;
+
+  return ''+
+  '<div class="cc">'+
+    '<div class="cc-top">'+
+      '<div class="cc-badge"><span class="tgt">⌖</span> Newsroom Command Center</div>'+
+      '<span class="cc-live"><span class="blip"></span> Live intake</span>'+
+      '<span class="cc-clock" id="cc-clock">'+esc(commandClock())+'</span>'+
+      '<span class="cc-top-links"><a href="#/admin">Articles</a><a href="#/">Site ↗</a></span>'+
+    '</div>'+
+    ccNav('command')+
+    '<div class="cc-stats">'+
+      '<div class="cc-stat hot"><div class="n">'+q.length+'</div><div class="l">Awaiting review</div></div>'+
+      '<div class="cc-stat ok"><div class="n">'+approvedToday+'</div><div class="l">Approved today</div></div>'+
+      '<div class="cc-stat no"><div class="n">'+rejected+'</div><div class="l">Rejected</div></div>'+
+      '<div class="cc-stat"><div class="n">'+nations+'</div><div class="l">Nations in queue</div></div>'+
+    '</div>'+
+    '<div class="cc-body">'+
+      renderCommandMap(arts)+
+      '<div class="cc-panel">'+
+        '<div class="cc-filter">'+chips+hubFilter+(anyFilter?'<button class="cc-clear" id="cc-clear">✕ clear</button>':'')+'</div>'+
+        '<div class="cc-bulk" id="cc-bulk">'+ccBulkHTML(arts)+'</div>'+
+        '<div class="cc-queue" id="cc-queue">'+commandQueueHTML(arts)+'</div>'+
+      '</div>'+
+    '</div>'+
+  '</div>';
+}
+function renderCCBulk(){ const el=document.getElementById('cc-bulk'); if(el) el.innerHTML=ccBulkHTML(ccFiltered()); }
+async function ccAct(slug, status){
+  const ok=await setArticleStatus(slug, status);
+  if(CC_SEL) CC_SEL.delete(slug);
+  toast(ok?(status==='published'?'✓ Approved — live on the front page.':'Rejected.'):'Saved locally · sign in to sync.');
+  route();
+}
+async function ccBulk(slugs, status){
+  slugs=(slugs||[]).filter(Boolean);
+  if(!slugs.length) return;
+  if(status==='rejected' && !confirm('Reject '+slugs.length+' stor'+(slugs.length===1?'y':'ies')+'? They stay off the front page.')) return;
+  const rows=[];
+  slugs.forEach(function(s){ const a=ARTICLES.find(function(x){return x.slug===s;}); if(a){ a.status=status; if(CC_SEL) CC_SEL.delete(s); rows.push(a); } });
+  saveCache(ARTICLES);
+  toast((status==='published'?'✓ Approved ':'Rejected ')+rows.length+' stor'+(rows.length===1?'y':'ies')+' — syncing…');
+  route();
+  const ok=await dbUpsert(rows);
+  if(!ok) toast('Saved locally · sign in to sync to the database.');
+}
+function bindCommandCenter(){
+  document.querySelectorAll('[data-ccvert]').forEach(function(b){
+    b.addEventListener('click',function(){ CC_VERT=b.getAttribute('data-ccvert')||null; route(); });
+  });
+  const clear=document.getElementById('cc-clear'); if(clear) clear.addEventListener('click',function(){ CC_VERT=null; CC_HUB=null; route(); });
+  const svg=document.querySelector('.cc-svg');
+  if(svg){
+    const pick=function(t){ const g=t.closest('[data-cchub]'); if(!g) return; const c=g.getAttribute('data-cchub'); CC_HUB=(CC_HUB===c?null:c); route(); };
+    svg.addEventListener('click',function(e){ pick(e.target); });
+    svg.addEventListener('keydown',function(e){ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); pick(e.target); } });
+  }
+  const queue=document.getElementById('cc-queue');
+  if(queue) queue.addEventListener('click',function(e){
+    const chk=e.target.closest('[data-ccsel]');
+    if(chk){ const slug=chk.getAttribute('data-ccsel'); if(chk.checked) CC_SEL.add(slug); else CC_SEL.delete(slug);
+      const card=chk.closest('.cc-card'); if(card) card.classList.toggle('sel', chk.checked); renderCCBulk(); return; }
+    const ap=e.target.closest('[data-ccapprove]'); if(ap){ ccAct(ap.getAttribute('data-ccapprove'),'published'); return; }
+    const rj=e.target.closest('[data-ccreject]'); if(rj){ ccAct(rj.getAttribute('data-ccreject'),'rejected'); return; }
+    const ed=e.target.closest('[data-ccedit]'); if(ed){ location.hash='#/admin/edit/'+ed.getAttribute('data-ccedit'); return; }
+  });
+  const panel=document.querySelector('.cc-panel');
+  if(panel) panel.addEventListener('click',function(e){
+    const b=e.target.closest('[data-ccbulk]'); if(!b) return;
+    const k=b.getAttribute('data-ccbulk');
+    if(k==='approve-all') ccBulk(ccFiltered().map(function(a){return a.slug;}),'published');
+    else if(k==='approve-sel') ccBulk(Array.from(CC_SEL||[]),'published');
+    else if(k==='reject-sel') ccBulk(Array.from(CC_SEL||[]),'rejected');
+  });
+  if(CC_CLOCK_TIMER){ clearInterval(CC_CLOCK_TIMER); }
+  CC_CLOCK_TIMER=setInterval(function(){ const el=document.getElementById('cc-clock'); if(el) el.textContent=commandClock(); },30000);
+}
+
 // ── VIEW: NEWSLETTER ──────────────────────────────────────────
 function viewNewsletter(){
   const pub=published();
@@ -4752,6 +5091,7 @@ function route(){
       else if(!isAuthed()) html=viewAdminLogin('#'+hash);
       else if(!isEditor()) html=viewNotEditor();
       else if(parts[1]==='new') html=viewNewArticle();
+      else if(parts[1]==='command') html=viewAdminCommand();
       else if(parts[1]==='leads') html=viewAdminLeads();
       else if(parts[1]==='comments') html=viewAdminComments();
       else if(parts[1]==='metrics') html=viewAdminMetrics();
@@ -4842,6 +5182,10 @@ function bindView(){
   if((location.hash||'').indexOf('#/admin/metrics')===0){
     METRICS_TIMER=setInterval(function(){ if(!document.hidden) refreshMetrics(); },30000);
   }
+
+  // Newsroom Command Center (editorial approval gate)
+  if(CC_CLOCK_TIMER){ clearInterval(CC_CLOCK_TIMER); CC_CLOCK_TIMER=null; }
+  if((location.hash||'').indexOf('#/admin/command')===0){ try{ bindCommandCenter(); }catch(e){ console.warn('command center',e); } }
 
   // Copy-link share button (article pages)
   document.querySelectorAll('[data-share-url]').forEach(function(btn){
