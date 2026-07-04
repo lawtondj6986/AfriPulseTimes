@@ -46,8 +46,8 @@ where id = (select id from auth.users where lower(email)=lower('YOUR_EMAIL_HERE'
 To add more editors later, run the same statement with their email. To verify:
 
 ```sql
-select email, role from auth.users u join public.profiles p on p.id=u.id
-where role in ('editor','admin');
+select u.email, p.role from auth.users u join public.profiles p on p.id = u.id
+where p.role in ('editor','admin');
 ```
 
 ## How it behaves
