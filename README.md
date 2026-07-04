@@ -83,6 +83,9 @@ api/                     Vercel serverless functions
   contact.js             Investor enquiry -> leads table + email (Resend)
   translate.js           AI article translation to FR/AR/SW/PT (cron, Claude)
   polish.js              AI cleanup of choppy RSS text -> clean briefs (cron, Claude)
+  create-checkout.js     Start a Stripe subscription checkout (Phase 3)
+  stripe-webhook.js      Stripe webhook -> sets profiles.tier (Phase 3)
+  billing-portal.js      Stripe billing portal (manage/cancel) (Phase 3)
   market-data.js         Live African FX rates for the ticker
 tests/                   Unit tests (npm test) + optional browser audit
 public/

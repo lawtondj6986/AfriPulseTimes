@@ -32,6 +32,13 @@ written into `public/supabase-config.js`. Change them → rebuild/redeploy.
 | `LEADS_NOTIFY_TO` | Optional | `contact.js` | Recipient(s) for enquiry alerts. Comma-separated for multiple. Required (with `RESEND_API_KEY`) to actually send. |
 | `LEADS_NOTIFY_FROM` | Optional | `contact.js` | Sender address for alerts. Defaults to Resend's shared `onboarding@resend.dev` (delivers only to your account email until you verify a domain). |
 | `RESEND_API_URL` | Optional | `contact.js` | Override the Resend endpoint. Defaults to `https://api.resend.com/emails`. Testing only. |
+| `STRIPE_SECRET_KEY` | ✅ for paid tiers | `create-checkout.js`, `stripe-webhook.js`, `billing-portal.js` | Stripe secret key (`sk_test_…` / `sk_live_…`). **Secret.** |
+| `STRIPE_WEBHOOK_SECRET` | ✅ for paid tiers | `stripe-webhook.js` | Signing secret (`whsec_…`) of the Stripe webhook endpoint. **Secret.** |
+| `STRIPE_PRICE_MEMBER_MONTH` | ✅ for paid tiers | `create-checkout.js` | Stripe Price ID for Member monthly. |
+| `STRIPE_PRICE_MEMBER_YEAR` | ✅ for paid tiers | `create-checkout.js` | Stripe Price ID for Member annual. |
+| `STRIPE_PRICE_INSIDER_MONTH` | ✅ for paid tiers | `create-checkout.js` | Stripe Price ID for Insider monthly. |
+| `STRIPE_PRICE_INSIDER_YEAR` | ✅ for paid tiers | `create-checkout.js` | Stripe Price ID for Insider annual. |
+| `SITE_URL` | Optional | Stripe fns | Fallback site origin for checkout redirect URLs when the request has no Origin header. |
 
 ## Where each variable lives
 

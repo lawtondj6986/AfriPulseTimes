@@ -188,6 +188,17 @@ sees visible comments — all enforced in the database. Needs the
 
 ---
 
+## 💳 Membership / paid tiers (Phase 3)
+
+Readers can subscribe as **Member** ($5/mo · $50/yr) or **Insider** ($18/mo ·
+$180/yr) via **Stripe Checkout** at `#/upgrade` (also linked from the profile and
+footer). Members read **ad-light**. A reader's tier is set only by the Stripe
+webhook after payment — never by the browser — and canceling flips them back to
+free automatically. Setup (Stripe products, keys, webhook) and the important
+merchant-country note are in [`PHASE3_SUBSCRIPTIONS.md`](./PHASE3_SUBSCRIPTIONS.md).
+
+---
+
 ## Editing content in general
 
 - **Stories:** Admin → Articles (create / edit / publish / delete, upload images).
