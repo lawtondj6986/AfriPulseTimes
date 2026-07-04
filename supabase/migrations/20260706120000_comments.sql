@@ -136,7 +136,15 @@ alter table public.comments        enable row level security;
 alter table public.comment_likes   enable row level security;
 alter table public.comment_reports enable row level security;
 
--- comments: public reads visible; editors read everything.
+-- comments: public reads visible; editors read everything. (drop-if-exists first
+-- so the whole file is safe to re-run.)
+drop policy if exists "Public read visible comments" on public.comments;
+drop policy if exists "Editors read all comments" on public.comments;
+drop policy if exists "Users insert own comments" on public.comments;
+drop policy if exists "Users update own comments" on public.comments;
+drop policy if exists "Editors update any comment" on public.comments;
+drop policy if exists "Users delete own comments" on public.comments;
+drop policy if exists "Editors delete any comment" on public.comments;
 create policy "Public read visible comments" on public.comments for select using (status = 'visible');
 create policy "Editors read all comments" on public.comments for select to authenticated using (public.is_editor(auth.uid()));
 create policy "Users insert own comments" on public.comments for insert to authenticated with check (user_id = auth.uid());
@@ -146,11 +154,16 @@ create policy "Users delete own comments" on public.comments for delete to authe
 create policy "Editors delete any comment" on public.comments for delete to authenticated using (public.is_editor(auth.uid()));
 
 -- likes: anyone reads (for counts), a user manages only their own like.
+drop policy if exists "Public read comment likes" on public.comment_likes;
+drop policy if exists "Users like as themselves" on public.comment_likes;
+drop policy if exists "Users remove own like" on public.comment_likes;
 create policy "Public read comment likes" on public.comment_likes for select using (true);
 create policy "Users like as themselves" on public.comment_likes for insert to authenticated with check (user_id = auth.uid());
 create policy "Users remove own like" on public.comment_likes for delete to authenticated using (user_id = auth.uid());
 
 -- reports: a user files as themselves; only editors can read the report log.
+drop policy if exists "Users report as themselves" on public.comment_reports;
+drop policy if exists "Editors read reports" on public.comment_reports;
 create policy "Users report as themselves" on public.comment_reports for insert to authenticated with check (user_id = auth.uid());
 create policy "Editors read reports" on public.comment_reports for select to authenticated using (public.is_editor(auth.uid()));
 
