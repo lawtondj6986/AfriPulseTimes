@@ -43,6 +43,10 @@ still works, because `published` was always allowed).
 - **Bulk:** tick the checkboxes and **Approve/Reject selected**, or **Approve all
   shown** to clear a filtered batch in one click.
 - **HUD stats:** Awaiting review · Approved today · Rejected · Nations in queue.
+- **Audit trail:** approving a story stamps **who** cleared it and **when**. It
+  shows in the Command Center's "✓ Cleared to front page today" strip and as a
+  green banner in the CMS editor ("Approved to the front page by … · …"). Stored
+  in the article payload (no schema change), so it survives round-trips.
 
 ## Where it lives in the code
 

@@ -1023,6 +1023,14 @@ html[dir="rtl"] .nl-modal-x{right:auto;left:14px}
 .cc-btn.edit{margin-left:auto;color:#7C8A83}
 .cc-btn.edit:hover{border-color:var(--cc-phos-dim);color:var(--cc-ink)}
 .cc-btn .src{}
+.cc-cleared{border-bottom:1px solid var(--cc-line);background:rgba(110,231,168,.04);padding:8px 16px 10px}
+.cc-cleared-h{font-size:9.5px;letter-spacing:.14em;color:var(--cc-phos);text-transform:uppercase;margin-bottom:6px}
+.cc-cleared-row{display:flex;align-items:center;gap:8px;font-size:11px;padding:2px 0;color:#9FB0A8}
+.cc-cleared-row .ck{color:var(--cc-phos)}
+.cc-cleared-row .hd{color:var(--cc-ink);font-family:'DM Sans',sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0}
+.cc-cleared-row .by{color:var(--cc-phos-dim);white-space:nowrap;font-size:10px;letter-spacing:.03em}
+.adm-audit{padding:9px 22px;background:rgba(46,160,90,.12);border-bottom:1px solid #2A2D31;color:#7FE0A8;font-size:12px;letter-spacing:.02em}
+.adm-audit b{color:#CDEBD8;font-weight:600}
 .cc-empty{padding:60px 24px;text-align:center;color:#5F6E67;font-size:12.5px;line-height:1.8;letter-spacing:.04em}
 .cc-empty b{color:var(--cc-phos);display:block;font-size:14px;margin-bottom:6px}
 @media (max-width:920px){.cc-body{grid-template-columns:1fr}.cc-mapwrap{border-right:0;border-bottom:1px solid var(--cc-line);min-height:380px}.cc-queue{max-height:none}.cc-stat .n{font-size:20px}}
@@ -4401,8 +4409,13 @@ function adminEditor(a){
     vertOpts += '<option value="'+esc(k)+'"'+(a.vertical===k?' selected':'')+'>'+esc(vlabel(k))+'</option>';
   }
   let statusOpts='';
-  for(const s of ['draft','review','published']){
+  for(const s of ['draft','review','published','rejected']){
     statusOpts += '<option value="'+esc(s)+'"'+(a.status===s?' selected':'')+'>'+esc(s)+'</option>';
+  }
+  let auditBanner='';
+  if(a.approved_by){
+    let when=''; try{ when=' · '+new Date(a.approved_at).toLocaleString(); }catch(e){}
+    auditBanner='<div class="adm-audit">✓ Approved to the front page by <b>'+esc(a.approved_by)+'</b>'+esc(when)+'</div>';
   }
   let tagsHTML='';
   for(const tg of (a.tags||[])){
@@ -4420,6 +4433,7 @@ function adminEditor(a){
       '<button class="adm-btn primary" id="save-btn" type="button">'+esc(t('save'))+'</button>'+
     '</div>'+
   '</div>'+
+  auditBanner+
   '<form class="adm-form" id="article-form" data-original-slug="'+esc(a.slug||'')+'" onsubmit="return false">'+
     '<div class="adm-slug">🔗 Slug<span class="u" id="slug-preview">'+esc(slugDisplay)+'</span></div>'+
     '<div class="adm-field">'+
@@ -4914,13 +4928,37 @@ function viewAdminCommand(){
       '<div class="cc-panel">'+
         '<div class="cc-filter">'+chips+hubFilter+(anyFilter?'<button class="cc-clear" id="cc-clear">✕ clear</button>':'')+'</div>'+
         '<div class="cc-bulk" id="cc-bulk">'+ccBulkHTML(arts)+'</div>'+
+        ccClearedHTML()+
         '<div class="cc-queue" id="cc-queue">'+commandQueueHTML(arts)+'</div>'+
       '</div>'+
     '</div>'+
   '</div>';
 }
 function renderCCBulk(){ const el=document.getElementById('cc-bulk'); if(el) el.innerHTML=ccBulkHTML(ccFiltered()); }
+// Audit trail: stamp who cleared a story to the front page, and when. Rides along
+// in the article payload (jsonb) — no schema change — so it round-trips through
+// Supabase and shows in the CMS and the Command Center's "cleared today" log.
+function approverName(){ return (PROFILE && (PROFILE.display_name||PROFILE.handle)) || currentUserEmail() || 'Editor'; }
+function stampApproval(a){ if(!a) return; a.approved_by=approverName(); a.approved_at=new Date().toISOString(); }
+function clearedToday(){
+  const t=new Date(); t.setHours(0,0,0,0);
+  return ARTICLES.filter(function(a){ return a.status==='published' && a.approved_at && new Date(a.approved_at)>=t; })
+    .sort(function(a,b){ return new Date(b.approved_at)-new Date(a.approved_at); });
+}
+function ccClearedHTML(){
+  const c=clearedToday();
+  if(!c.length) return '';
+  let items='';
+  c.slice(0,6).forEach(function(a){
+    items+='<div class="cc-cleared-row"><span class="ck">✓</span>'+
+      '<span class="hd">'+esc(a.headline)+'</span>'+
+      '<span class="by">'+esc(a.approved_by||'editor')+' · '+esc(timeAgo(a.approved_at))+'</span></div>';
+  });
+  return '<div class="cc-cleared"><div class="cc-cleared-h">✓ Cleared to front page today · '+c.length+'</div>'+items+'</div>';
+}
 async function ccAct(slug, status){
+  const a=ARTICLES.find(function(x){ return x.slug===slug; });
+  if(a && status==='published') stampApproval(a);
   const ok=await setArticleStatus(slug, status);
   if(CC_SEL) CC_SEL.delete(slug);
   toast(ok?(status==='published'?'✓ Approved — live on the front page.':'Rejected.'):'Saved locally · sign in to sync.');
@@ -4931,7 +4969,7 @@ async function ccBulk(slugs, status){
   if(!slugs.length) return;
   if(status==='rejected' && !confirm('Reject '+slugs.length+' stor'+(slugs.length===1?'y':'ies')+'? They stay off the front page.')) return;
   const rows=[];
-  slugs.forEach(function(s){ const a=ARTICLES.find(function(x){return x.slug===s;}); if(a){ a.status=status; if(CC_SEL) CC_SEL.delete(s); rows.push(a); } });
+  slugs.forEach(function(s){ const a=ARTICLES.find(function(x){return x.slug===s;}); if(a){ a.status=status; if(status==='published') stampApproval(a); if(CC_SEL) CC_SEL.delete(s); rows.push(a); } });
   saveCache(ARTICLES);
   toast((status==='published'?'✓ Approved ':'Rejected ')+rows.length+' stor'+(rows.length===1?'y':'ies')+' — syncing…');
   route();
