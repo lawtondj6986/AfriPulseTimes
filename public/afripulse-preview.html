@@ -1425,8 +1425,193 @@ function applyLang(code){
 function setLang(code){
   if(!applyLang(code)) return;
   try{ localStorage.setItem('afripulse_lang', code); }catch(e){}
-  toast(code==='en'?'English':code==='fr'?'Français':'العربية');
+  const names={en:'English',fr:'Français',ar:'العربية',sw:'Kiswahili',pt:'Português'};
+  toast(names[code]||code);
   route();
+}
+
+// ── READER-UI I18N (RUI) ──────────────────────────────────────
+// Flat dictionary for the newer reader-facing surfaces (map panel, join,
+// profile, comments, membership) — the five languages kept ADJACENT per key so
+// they can't drift out of alignment. Every key must have en/fr/ar/sw/pt; the
+// reader-i18n test fails the build if one is missing. Use ’ (U+2019) for
+// apostrophes so the single-quoted literals stay valid. Placeholders: %s (one
+// value), %c city, %v vertical, %r region — filled by rt(key,{s:..}).
+const RUI = {
+  // Live coverage map
+  map_eyebrow:{en:'One pulse · 54 nations',fr:'Un seul pouls · 54 nations',ar:'نبض واحد · 54 دولة',sw:'Mpigo mmoja · mataifa 54',pt:'Um só pulso · 54 nações'},
+  map_h:{en:'Live across the continent.',fr:'En direct sur tout le continent.',ar:'مباشرة عبر القارة.',sw:'Moja kwa moja katika bara zima.',pt:'Ao vivo por todo o continente.'},
+  map_p:{en:'Every dot is a bureau on the ground — Dakar to Nairobi, Cairo to Cape Town — filing in real time into one pan-African newsroom.',fr:'Chaque point est un bureau sur le terrain — de Dakar à Nairobi, du Caire au Cap — qui publie en temps réel dans une seule rédaction panafricaine.',ar:'كل نقطة هي مكتب ميداني — من داكار إلى نيروبي، ومن القاهرة إلى كيب تاون — ينشر بشكل فوري في غرفة أخبار أفريقية واحدة.',sw:'Kila nukta ni afisi iliyopo eneo la tukio — Dakar hadi Nairobi, Cairo hadi Cape Town — ikiwasilisha habari papo hapo katika chumba kimoja cha habari cha Afrika nzima.',pt:'Cada ponto é uma redação no terreno — de Dakar a Nairóbi, do Cairo à Cidade do Cabo — a publicar em tempo real numa única redação pan-africana.'},
+  map_nations:{en:'Nations active',fr:'Nations actives',ar:'دول نشطة',sw:'Mataifa hai',pt:'Nações ativas'},
+  map_bureaux:{en:'Bureaux',fr:'Bureaux',ar:'مكاتب',sw:'Afisi',pt:'Redações'},
+  map_stories:{en:'Stories live',fr:'Articles en direct',ar:'أخبار مباشرة',sw:'Habari moja kwa moja',pt:'Notícias ao vivo'},
+  map_all:{en:'All',fr:'Tout',ar:'الكل',sw:'Zote',pt:'Tudo'},
+  map_hint:{en:'👆 Tap a glowing city to read its stories',fr:'👆 Touchez une ville lumineuse pour lire ses articles',ar:'👆 اضغط على مدينة متوهّجة لقراءة أخبارها',sw:'👆 Gusa mji unaong’aa kusoma habari zake',pt:'👆 Toque numa cidade luminosa para ler as suas notícias'},
+  map_sponsor:{en:'Presented in partnership with —',fr:'Présenté en partenariat avec —',ar:'مقدَّم بالشراكة مع —',sw:'Imewasilishwa kwa ushirikiano na —',pt:'Apresentado em parceria com —'},
+  map_sponsor_link:{en:'become the founding sponsor of Africa’s live map →',fr:'devenez le sponsor fondateur de la carte en direct de l’Afrique →',ar:'كن الراعي المؤسِّس لخريطة أفريقيا المباشرة →',sw:'kuwa mfadhili mwanzilishi wa ramani ya moja kwa moja ya Afrika →',pt:'torne-se o patrocinador fundador do mapa ao vivo de África →'},
+
+  // Hub panel
+  hub_empty:{en:'No %v stories from %c just yet — our bureau is live and reporting. Explore the whole continent.',fr:'Pas encore d’articles %v depuis %c — notre bureau est en direct et couvre l’actualité. Explorez tout le continent.',ar:'لا توجد أخبار %v من %c حتى الآن — مكتبنا مباشر ويغطي الأحداث. استكشف القارة بأكملها.',sw:'Bado hakuna habari za %v kutoka %c — afisi yetu iko moja kwa moja na inaripoti. Chunguza bara zima.',pt:'Ainda sem notícias %v de %c — a nossa redação está ao vivo e a reportar. Explore todo o continente.'},
+  hub_close:{en:'Close',fr:'Fermer',ar:'إغلاق',sw:'Funga',pt:'Fechar'},
+  hub_story_one:{en:'live story',fr:'article en direct',ar:'خبر مباشر',sw:'habari moja kwa moja',pt:'notícia ao vivo'},
+  hub_story_many:{en:'live stories',fr:'articles en direct',ar:'أخبار مباشرة',sw:'habari moja kwa moja',pt:'notícias ao vivo'},
+  hub_seeall:{en:'See all %r coverage →',fr:'Voir toute la couverture %r →',ar:'عرض كل تغطية %r →',sw:'Ona habari zote za %r →',pt:'Ver toda a cobertura de %r →'},
+
+  // Join / create profile
+  join_redirect:{en:'Redirecting to your profile…',fr:'Redirection vers votre profil…',ar:'جارٍ التوجيه إلى ملفك الشخصي…',sw:'Inaelekeza kwenye wasifu wako…',pt:'A redirecionar para o seu perfil…'},
+  join_eyebrow:{en:'Join AfriPulse Times · Free forever',fr:'Rejoignez AfriPulse Times · Gratuit à vie',ar:'انضم إلى AfriPulse Times · مجاني للأبد',sw:'Jiunge na AfriPulse Times · Bure milele',pt:'Junte-se ao AfriPulse Times · Grátis para sempre'},
+  join_h:{en:'Create your free profile.',fr:'Créez votre profil gratuit.',ar:'أنشئ ملفك الشخصي المجاني.',sw:'Fungua wasifu wako bila malipo.',pt:'Crie o seu perfil gratuito.'},
+  join_sub:{en:'Comment on stories, save what you read, and get a feed tuned to you. We ask a little now and a little later — never all at once. One click, no password.',fr:'Commentez les articles, enregistrez vos lectures et obtenez un fil adapté à vous. Nous demandons un peu maintenant et un peu plus tard — jamais tout d’un coup. Un clic, sans mot de passe.',ar:'علّق على الأخبار، واحفظ ما تقرأه، واحصل على تغذية مخصّصة لك. نطلب القليل الآن والقليل لاحقًا — وليس كل شيء دفعة واحدة. نقرة واحدة، دون كلمة مرور.',sw:'Toa maoni kuhusu habari, hifadhi unachosoma, na upate mkondo uliolengwa kwako. Tunauliza kidogo sasa na kidogo baadaye — si vyote kwa mara moja. Bofya mara moja, bila nywila.',pt:'Comente notícias, guarde o que lê e receba um feed à sua medida. Pedimos um pouco agora e um pouco depois — nunca tudo de uma vez. Um clique, sem palavra-passe.'},
+  f_fullname:{en:'Full name',fr:'Nom complet',ar:'الاسم الكامل',sw:'Jina kamili',pt:'Nome completo'},
+  ph_yourname:{en:'Your name',fr:'Votre nom',ar:'اسمك',sw:'Jina lako',pt:'O seu nome'},
+  f_email:{en:'Email',fr:'E-mail',ar:'البريد الإلكتروني',sw:'Barua pepe',pt:'E-mail'},
+  f_country:{en:'Country',fr:'Pays',ar:'الدولة',sw:'Nchi',pt:'País'},
+  tag_regionfeed:{en:'powers your region feed',fr:'alimente votre fil régional',ar:'يشغّل تغذية منطقتك',sw:'huendesha mkondo wa eneo lako',pt:'alimenta o feed da sua região'},
+  f_preflang:{en:'Preferred language',fr:'Langue préférée',ar:'اللغة المفضّلة',sw:'Lugha unayopendelea',pt:'Idioma preferido'},
+  f_follow:{en:'What do you follow?',fr:'Que suivez-vous ?',ar:'ماذا تتابع؟',sw:'Unafuatilia nini?',pt:'O que acompanha?'},
+  opt_pickfew:{en:'pick a few',fr:'choisissez-en quelques-uns',ar:'اختر بعضها',sw:'chagua machache',pt:'escolha alguns'},
+  tag_tunesfeed:{en:'tunes your feed',fr:'ajuste votre fil',ar:'يضبط تغذيتك',sw:'hurekebisha mkondo wako',pt:'ajusta o seu feed'},
+  f_occupation:{en:'Occupation',fr:'Profession',ar:'المهنة',sw:'Kazi',pt:'Profissão'},
+  opt_optional:{en:'optional',fr:'facultatif',ar:'اختياري',sw:'si lazima',pt:'opcional'},
+  ph_occupation:{en:'e.g. Finance, Student, Journalist',fr:'ex. Finance, Étudiant, Journaliste',ar:'مثال: تمويل، طالب، صحفي',sw:'k.m. Fedha, Mwanafunzi, Mwandishi',pt:'ex. Finanças, Estudante, Jornalista'},
+  btn_createprofile:{en:'Create my profile →',fr:'Créer mon profil →',ar:'أنشئ ملفي الشخصي →',sw:'Fungua wasifu wangu →',pt:'Criar o meu perfil →'},
+  join_note_pre:{en:'Already have an account? Enter your email and we’ll sign you in. By joining you agree to our',fr:'Vous avez déjà un compte ? Saisissez votre e-mail et nous vous connecterons. En vous inscrivant, vous acceptez nos',ar:'هل لديك حساب بالفعل؟ أدخل بريدك الإلكتروني وسنسجّل دخولك. بالانضمام، فإنك توافق على',sw:'Tayari una akaunti? Weka barua pepe yako nasi tutakuingiza. Kwa kujiunga unakubali',pt:'Já tem uma conta? Introduza o seu e-mail e iniciamos a sua sessão. Ao juntar-se, aceita os nossos'},
+  word_terms:{en:'terms',fr:'conditions',ar:'الشروط',sw:'masharti',pt:'termos'},
+  word_privacy:{en:'privacy',fr:'confidentialité',ar:'الخصوصية',sw:'faragha',pt:'privacidade'},
+  join_note_post:{en:'You control your data.',fr:'Vous contrôlez vos données.',ar:'أنت تتحكم في بياناتك.',sw:'Wewe unadhibiti data yako.',pt:'Os seus dados são controlados por si.'},
+  toast_entername:{en:'Please enter your name.',fr:'Veuillez saisir votre nom.',ar:'يرجى إدخال اسمك.',sw:'Tafadhali weka jina lako.',pt:'Introduza o seu nome, por favor.'},
+  toast_validemail:{en:'Please enter a valid email.',fr:'Veuillez saisir un e-mail valide.',ar:'يرجى إدخال بريد إلكتروني صالح.',sw:'Tafadhali weka barua pepe halali.',pt:'Introduza um e-mail válido, por favor.'},
+  btn_sending:{en:'Sending…',fr:'Envoi…',ar:'جارٍ الإرسال…',sw:'Inatuma…',pt:'A enviar…'},
+  join_check_eyebrow:{en:'Check your inbox',fr:'Consultez votre boîte de réception',ar:'تحقّق من بريدك الوارد',sw:'Angalia kikasha chako',pt:'Verifique a sua caixa de entrada'},
+  join_almost:{en:'Almost there, %s.',fr:'Presque, %s.',ar:'اقتربت، %s.',sw:'Umekaribia, %s.',pt:'Quase lá, %s.'},
+  join_sent_sub:{en:'We sent a one-click sign-in link to %s. Open it on this device to finish creating your profile. You can close this tab.',fr:'Nous avons envoyé un lien de connexion en un clic à %s. Ouvrez-le sur cet appareil pour terminer la création de votre profil. Vous pouvez fermer cet onglet.',ar:'أرسلنا رابط دخول بنقرة واحدة إلى %s. افتحه على هذا الجهاز لإكمال إنشاء ملفك الشخصي. يمكنك إغلاق هذه الصفحة.',sw:'Tumetuma kiungo cha kuingia kwa mbofyo mmoja kwa %s. Kifungue kwenye kifaa hiki kumalizia kufungua wasifu wako. Unaweza kufunga kichupo hiki.',pt:'Enviámos um link de acesso com um clique para %s. Abra-o neste dispositivo para concluir a criação do seu perfil. Pode fechar este separador.'},
+  join_sent_note_pre:{en:'No email after a minute? Check spam, or',fr:'Pas d’e-mail après une minute ? Vérifiez les spams, ou',ar:'لم يصلك بريد بعد دقيقة؟ تحقّق من مجلد الرسائل غير المرغوبة، أو',sw:'Hakuna barua pepe baada ya dakika? Angalia taka, au',pt:'Sem e-mail após um minuto? Verifique o spam, ou'},
+  word_tryagain:{en:'try again',fr:'réessayez',ar:'حاول مرة أخرى',sw:'jaribu tena',pt:'tente novamente'},
+
+  // My profile
+  me_signin_wait:{en:'Please sign in…',fr:'Veuillez vous connecter…',ar:'يرجى تسجيل الدخول…',sw:'Tafadhali ingia…',pt:'Inicie sessão, por favor…'},
+  me_finishing_h:{en:'Finishing setup…',fr:'Finalisation…',ar:'جارٍ إنهاء الإعداد…',sw:'Inakamilisha usanidi…',pt:'A concluir a configuração…'},
+  me_finishing_sub:{en:'We couldn’t load your profile. If this persists, the profiles table may not be set up yet.',fr:'Nous n’avons pas pu charger votre profil. Si cela persiste, la table des profils n’est peut-être pas encore configurée.',ar:'تعذّر تحميل ملفك الشخصي. إذا استمر ذلك، فقد لا يكون جدول الملفات الشخصية معدًّا بعد.',sw:'Hatukuweza kupakia wasifu wako. Ikiendelea, huenda jedwali la wasifu bado halijawekwa.',pt:'Não foi possível carregar o seu perfil. Se persistir, a tabela de perfis pode ainda não estar configurada.'},
+  btn_retry:{en:'Retry',fr:'Réessayer',ar:'إعادة المحاولة',sw:'Jaribu tena',pt:'Tentar de novo'},
+  tier_reader:{en:'Reader',fr:'Lecteur',ar:'قارئ',sw:'Msomaji',pt:'Leitor'},
+  tier_member:{en:'Member',fr:'Membre',ar:'عضو',sw:'Mwanachama',pt:'Membro'},
+  tier_insider:{en:'Insider',fr:'Insider',ar:'Insider',sw:'Insider',pt:'Insider'},
+  chip_addinterests:{en:'+ add interests to tune your feed',fr:'+ ajoutez des centres d’intérêt pour ajuster votre fil',ar:'+ أضف اهتمامات لضبط تغذيتك',sw:'+ ongeza mambo unayopenda kurekebisha mkondo wako',pt:'+ adicione interesses para ajustar o seu feed'},
+  me_editorlink:{en:'You’re an editor · open the Newsroom →',fr:'Vous êtes rédacteur · ouvrir la rédaction →',ar:'أنت محرّر · افتح غرفة الأخبار →',sw:'Wewe ni mhariri · fungua Chumba cha Habari →',pt:'É editor · abrir a Redação →'},
+  me_membership:{en:'%s membership · ad-light & supporting the mission 💚',fr:'Abonnement %s · publicité réduite et soutien à la mission 💚',ar:'عضوية %s · إعلانات مخفّفة ودعم للرسالة 💚',sw:'Uanachama wa %s · matangazo machache na kuunga mkono dhamira 💚',pt:'Adesão %s · menos anúncios e a apoiar a missão 💚'},
+  btn_managesub:{en:'Manage subscription',fr:'Gérer l’abonnement',ar:'إدارة الاشتراك',sw:'Dhibiti usajili',pt:'Gerir subscrição'},
+  me_freeplan:{en:'You’re on the free plan.',fr:'Vous êtes sur l’offre gratuite.',ar:'أنت على الخطة المجانية.',sw:'Uko kwenye mpango wa bure.',pt:'Está no plano gratuito.'},
+  me_freeplan_sub:{en:'Go ad-light and back independent African journalism.',fr:'Passez en publicité réduite et soutenez un journalisme africain indépendant.',ar:'انتقل إلى إعلانات مخفّفة وادعم صحافة أفريقية مستقلة.',sw:'Nenda kwa matangazo machache na uunge mkono uandishi huru wa Afrika.',pt:'Reduza os anúncios e apoie o jornalismo africano independente.'},
+  btn_becomemember:{en:'Become a member →',fr:'Devenir membre →',ar:'كن عضوًا →',sw:'Kuwa mwanachama →',pt:'Tornar-se membro →'},
+  btn_editprofile:{en:'Edit profile',fr:'Modifier le profil',ar:'تعديل الملف الشخصي',sw:'Hariri wasifu',pt:'Editar perfil'},
+  bio_empty:{en:'Add a short bio so the community knows who you are.',fr:'Ajoutez une courte bio pour que la communauté sache qui vous êtes.',ar:'أضف نبذة قصيرة ليتعرّف المجتمع عليك.',sw:'Ongeza wasifu mfupi ili jamii ikujue.',pt:'Adicione uma breve bio para a comunidade saber quem é.'},
+  tab_mycomments:{en:'My comments',fr:'Mes commentaires',ar:'تعليقاتي',sw:'Maoni yangu',pt:'Os meus comentários'},
+  tab_saved:{en:'Saved stories',fr:'Articles enregistrés',ar:'الأخبار المحفوظة',sw:'Habari zilizohifadhiwa',pt:'Notícias guardadas'},
+  me_comments_empty:{en:'💬 Your comments will appear here once you join the conversation.',fr:'💬 Vos commentaires apparaîtront ici dès que vous rejoindrez la conversation.',ar:'💬 ستظهر تعليقاتك هنا بمجرد انضمامك إلى النقاش.',sw:'💬 Maoni yako yataonekana hapa mara utakapojiunga na mazungumzo.',pt:'💬 Os seus comentários aparecerão aqui assim que entrar na conversa.'},
+  edit_h:{en:'Edit your profile',fr:'Modifier votre profil',ar:'تعديل ملفك الشخصي',sw:'Hariri wasifu wako',pt:'Editar o seu perfil'},
+  btn_uploadphoto:{en:'Upload photo',fr:'Téléverser une photo',ar:'رفع صورة',sw:'Pakia picha',pt:'Carregar foto'},
+  upload_hint:{en:'JPG/PNG/WebP, up to 2 MB',fr:'JPG/PNG/WebP, jusqu’à 2 Mo',ar:'JPG/PNG/WebP، حتى 2 ميغابايت',sw:'JPG/PNG/WebP, hadi MB 2',pt:'JPG/PNG/WebP, até 2 MB'},
+  f_displayname:{en:'Display name',fr:'Nom affiché',ar:'الاسم المعروض',sw:'Jina la kuonyeshwa',pt:'Nome a apresentar'},
+  f_handle:{en:'Handle',fr:'Identifiant',ar:'المعرّف',sw:'Kitambulisho',pt:'Identificador'},
+  f_aboutyou:{en:'About you',fr:'À propos de vous',ar:'نبذة عنك',sw:'Kukuhusu',pt:'Sobre si'},
+  ph_bio:{en:'A sentence or two about yourself…',fr:'Une phrase ou deux sur vous…',ar:'جملة أو جملتان عنك…',sw:'Sentensi moja au mbili kukuhusu…',pt:'Uma frase ou duas sobre si…'},
+  f_interests:{en:'Interests',fr:'Centres d’intérêt',ar:'الاهتمامات',sw:'Mambo unayopenda',pt:'Interesses'},
+  btn_savechanges:{en:'Save changes',fr:'Enregistrer les modifications',ar:'حفظ التغييرات',sw:'Hifadhi mabadiliko',pt:'Guardar alterações'},
+  btn_cancel:{en:'Cancel',fr:'Annuler',ar:'إلغاء',sw:'Ghairi',pt:'Cancelar'},
+  btn_signout:{en:'Sign out',fr:'Se déconnecter',ar:'تسجيل الخروج',sw:'Toka',pt:'Terminar sessão'},
+  btn_uploading:{en:'Uploading…',fr:'Téléversement…',ar:'جارٍ الرفع…',sw:'Inapakia…',pt:'A carregar…'},
+  toast_img2mb:{en:'Please choose an image under 2 MB.',fr:'Veuillez choisir une image de moins de 2 Mo.',ar:'يرجى اختيار صورة أقل من 2 ميغابايت.',sw:'Tafadhali chagua picha chini ya MB 2.',pt:'Escolha uma imagem com menos de 2 MB.'},
+  toast_uploadfail:{en:'Upload failed · %s',fr:'Échec du téléversement · %s',ar:'فشل الرفع · %s',sw:'Upakiaji umeshindwa · %s',pt:'Falha no carregamento · %s'},
+  toast_savephoto_err:{en:'Saved photo but could not update profile · %s',fr:'Photo enregistrée mais impossible de mettre à jour le profil · %s',ar:'تم حفظ الصورة لكن تعذّر تحديث الملف الشخصي · %s',sw:'Picha imehifadhiwa lakini imeshindwa kusasisha wasifu · %s',pt:'Foto guardada mas não foi possível atualizar o perfil · %s'},
+  toast_photoupdated:{en:'Photo updated.',fr:'Photo mise à jour.',ar:'تم تحديث الصورة.',sw:'Picha imesasishwa.',pt:'Foto atualizada.'},
+  btn_saving:{en:'Saving…',fr:'Enregistrement…',ar:'جارٍ الحفظ…',sw:'Inahifadhi…',pt:'A guardar…'},
+  toast_handletaken:{en:'That handle is taken — try another.',fr:'Cet identifiant est pris — essayez-en un autre.',ar:'هذا المعرّف مستخدم — جرّب آخر.',sw:'Kitambulisho hicho kimechukuliwa — jaribu kingine.',pt:'Esse identificador já existe — tente outro.'},
+  toast_couldnotsave:{en:'Could not save · %s',fr:'Échec de l’enregistrement · %s',ar:'تعذّر الحفظ · %s',sw:'Imeshindwa kuhifadhi · %s',pt:'Não foi possível guardar · %s'},
+  toast_profilesaved:{en:'Profile saved.',fr:'Profil enregistré.',ar:'تم حفظ الملف الشخصي.',sw:'Wasifu umehifadhiwa.',pt:'Perfil guardado.'},
+
+  // Public profile
+  loading_profile:{en:'Loading profile…',fr:'Chargement du profil…',ar:'جارٍ تحميل الملف الشخصي…',sw:'Inapakia wasifu…',pt:'A carregar perfil…'},
+  profile_notfound_h:{en:'Profile not found',fr:'Profil introuvable',ar:'الملف الشخصي غير موجود',sw:'Wasifu haukupatikana',pt:'Perfil não encontrado'},
+  profile_notfound_sub:{en:'This reader doesn’t exist or hasn’t set up a public profile.',fr:'Ce lecteur n’existe pas ou n’a pas configuré de profil public.',ar:'هذا القارئ غير موجود أو لم يُعِدّ ملفًا شخصيًا عامًا.',sw:'Msomaji huyu hayupo au hajaweka wasifu wa umma.',pt:'Este leitor não existe ou não configurou um perfil público.'},
+  word_backnews:{en:'Back to the news →',fr:'Retour à l’actualité →',ar:'العودة إلى الأخبار →',sw:'Rudi kwenye habari →',pt:'Voltar às notícias →'},
+
+  // Comments
+  cmt_join_conv:{en:'Join the conversation',fr:'Rejoignez la conversation',ar:'انضم إلى النقاش',sw:'Jiunge na mazungumzo',pt:'Junte-se à conversa'},
+  cmt_loading:{en:'Loading comments…',fr:'Chargement des commentaires…',ar:'جارٍ تحميل التعليقات…',sw:'Inapakia maoni…',pt:'A carregar comentários…'},
+  cmt_signin_btn:{en:'Sign in to comment',fr:'Connectez-vous pour commenter',ar:'سجّل الدخول للتعليق',sw:'Ingia ili kutoa maoni',pt:'Inicie sessão para comentar'},
+  cmt_signin_sub:{en:'A real, signed-in community — join the conversation, it’s free.',fr:'Une vraie communauté connectée — rejoignez la conversation, c’est gratuit.',ar:'مجتمع حقيقي بحسابات مسجّلة — انضم إلى النقاش، إنه مجاني.',sw:'Jamii halisi iliyoingia — jiunge na mazungumzo, ni bure.',pt:'Uma comunidade real e autenticada — junte-se à conversa, é grátis.'},
+  cmt_replyingto:{en:'Replying to',fr:'En réponse à',ar:'رد على',sw:'Unamjibu',pt:'A responder a'},
+  ph_comment:{en:'Share your perspective from the ground…',fr:'Partagez votre point de vue depuis le terrain…',ar:'شارك وجهة نظرك من الميدان…',sw:'Shiriki mtazamo wako kutoka eneo la tukio…',pt:'Partilhe a sua perspetiva no terreno…'},
+  cmt_postingas:{en:'Posting as',fr:'Publication en tant que',ar:'النشر باسم',sw:'Unachapisha kama',pt:'A publicar como'},
+  cmt_beresp:{en:'· be respectful — comments are moderated.',fr:'· soyez respectueux — les commentaires sont modérés.',ar:'· كن محترمًا — التعليقات خاضعة للإشراف.',sw:'· kuwa na heshima — maoni yanasimamiwa.',pt:'· seja respeitoso — os comentários são moderados.'},
+  btn_postcomment:{en:'Post comment',fr:'Publier le commentaire',ar:'نشر التعليق',sw:'Chapisha maoni',pt:'Publicar comentário'},
+  btn_reply:{en:'Reply',fr:'Répondre',ar:'رد',sw:'Jibu',pt:'Responder'},
+  btn_edit:{en:'Edit',fr:'Modifier',ar:'تعديل',sw:'Hariri',pt:'Editar'},
+  btn_delete:{en:'Delete',fr:'Supprimer',ar:'حذف',sw:'Futa',pt:'Eliminar'},
+  btn_report:{en:'Report',fr:'Signaler',ar:'إبلاغ',sw:'Ripoti',pt:'Denunciar'},
+  btn_hide:{en:'Hide',fr:'Masquer',ar:'إخفاء',sw:'Ficha',pt:'Ocultar'},
+  cmt_edited:{en:'edited',fr:'modifié',ar:'مُعدّل',sw:'imehaririwa',pt:'editado'},
+  cmt_count_one:{en:'%s comment',fr:'%s commentaire',ar:'%s تعليق',sw:'maoni %s',pt:'%s comentário'},
+  cmt_count_many:{en:'%s comments',fr:'%s commentaires',ar:'%s تعليقات',sw:'maoni %s',pt:'%s comentários'},
+  cmt_empty:{en:'💬 No comments yet — be the first to weigh in.',fr:'💬 Aucun commentaire pour l’instant — soyez le premier à réagir.',ar:'💬 لا توجد تعليقات بعد — كن أول من يشارك برأيه.',sw:'💬 Bado hakuna maoni — kuwa wa kwanza kuchangia.',pt:'💬 Ainda sem comentários — seja o primeiro a participar.'},
+  toast_writefirst:{en:'Write something first.',fr:'Écrivez d’abord quelque chose.',ar:'اكتب شيئًا أولًا.',sw:'Andika kitu kwanza.',pt:'Escreva algo primeiro.'},
+  btn_posting:{en:'Posting…',fr:'Publication…',ar:'جارٍ النشر…',sw:'Inachapisha…',pt:'A publicar…'},
+  toast_couldnotpost:{en:'Could not post · %s',fr:'Échec de la publication · %s',ar:'تعذّر النشر · %s',sw:'Imeshindwa kuchapisha · %s',pt:'Não foi possível publicar · %s'},
+  toast_commentposted:{en:'Comment posted.',fr:'Commentaire publié.',ar:'تم نشر التعليق.',sw:'Maoni yamechapishwa.',pt:'Comentário publicado.'},
+  toast_reported:{en:'Reported — thank you. Our team will review it.',fr:'Signalé — merci. Notre équipe l’examinera.',ar:'تم الإبلاغ — شكرًا لك. سيراجعه فريقنا.',sw:'Imeripotiwa — asante. Timu yetu itaikagua.',pt:'Denunciado — obrigado. A nossa equipa irá analisá-lo.'},
+  toast_couldnotreport:{en:'Could not report · %s',fr:'Échec du signalement · %s',ar:'تعذّر الإبلاغ · %s',sw:'Imeshindwa kuripoti · %s',pt:'Não foi possível denunciar · %s'},
+  confirm_delcomment:{en:'Delete your comment? This cannot be undone.',fr:'Supprimer votre commentaire ? Cette action est irréversible.',ar:'حذف تعليقك؟ لا يمكن التراجع عن ذلك.',sw:'Futa maoni yako? Hili haliwezi kutenduliwa.',pt:'Eliminar o seu comentário? Esta ação é irreversível.'},
+  toast_commentdeleted:{en:'Comment deleted.',fr:'Commentaire supprimé.',ar:'تم حذف التعليق.',sw:'Maoni yamefutwa.',pt:'Comentário eliminado.'},
+  toast_commenthidden:{en:'Comment hidden.',fr:'Commentaire masqué.',ar:'تم إخفاء التعليق.',sw:'Maoni yamefichwa.',pt:'Comentário ocultado.'},
+  btn_save:{en:'Save',fr:'Enregistrer',ar:'حفظ',sw:'Hifadhi',pt:'Guardar'},
+  toast_commentempty:{en:'Comment can’t be empty.',fr:'Le commentaire ne peut pas être vide.',ar:'لا يمكن أن يكون التعليق فارغًا.',sw:'Maoni hayawezi kuwa tupu.',pt:'O comentário não pode estar vazio.'},
+  toast_commentupdated:{en:'Comment updated.',fr:'Commentaire mis à jour.',ar:'تم تحديث التعليق.',sw:'Maoni yamesasishwa.',pt:'Comentário atualizado.'},
+
+  // Membership / upgrade
+  member_tagline:{en:'Support the mission',fr:'Soutenez la mission',ar:'ادعم المهمة',sw:'Unga mkono dhamira',pt:'Apoie a missão'},
+  insider_tagline:{en:'For professionals & institutions',fr:'Pour les professionnels et les institutions',ar:'للمحترفين والمؤسسات',sw:'Kwa wataalamu na taasisi',pt:'Para profissionais e instituições'},
+  member_perk1:{en:'Ad-light reading',fr:'Lecture allégée en publicité',ar:'قراءة بإعلانات مخفّفة',sw:'Kusoma bila matangazo mengi',pt:'Leitura com menos anúncios'},
+  member_perk2:{en:'Member badge on your profile',fr:'Badge Membre sur votre profil',ar:'شارة عضو على ملفك الشخصي',sw:'Beji ya Mwanachama kwenye wasifu wako',pt:'Selo de Membro no seu perfil'},
+  member_perk3:{en:'Full story archive',fr:'Archives complètes des articles',ar:'أرشيف كامل للأخبار',sw:'Kumbukumbu kamili za habari',pt:'Arquivo completo de notícias'},
+  member_perk4:{en:'The Members’ newsletter',fr:'La newsletter des Membres',ar:'نشرة الأعضاء الإخبارية',sw:'Jarida la Wanachama',pt:'A newsletter dos Membros'},
+  insider_perk1:{en:'Everything in Member',fr:'Tout ce qu’inclut Membre',ar:'كل ما في باقة العضو',sw:'Kila kitu kilichomo kwa Mwanachama',pt:'Tudo o que inclui o Membro'},
+  insider_perk2:{en:'AfriPulse Intelligence briefings',fr:'Briefings AfriPulse Intelligence',ar:'إحاطات AfriPulse Intelligence',sw:'Muhtasari wa AfriPulse Intelligence',pt:'Briefings AfriPulse Intelligence'},
+  insider_perk3:{en:'Data & FX downloads',fr:'Téléchargements de données et de taux de change',ar:'تنزيلات البيانات وأسعار الصرف',sw:'Upakuaji wa data na viwango vya ubadilishaji',pt:'Descarregamentos de dados e câmbios'},
+  insider_perk4:{en:'Priority access + invitations',fr:'Accès prioritaire + invitations',ar:'وصول ذو أولوية + دعوات',sw:'Ufikiaji wa kipaumbele + mialiko',pt:'Acesso prioritário + convites'},
+  per_year:{en:'/year',fr:'/an',ar:'/سنة',sw:'/mwaka',pt:'/ano'},
+  per_month:{en:'/month',fr:'/mois',ar:'/شهر',sw:'/mwezi',pt:'/mês'},
+  btn_currentplan:{en:'Your current plan',fr:'Votre offre actuelle',ar:'خطتك الحالية',sw:'Mpango wako wa sasa',pt:'O seu plano atual'},
+  btn_choose:{en:'Choose %s →',fr:'Choisir %s →',ar:'اختر %s →',sw:'Chagua %s →',pt:'Escolher %s →'},
+  up_flag_popular:{en:'Most popular',fr:'Le plus choisi',ar:'الأكثر شيوعًا',sw:'Maarufu zaidi',pt:'Mais popular'},
+  up_yourplan:{en:'Your plan:',fr:'Votre offre :',ar:'خطتك:',sw:'Mpango wako:',pt:'O seu plano:'},
+  up_thankyou:{en:'— thank you for backing independent African journalism.',fr:'— merci de soutenir un journalisme africain indépendant.',ar:'— شكرًا لدعمك صحافة أفريقية مستقلة.',sw:'— asante kwa kuunga mkono uandishi huru wa Afrika.',pt:'— obrigado por apoiar o jornalismo africano independente.'},
+  up_eyebrow:{en:'Membership · Back the mission',fr:'Abonnement · Soutenez la mission',ar:'العضوية · ادعم المهمة',sw:'Uanachama · Unga mkono dhamira',pt:'Adesão · Apoie a missão'},
+  up_h:{en:'Real-time African journalism,',fr:'Un journalisme africain en temps réel,',ar:'صحافة أفريقية في الوقت الفعلي،',sw:'Uandishi wa Afrika wa papo hapo,',pt:'Jornalismo africano em tempo real,'},
+  up_h_em:{en:'reader-funded.',fr:'financé par les lecteurs.',ar:'يموّله القرّاء.',sw:'unaofadhiliwa na wasomaji.',pt:'financiado pelos leitores.'},
+  up_sub:{en:'Advertising keeps AfriPulse free to read. Membership keeps it independent — and gets you an ad-light experience plus deeper coverage. Cancel anytime.',fr:'La publicité garde AfriPulse gratuit à lire. L’abonnement le garde indépendant — et vous offre une expérience avec moins de publicité et une couverture plus approfondie. Annulez à tout moment.',ar:'الإعلانات تُبقي AfriPulse مجانيًا للقراءة. العضوية تُبقيه مستقلًا — وتمنحك تجربة بإعلانات مخفّفة وتغطية أعمق. يمكنك الإلغاء في أي وقت.',sw:'Matangazo yanaweka AfriPulse bure kusoma. Uanachama unaiweka huru — na kukupa uzoefu wa matangazo machache pamoja na habari za kina. Ghairi wakati wowote.',pt:'A publicidade mantém o AfriPulse gratuito. A adesão mantém-no independente — e dá-lhe uma experiência com menos anúncios e uma cobertura mais aprofundada. Cancele quando quiser.'},
+  up_monthly:{en:'Monthly',fr:'Mensuel',ar:'شهري',sw:'Kila mwezi',pt:'Mensal'},
+  up_annual:{en:'Annual',fr:'Annuel',ar:'سنوي',sw:'Kila mwaka',pt:'Anual'},
+  up_2months:{en:'2 months free',fr:'2 mois offerts',ar:'شهران مجانًا',sw:'Miezi 2 bure',pt:'2 meses grátis'},
+  up_note:{en:'Secure payment by Stripe · your card details never touch our servers. Prices in USD.',fr:'Paiement sécurisé par Stripe · vos données de carte ne passent jamais par nos serveurs. Prix en USD.',ar:'دفع آمن عبر Stripe · بيانات بطاقتك لا تمرّ أبدًا عبر خوادمنا. الأسعار بالدولار الأمريكي.',sw:'Malipo salama kupitia Stripe · maelezo ya kadi yako hayaguswi na seva zetu. Bei kwa USD.',pt:'Pagamento seguro pela Stripe · os dados do seu cartão nunca passam pelos nossos servidores. Preços em USD.'},
+  btn_redirect_checkout:{en:'Redirecting to secure checkout…',fr:'Redirection vers le paiement sécurisé…',ar:'جارٍ التوجيه إلى الدفع الآمن…',sw:'Inaelekeza kwenye malipo salama…',pt:'A redirecionar para o pagamento seguro…'},
+  toast_checkout_fail:{en:'Could not start checkout · %s',fr:'Impossible de démarrer le paiement · %s',ar:'تعذّر بدء الدفع · %s',sw:'Imeshindwa kuanzisha malipo · %s',pt:'Não foi possível iniciar o pagamento · %s'},
+  toast_checkout_unavail:{en:'Checkout unavailable.',fr:'Paiement indisponible.',ar:'الدفع غير متاح.',sw:'Malipo hayapatikani.',pt:'Pagamento indisponível.'},
+  toast_billing_fail:{en:'Could not open billing · %s',fr:'Impossible d’ouvrir la facturation · %s',ar:'تعذّر فتح الفوترة · %s',sw:'Imeshindwa kufungua bili · %s',pt:'Não foi possível abrir a faturação · %s'},
+  toast_billing_unavail:{en:'Billing unavailable.',fr:'Facturation indisponible.',ar:'الفوترة غير متاحة.',sw:'Bili haipatikani.',pt:'Faturação indisponível.'},
+
+  // Not-editor gate
+  ne_eyebrow:{en:'Newsroom access',fr:'Accès à la rédaction',ar:'الوصول إلى غرفة الأخبار',sw:'Ufikiaji wa chumba cha habari',pt:'Acesso à redação'},
+  ne_h:{en:'This area is for editors.',fr:'Cette zone est réservée aux rédacteurs.',ar:'هذه المنطقة مخصّصة للمحرّرين.',sw:'Eneo hili ni la wahariri.',pt:'Esta área é para editores.'},
+  ne_sub:{en:'You’re signed in as a reader, so the newsroom CMS isn’t available on your account. Head to your profile, or contact us if you should have editor access.',fr:'Vous êtes connecté en tant que lecteur, donc le CMS de la rédaction n’est pas disponible sur votre compte. Rendez-vous sur votre profil, ou contactez-nous si vous devriez avoir un accès rédacteur.',ar:'أنت مسجّل الدخول كقارئ، لذا فإن نظام إدارة المحتوى الخاص بغرفة الأخبار غير متاح على حسابك. توجّه إلى ملفك الشخصي، أو تواصل معنا إذا كان يُفترض أن تملك صلاحية المحرّر.',sw:'Umeingia kama msomaji, kwa hivyo mfumo wa uhariri wa chumba cha habari haupatikani kwenye akaunti yako. Nenda kwenye wasifu wako, au wasiliana nasi ikiwa unapaswa kuwa na ufikiaji wa mhariri.',pt:'Iniciou sessão como leitor, por isso o CMS da redação não está disponível na sua conta. Vá ao seu perfil, ou contacte-nos se devia ter acesso de editor.'},
+  ne_gotoprofile:{en:'Go to my profile →',fr:'Aller à mon profil →',ar:'الذهاب إلى ملفي الشخصي →',sw:'Nenda kwenye wasifu wangu →',pt:'Ir para o meu perfil →'},
+  ne_backnews:{en:'Back to the news',fr:'Retour à l’actualité',ar:'العودة إلى الأخبار',sw:'Rudi kwenye habari',pt:'Voltar às notícias'}
+};
+function rt(key, subs){
+  const row = RUI[key];
+  let v = row ? (row[CURRENT_LANG] || row.en) : null;
+  if(v == null) return key;
+  if(subs){ for(const k in subs){ v = v.split('%'+k).join(String(subs[k])); } }
+  return v;
 }
 
 // ── VERTICALS (keys) ──────────────────────────────────────────
@@ -2594,7 +2779,7 @@ function renderCoverageMap(){
     '</g>';
   });
   // Vertical filter chips (re-weights the map by topic).
-  let chips='<button class="cmap-chip'+(MAP_VERTICAL?'':' on')+'" data-vert="all" type="button">All</button>';
+  let chips='<button class="cmap-chip'+(MAP_VERTICAL?'':' on')+'" data-vert="all" type="button">'+esc(rt('map_all'))+'</button>';
   CMAP_FILTERS.forEach(function(k){ chips+='<button class="cmap-chip'+(MAP_VERTICAL===k?' on':'')+'" data-vert="'+esc(k)+'" type="button">'+esc(vshort(k))+'</button>'; });
   // Smoother, more recognisable Africa silhouette (bezier coasts): Mediterranean
   // top, West-African bulge, Gulf of Guinea, Horn of Africa, and the Cape.
@@ -2612,13 +2797,13 @@ function renderCoverageMap(){
   return '<section class="cmap-section" aria-label="Live coverage across Africa">'+
     '<div class="cmap-inner">'+
       '<div class="cmap-copy">'+
-        '<div class="cmap-eyebrow">One pulse · 54 nations</div>'+
-        '<h2 class="cmap-h">Live across the continent.</h2>'+
-        '<p class="cmap-p">Every dot is a bureau on the ground — Dakar to Nairobi, Cairo to Cape Town — filing in real time into one pan-African newsroom.</p>'+
+        '<div class="cmap-eyebrow">'+esc(rt('map_eyebrow'))+'</div>'+
+        '<h2 class="cmap-h">'+esc(rt('map_h'))+'</h2>'+
+        '<p class="cmap-p">'+esc(rt('map_p'))+'</p>'+
         '<div class="cmap-stats">'+
-          '<div class="cmap-stat"><div class="n js-count" data-count="'+nations+'">'+nations+'</div><div class="l">Nations active</div></div>'+
-          '<div class="cmap-stat"><div class="n js-count" data-count="'+COVERAGE_HUBS.length+'">'+COVERAGE_HUBS.length+'</div><div class="l">Bureaux</div></div>'+
-          '<div class="cmap-stat"><div class="n js-count" data-count="'+totalStories+'">'+totalStories+'</div><div class="l">Stories live</div></div>'+
+          '<div class="cmap-stat"><div class="n js-count" data-count="'+nations+'">'+nations+'</div><div class="l">'+esc(rt('map_nations'))+'</div></div>'+
+          '<div class="cmap-stat"><div class="n js-count" data-count="'+COVERAGE_HUBS.length+'">'+COVERAGE_HUBS.length+'</div><div class="l">'+esc(rt('map_bureaux'))+'</div></div>'+
+          '<div class="cmap-stat"><div class="n js-count" data-count="'+totalStories+'">'+totalStories+'</div><div class="l">'+esc(rt('map_stories'))+'</div></div>'+
         '</div>'+
       '</div>'+
       '<div class="cmap-map">'+
@@ -2632,12 +2817,12 @@ function renderCoverageMap(){
           '<circle class="cmap-core" cx="'+cx+'" cy="'+cy+'" r="1.9"/>'+
           nodes+
         '</svg>'+
-        '<div class="cmap-hint" id="cmap-hint">👆 Tap a glowing city to read its stories</div>'+
+        '<div class="cmap-hint" id="cmap-hint">'+esc(rt('map_hint'))+'</div>'+
       '</div>'+
     '</div>'+
     '<div class="cmap-filter" role="group" aria-label="Filter the map by topic">'+chips+'</div>'+
     '<aside class="cmap-panel" id="cmap-panel" hidden aria-live="polite"></aside>'+
-    '<div class="cmap-sponsor">Presented in partnership with — <a href="#/advertise">become the founding sponsor of Africa’s live map →</a></div>'+
+    '<div class="cmap-sponsor">'+esc(rt('map_sponsor'))+' <a href="#/advertise">'+esc(rt('map_sponsor_link'))+'</a></div>'+
   '</section>';
 }
 
@@ -2674,16 +2859,17 @@ function fillHubPanel(){
       '</a>';
     });
   }else{
-    list='<div class="cmap-empty">No '+(MAP_VERTICAL?esc(vshort(MAP_VERTICAL))+' ':'')+'stories from '+esc(hub.city)+' just yet — our bureau is live and reporting. Explore the whole continent.</div>';
+    list='<div class="cmap-empty">'+esc(rt('hub_empty',{v:(MAP_VERTICAL?vshort(MAP_VERTICAL):''),c:hub.city})).replace(/\s{2,}/g,' ')+'</div>';
   }
+  const storyWord=rt(arts.length===1?'hub_story_one':'hub_story_many');
   panel.innerHTML=''+
     '<div class="cmap-panel-head">'+
       '<div class="cmap-panel-title"><span class="cmap-panel-dot"></span>'+esc(hub.city)+
-        '<span class="cmap-panel-sub">'+esc(regionLabel)+vertNote+' · '+arts.length+' live stor'+(arts.length===1?'y':'ies')+'</span></div>'+
-      '<button class="cmap-panel-close" id="cmap-panel-close" type="button" aria-label="Close">✕</button>'+
+        '<span class="cmap-panel-sub">'+esc(regionLabel)+vertNote+' · '+arts.length+' '+esc(storyWord)+'</span></div>'+
+      '<button class="cmap-panel-close" id="cmap-panel-close" type="button" aria-label="'+esc(rt('hub_close'))+'">✕</button>'+
     '</div>'+
     '<div class="cmap-panel-list">'+list+'</div>'+
-    '<a class="cmap-panel-all" href="#/region/'+esc(hub.region)+'">See all '+esc(regionLabel)+' coverage →</a>';
+    '<a class="cmap-panel-all" href="#/region/'+esc(hub.region)+'">'+esc(rt('hub_seeall',{r:regionLabel}))+'</a>';
   panel.hidden=false;
   if(hint) hint.style.display='none';
   const close=document.getElementById('cmap-panel-close');
@@ -3515,24 +3701,24 @@ function langOptions(sel){
 }
 
 function viewJoin(){
-  if(AUTH_READY && isAuthed()){ setTimeout(function(){ location.hash='#/me'; },0); return renderHeader(null)+'<div class="rp-wrap"><div class="rp-card">Redirecting to your profile…</div></div>'+renderFooter(); }
+  if(AUTH_READY && isAuthed()){ setTimeout(function(){ location.hash='#/me'; },0); return renderHeader(null)+'<div class="rp-wrap"><div class="rp-card">'+esc(rt('join_redirect'))+'</div></div>'+renderFooter(); }
   return renderHeader(null)+renderTicker()+
     '<div class="rp-wrap">'+
       '<div class="rp-card" id="join-card">'+
-        '<div class="rp-eyebrow">Join AfriPulse Times · Free forever</div>'+
-        '<h1 class="rp-h">Create your free profile.</h1>'+
-        '<p class="rp-sub">Comment on stories, save what you read, and get a feed tuned to you. We ask a little now and a little later — never all at once. One click, no password.</p>'+
+        '<div class="rp-eyebrow">'+esc(rt('join_eyebrow'))+'</div>'+
+        '<h1 class="rp-h">'+esc(rt('join_h'))+'</h1>'+
+        '<p class="rp-sub">'+esc(rt('join_sub'))+'</p>'+
         '<form id="join-form" class="rp-form" autocomplete="on">'+
           '<div class="rp-grid">'+
-            '<div class="rp-field"><label>Full name</label><input type="text" name="name" required maxlength="80" placeholder="Your name"></div>'+
-            '<div class="rp-field"><label>Email</label><input type="email" name="email" required placeholder="you@example.com"></div>'+
-            '<div class="rp-field"><label>Country <span class="rp-tag">powers your region feed</span></label><select name="country" class="rp-sel">'+countryOptions('')+'</select></div>'+
-            '<div class="rp-field"><label>Preferred language</label><select name="language" class="rp-sel">'+langOptions(CURRENT_LANG)+'</select></div>'+
-            '<div class="rp-field rp-full"><label>What do you follow? <span class="rp-opt">pick a few</span> <span class="rp-tag">tunes your feed</span></label>'+interestPicker([])+'</div>'+
-            '<div class="rp-field rp-full"><label>Occupation <span class="rp-opt">optional</span></label><input type="text" name="occupation" maxlength="80" placeholder="e.g. Finance, Student, Journalist"></div>'+
+            '<div class="rp-field"><label>'+esc(rt('f_fullname'))+'</label><input type="text" name="name" required maxlength="80" placeholder="'+esc(rt('ph_yourname'))+'"></div>'+
+            '<div class="rp-field"><label>'+esc(rt('f_email'))+'</label><input type="email" name="email" required placeholder="you@example.com"></div>'+
+            '<div class="rp-field"><label>'+esc(rt('f_country'))+' <span class="rp-tag">'+esc(rt('tag_regionfeed'))+'</span></label><select name="country" class="rp-sel">'+countryOptions('')+'</select></div>'+
+            '<div class="rp-field"><label>'+esc(rt('f_preflang'))+'</label><select name="language" class="rp-sel">'+langOptions(CURRENT_LANG)+'</select></div>'+
+            '<div class="rp-field rp-full"><label>'+esc(rt('f_follow'))+' <span class="rp-opt">'+esc(rt('opt_pickfew'))+'</span> <span class="rp-tag">'+esc(rt('tag_tunesfeed'))+'</span></label>'+interestPicker([])+'</div>'+
+            '<div class="rp-field rp-full"><label>'+esc(rt('f_occupation'))+' <span class="rp-opt">'+esc(rt('opt_optional'))+'</span></label><input type="text" name="occupation" maxlength="80" placeholder="'+esc(rt('ph_occupation'))+'"></div>'+
           '</div>'+
-          '<div class="rp-cta"><button type="submit" class="rp-btn">Create my profile →</button>'+
-            '<span class="rp-note">Already have an account? Enter your email and we’ll sign you in. By joining you agree to our <a href="#/terms">terms</a> &amp; <a href="#/privacy">privacy</a>. You control your data.</span></div>'+
+          '<div class="rp-cta"><button type="submit" class="rp-btn">'+esc(rt('btn_createprofile'))+'</button>'+
+            '<span class="rp-note">'+esc(rt('join_note_pre'))+' <a href="#/terms">'+esc(rt('word_terms'))+'</a> &amp; <a href="#/privacy">'+esc(rt('word_privacy'))+'</a>. '+esc(rt('join_note_post'))+'</span></div>'+
         '</form>'+
       '</div>'+
     '</div>'+
@@ -3541,24 +3727,24 @@ function viewJoin(){
 
 function viewMe(){
   if(!AUTH_READY) return viewAuthChecking();
-  if(!isAuthed()){ setTimeout(function(){ location.hash='#/join'; },0); return renderHeader(null)+'<div class="rp-wrap"><div class="rp-card">Please sign in…</div></div>'+renderFooter(); }
+  if(!isAuthed()){ setTimeout(function(){ location.hash='#/join'; },0); return renderHeader(null)+'<div class="rp-wrap"><div class="rp-card">'+esc(rt('me_signin_wait'))+'</div></div>'+renderFooter(); }
   if(!PROFILE){
-    return renderHeader(null)+'<div class="rp-wrap"><div class="rp-card"><h1 class="rp-h">Finishing setup…</h1>'+
-      '<p class="rp-sub">We couldn’t load your profile. If this persists, the <code>profiles</code> table may not be set up yet.</p>'+
-      '<button class="rp-btn" id="me-retry" type="button">Retry</button></div></div>'+renderFooter();
+    return renderHeader(null)+'<div class="rp-wrap"><div class="rp-card"><h1 class="rp-h">'+esc(rt('me_finishing_h'))+'</h1>'+
+      '<p class="rp-sub">'+esc(rt('me_finishing_sub'))+'</p>'+
+      '<button class="rp-btn" id="me-retry" type="button">'+esc(rt('btn_retry'))+'</button></div></div>'+renderFooter();
   }
   const p=PROFILE;
-  const tierLabel = p.tier==='insider'?'Insider':p.tier==='member'?'Member':'Reader';
+  const tierLabel = p.tier==='insider'?rt('tier_insider'):p.tier==='member'?rt('tier_member'):rt('tier_reader');
   const tierCls = p.tier==='insider'?'insider':p.tier==='member'?'member':'reader';
   const interests=(p.interests||[]);
   let chips=interests.map(function(k){ return '<span class="rp-chip">'+esc(vlabel(k))+'</span>'; }).join('');
-  if(!chips) chips='<span class="rp-chip plus">+ add interests to tune your feed</span>';
-  const editorBar = isEditor() ? '<a class="rp-editorlink" href="#/admin">You’re an editor · open the Newsroom →</a>' : '';
+  if(!chips) chips='<span class="rp-chip plus">'+esc(rt('chip_addinterests'))+'</span>';
+  const editorBar = isEditor() ? '<a class="rp-editorlink" href="#/admin">'+esc(rt('me_editorlink'))+'</a>' : '';
   const membershipBlock = isPaid()
-    ? '<div class="rp-member paid"><div><b>'+esc(tierLabel)+' membership</b> · ad-light &amp; supporting the mission 💚</div>'+
-        '<button class="rp-mini" id="me-manage-sub" type="button">Manage subscription</button></div>'
-    : '<div class="rp-member"><div><b>You’re on the free plan.</b> Go ad-light and back independent African journalism.</div>'+
-        '<a class="rp-mini solid" href="#/upgrade">Become a member →</a></div>';
+    ? '<div class="rp-member paid"><div>'+esc(rt('me_membership',{s:tierLabel}))+'</div>'+
+        '<button class="rp-mini" id="me-manage-sub" type="button">'+esc(rt('btn_managesub'))+'</button></div>'
+    : '<div class="rp-member"><div><b>'+esc(rt('me_freeplan'))+'</b> '+esc(rt('me_freeplan_sub'))+'</div>'+
+        '<a class="rp-mini solid" href="#/upgrade">'+esc(rt('btn_becomemember'))+'</a></div>';
 
   return renderHeader(null)+renderTicker()+
     '<div class="rp-wrap">'+
@@ -3567,40 +3753,40 @@ function viewMe(){
         '<div class="rp-phead">'+
           avatarHTML(p,96)+
           '<div class="rp-pname-row">'+
-            '<div class="rp-pname">'+esc(p.display_name||'Your name')+' <span class="rp-badge '+tierCls+'">'+tierLabel+'</span></div>'+
+            '<div class="rp-pname">'+esc(p.display_name||rt('ph_yourname'))+' <span class="rp-badge '+tierCls+'">'+esc(tierLabel)+'</span></div>'+
             '<div class="rp-phandle">@'+esc(p.handle||'reader')+(p.country?' · '+esc(p.country):'')+(p.occupation?' · '+esc(p.occupation):'')+'</div>'+
           '</div>'+
-          '<button class="rp-editbtn" id="me-edit-toggle" type="button">Edit profile</button>'+
+          '<button class="rp-editbtn" id="me-edit-toggle" type="button">'+esc(rt('btn_editprofile'))+'</button>'+
         '</div>'+
         '<div class="rp-pbody">'+
-          (p.bio?'<div class="rp-bio">'+esc(p.bio)+'</div>':'<div class="rp-bio rp-bio-empty">Add a short bio so the community knows who you are.</div>')+
+          (p.bio?'<div class="rp-bio">'+esc(p.bio)+'</div>':'<div class="rp-bio rp-bio-empty">'+esc(rt('bio_empty'))+'</div>')+
           '<div class="rp-chips">'+chips+'</div>'+
           membershipBlock+
           editorBar+
-          '<div class="rp-tabs"><div class="rp-tab on">My comments</div><div class="rp-tab">Saved stories</div></div>'+
-          '<div class="rp-empty">💬 Your comments will appear here once commenting launches (next update).</div>'+
+          '<div class="rp-tabs"><div class="rp-tab on">'+esc(rt('tab_mycomments'))+'</div><div class="rp-tab">'+esc(rt('tab_saved'))+'</div></div>'+
+          '<div class="rp-empty">'+esc(rt('me_comments_empty'))+'</div>'+
         '</div>'+
       '</div>'+
 
       '<form class="rp-edit hidden" id="me-edit-form">'+
-        '<h3 class="rp-edit-h">Edit your profile</h3>'+
+        '<h3 class="rp-edit-h">'+esc(rt('edit_h'))+'</h3>'+
         '<div class="rp-avatar-row">'+
           '<span id="me-avatar-preview">'+avatarHTML(p,64)+'</span>'+
-          '<div><input type="file" id="me-avatar-file" accept="image/*" hidden><button type="button" class="rp-mini" id="me-avatar-btn">Upload photo</button>'+
-            '<div class="rp-opt" style="margin-top:4px">JPG/PNG/WebP, up to 2 MB</div></div>'+
+          '<div><input type="file" id="me-avatar-file" accept="image/*" hidden><button type="button" class="rp-mini" id="me-avatar-btn">'+esc(rt('btn_uploadphoto'))+'</button>'+
+            '<div class="rp-opt" style="margin-top:4px">'+esc(rt('upload_hint'))+'</div></div>'+
         '</div>'+
         '<div class="rp-grid">'+
-          '<div class="rp-field"><label>Display name</label><input type="text" name="display_name" maxlength="80" value="'+esc(p.display_name||'')+'"></div>'+
-          '<div class="rp-field"><label>Handle</label><input type="text" name="handle" maxlength="30" value="'+esc(p.handle||'')+'"></div>'+
-          '<div class="rp-field"><label>Country</label><select name="country" class="rp-sel">'+countryOptions(p.country||'')+'</select></div>'+
-          '<div class="rp-field"><label>Preferred language</label><select name="language" class="rp-sel">'+langOptions(p.language||'en')+'</select></div>'+
-          '<div class="rp-field rp-full"><label>Occupation <span class="rp-opt">optional</span></label><input type="text" name="occupation" maxlength="80" value="'+esc(p.occupation||'')+'"></div>'+
-          '<div class="rp-field rp-full"><label>About you <span class="rp-opt">optional</span></label><textarea name="bio" maxlength="400" rows="3" placeholder="A sentence or two about yourself…">'+esc(p.bio||'')+'</textarea></div>'+
-          '<div class="rp-field rp-full"><label>Interests</label>'+interestPicker(interests)+'</div>'+
+          '<div class="rp-field"><label>'+esc(rt('f_displayname'))+'</label><input type="text" name="display_name" maxlength="80" value="'+esc(p.display_name||'')+'"></div>'+
+          '<div class="rp-field"><label>'+esc(rt('f_handle'))+'</label><input type="text" name="handle" maxlength="30" value="'+esc(p.handle||'')+'"></div>'+
+          '<div class="rp-field"><label>'+esc(rt('f_country'))+'</label><select name="country" class="rp-sel">'+countryOptions(p.country||'')+'</select></div>'+
+          '<div class="rp-field"><label>'+esc(rt('f_preflang'))+'</label><select name="language" class="rp-sel">'+langOptions(p.language||'en')+'</select></div>'+
+          '<div class="rp-field rp-full"><label>'+esc(rt('f_occupation'))+' <span class="rp-opt">'+esc(rt('opt_optional'))+'</span></label><input type="text" name="occupation" maxlength="80" value="'+esc(p.occupation||'')+'"></div>'+
+          '<div class="rp-field rp-full"><label>'+esc(rt('f_aboutyou'))+' <span class="rp-opt">'+esc(rt('opt_optional'))+'</span></label><textarea name="bio" maxlength="400" rows="3" placeholder="'+esc(rt('ph_bio'))+'">'+esc(p.bio||'')+'</textarea></div>'+
+          '<div class="rp-field rp-full"><label>'+esc(rt('f_interests'))+'</label>'+interestPicker(interests)+'</div>'+
         '</div>'+
-        '<div class="rp-cta"><button type="submit" class="rp-btn">Save changes</button>'+
-          '<button type="button" class="rp-mini ghost" id="me-edit-cancel">Cancel</button>'+
-          '<button type="button" class="rp-mini ghost" id="me-signout">Sign out</button></div>'+
+        '<div class="rp-cta"><button type="submit" class="rp-btn">'+esc(rt('btn_savechanges'))+'</button>'+
+          '<button type="button" class="rp-mini ghost" id="me-edit-cancel">'+esc(rt('btn_cancel'))+'</button>'+
+          '<button type="button" class="rp-mini ghost" id="me-signout">'+esc(rt('btn_signout'))+'</button></div>'+
       '</form>'+
     '</div>'+
     renderFooter();
@@ -3610,21 +3796,21 @@ function viewPublicProfile(handle){
   // Renders a shell; fillPublicProfile() loads the row and injects the content.
   return renderHeader(null)+renderTicker()+
     '<div class="rp-wrap"><div id="pub-profile" data-handle="'+esc(handle)+'">'+
-      '<div class="rp-card">Loading profile…</div>'+
+      '<div class="rp-card">'+esc(rt('loading_profile'))+'</div>'+
     '</div></div>'+renderFooter();
 }
 async function fillPublicProfile(handle){
   const host=document.getElementById('pub-profile');
   if(!host) return;
   const p=await loadProfileByHandle(handle);
-  if(!p){ host.innerHTML='<div class="rp-card"><h1 class="rp-h">Profile not found</h1><p class="rp-sub">This reader doesn’t exist or hasn’t set up a public profile. <a href="#/">Back to the news →</a></p></div>'; return; }
-  const tierLabel=p.tier==='insider'?'Insider':p.tier==='member'?'Member':'Reader';
+  if(!p){ host.innerHTML='<div class="rp-card"><h1 class="rp-h">'+esc(rt('profile_notfound_h'))+'</h1><p class="rp-sub">'+esc(rt('profile_notfound_sub'))+' <a href="#/">'+esc(rt('word_backnews'))+'</a></p></div>'; return; }
+  const tierLabel=p.tier==='insider'?rt('tier_insider'):p.tier==='member'?rt('tier_member'):rt('tier_reader');
   const tierCls=p.tier==='insider'?'insider':p.tier==='member'?'member':'reader';
   let chips=(p.interests||[]).map(function(k){ return '<span class="rp-chip">'+esc(vlabel(k))+'</span>'; }).join('');
   host.innerHTML='<div class="rp-profile">'+
     '<div class="rp-cover"></div>'+
     '<div class="rp-phead">'+avatarHTML(p,96)+
-      '<div class="rp-pname-row"><div class="rp-pname">'+esc(p.display_name||'Reader')+' <span class="rp-badge '+tierCls+'">'+tierLabel+'</span></div>'+
+      '<div class="rp-pname-row"><div class="rp-pname">'+esc(p.display_name||rt('tier_reader'))+' <span class="rp-badge '+tierCls+'">'+esc(tierLabel)+'</span></div>'+
       '<div class="rp-phandle">@'+esc(p.handle||'reader')+(p.country?' · '+esc(p.country):'')+(p.occupation?' · '+esc(p.occupation):'')+'</div></div>'+
     '</div>'+
     '<div class="rp-pbody">'+(p.bio?'<div class="rp-bio">'+esc(p.bio)+'</div>':'')+'<div class="rp-chips">'+chips+'</div></div>'+
@@ -3663,20 +3849,20 @@ function bindReaderView(){
       const fd=new FormData(joinForm);
       const name=String(fd.get('name')||'').trim();
       const email=String(fd.get('email')||'').trim();
-      if(!name){ toast('Please enter your name.'); return; }
-      if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ toast('Please enter a valid email.'); return; }
+      if(!name){ toast(rt('toast_entername')); return; }
+      if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ toast(rt('toast_validemail')); return; }
       const meta={ full_name:name, country:String(fd.get('country')||'')||undefined,
         language:String(fd.get('language')||'')||undefined, occupation:String(fd.get('occupation')||'')||undefined,
         interests:selectedInterests(joinForm) };
       const btn=joinForm.querySelector('button[type=submit]');
-      if(btn){ btn.disabled=true; btn.textContent='Sending…'; }
+      if(btn){ btn.disabled=true; btn.textContent=rt('btn_sending'); }
       const ok=await sendMagicLink(email,'#/me',meta);
-      if(!ok){ if(btn){ btn.disabled=false; btn.textContent='Create my profile →'; } return; }
+      if(!ok){ if(btn){ btn.disabled=false; btn.textContent=rt('btn_createprofile'); } return; }
       const card=document.getElementById('join-card');
-      if(card) card.innerHTML='<div class="rp-eyebrow">Check your inbox</div>'+
-        '<h1 class="rp-h">Almost there, '+esc(name.split(' ')[0])+'.</h1>'+
-        '<p class="rp-sub">We sent a one-click sign-in link to <strong>'+esc(email)+'</strong>. Open it on this device to finish creating your profile. You can close this tab.</p>'+
-        '<p class="rp-note">No email after a minute? Check spam, or <a href="#/join">try again</a>.</p>';
+      if(card) card.innerHTML='<div class="rp-eyebrow">'+esc(rt('join_check_eyebrow'))+'</div>'+
+        '<h1 class="rp-h">'+esc(rt('join_almost',{s:name.split(' ')[0]}))+'</h1>'+
+        '<p class="rp-sub">'+rt('join_sent_sub',{s:'<strong>'+esc(email)+'</strong>'})+'</p>'+
+        '<p class="rp-note">'+esc(rt('join_sent_note_pre'))+' <a href="#/join">'+esc(rt('word_tryagain'))+'</a>.</p>';
     });
   }
 
@@ -3702,15 +3888,15 @@ function bindReaderView(){
     avatarBtn.addEventListener('click',function(){ avatarFile.click(); });
     avatarFile.addEventListener('change',async function(){
       const f=avatarFile.files&&avatarFile.files[0]; if(!f) return;
-      if(f.size>2*1024*1024){ toast('Please choose an image under 2 MB.'); return; }
-      avatarBtn.disabled=true; avatarBtn.textContent='Uploading…';
+      if(f.size>2*1024*1024){ toast(rt('toast_img2mb')); return; }
+      avatarBtn.disabled=true; avatarBtn.textContent=rt('btn_uploading');
       const r=await uploadAvatar(f);
-      if(r.error){ toast('Upload failed · '+r.error); avatarBtn.disabled=false; avatarBtn.textContent='Upload photo'; return; }
+      if(r.error){ toast(rt('toast_uploadfail',{s:r.error})); avatarBtn.disabled=false; avatarBtn.textContent=rt('btn_uploadphoto'); return; }
       const s=await saveProfile({avatar_url:r.url});
-      avatarBtn.disabled=false; avatarBtn.textContent='Upload photo';
-      if(s.error){ toast('Saved photo but could not update profile · '+s.error); return; }
+      avatarBtn.disabled=false; avatarBtn.textContent=rt('btn_uploadphoto');
+      if(s.error){ toast(rt('toast_savephoto_err',{s:s.error})); return; }
       const prev=document.getElementById('me-avatar-preview'); if(prev) prev.innerHTML=avatarHTML(PROFILE,64);
-      toast('Photo updated.');
+      toast(rt('toast_photoupdated'));
     });
   }
   if(editForm){
@@ -3727,14 +3913,14 @@ function bindReaderView(){
         interests:selectedInterests(editForm)
       };
       const btn=editForm.querySelector('button[type=submit]');
-      if(btn){ btn.disabled=true; btn.textContent='Saving…'; }
+      if(btn){ btn.disabled=true; btn.textContent=rt('btn_saving'); }
       const r=await saveProfile(patch);
-      if(btn){ btn.disabled=false; btn.textContent='Save changes'; }
+      if(btn){ btn.disabled=false; btn.textContent=rt('btn_savechanges'); }
       if(r.error){
-        toast(/duplicate|unique/i.test(r.error)?'That handle is taken — try another.':('Could not save · '+r.error));
+        toast(/duplicate|unique/i.test(r.error)?rt('toast_handletaken'):rt('toast_couldnotsave',{s:r.error}));
         return;
       }
-      toast('Profile saved.');
+      toast(rt('toast_profilesaved'));
       route();
     });
   }
@@ -3745,7 +3931,7 @@ function bindReaderView(){
 
   // Membership / upgrade
   document.querySelectorAll('[data-checkout]').forEach(function(b){
-    b.addEventListener('click',function(){ b.disabled=true; b.textContent='Redirecting to secure checkout…'; startCheckout(b.getAttribute('data-checkout'), UPGRADE_INTERVAL); });
+    b.addEventListener('click',function(){ b.disabled=true; b.textContent=rt('btn_redirect_checkout'); startCheckout(b.getAttribute('data-checkout'), UPGRADE_INTERVAL); });
   });
   document.querySelectorAll('.up-tog[data-interval]').forEach(function(b){
     b.addEventListener('click',function(){ UPGRADE_INTERVAL=b.getAttribute('data-interval'); route(); });
@@ -3808,42 +3994,42 @@ async function moderateComment(id, status){
 
 function commentsSectionHTML(slug){
   return '<section class="cmt-section" id="comments" data-article="'+esc(slug)+'">'+
-    '<div class="cmt-head"><h3>Join the conversation</h3><span class="cmt-count" id="cmt-count"></span></div>'+
+    '<div class="cmt-head"><h3>'+esc(rt('cmt_join_conv'))+'</h3><span class="cmt-count" id="cmt-count"></span></div>'+
     '<div id="cmt-compose"></div>'+
-    '<div id="cmt-list" class="cmt-list"><div class="cmt-loading">Loading comments…</div></div>'+
+    '<div id="cmt-list" class="cmt-list"><div class="cmt-loading">'+esc(rt('cmt_loading'))+'</div></div>'+
   '</section>';
 }
 function commentComposeHTML(){
   if(!AUTH_READY) return '';
   if(!isAuthed()){
-    return '<div class="cmt-signin"><a href="#/join" class="rp-btn">Sign in to comment</a>'+
-      '<span>A real, signed-in community — join the conversation, it’s free.</span></div>';
+    return '<div class="cmt-signin"><a href="#/join" class="rp-btn">'+esc(rt('cmt_signin_btn'))+'</a>'+
+      '<span>'+esc(rt('cmt_signin_sub'))+'</span></div>';
   }
-  const replying = COMMENT_REPLY_TO ? '<div class="cmt-replying">Replying to <b>'+esc(COMMENT_REPLY_TO.name)+'</b> <button type="button" id="cmt-reply-cancel" aria-label="Cancel reply">✕</button></div>' : '';
+  const replying = COMMENT_REPLY_TO ? '<div class="cmt-replying">'+esc(rt('cmt_replyingto'))+' <b>'+esc(COMMENT_REPLY_TO.name)+'</b> <button type="button" id="cmt-reply-cancel" aria-label="'+esc(rt('btn_cancel'))+'">✕</button></div>' : '';
   return '<div class="cmt-compose">'+avatarHTML(PROFILE,40)+
     '<div class="cmt-compose-box">'+replying+
-      '<textarea id="cmt-input" maxlength="2000" rows="3" placeholder="Share your perspective from the ground…"></textarea>'+
-      '<div class="cmt-compose-row"><span class="cmt-guides">Posting as <b>'+esc((PROFILE&&PROFILE.display_name)||'you')+'</b> · be respectful — comments are moderated.</span>'+
-      '<button class="cmt-post-btn" id="cmt-post" type="button">Post comment</button></div>'+
+      '<textarea id="cmt-input" maxlength="2000" rows="3" placeholder="'+esc(rt('ph_comment'))+'"></textarea>'+
+      '<div class="cmt-compose-row"><span class="cmt-guides">'+esc(rt('cmt_postingas'))+' <b>'+esc((PROFILE&&PROFILE.display_name)||'you')+'</b> '+esc(rt('cmt_beresp'))+'</span>'+
+      '<button class="cmt-post-btn" id="cmt-post" type="button">'+esc(rt('btn_postcomment'))+'</button></div>'+
     '</div></div>';
 }
 function commentNodeHTML(c, likes, isReply){
   const a=c.author||{}; const liked=likes.has(c.id);
   const mine = SESSION && SESSION.user && SESSION.user.id===c.user_id;
   const tier=a.tier==='insider'?'insider':a.tier==='member'?'member':'';
-  const badge=tier?'<span class="rp-badge '+tier+'">'+(tier==='insider'?'Insider':'Member')+'</span>':'';
+  const badge=tier?'<span class="rp-badge '+tier+'">'+esc(tier==='insider'?rt('tier_insider'):rt('tier_member'))+'</span>':'';
   let actions='<button class="cmt-act'+(liked?' on':'')+'" data-cm-like="'+esc(c.id)+'" data-liked="'+(liked?'1':'0')+'">♥ <span>'+c.like_count+'</span></button>';
-  if(!isReply && SESSION && SESSION.user) actions+='<button class="cmt-act" data-cm-reply="'+esc(c.id)+'" data-name="'+esc(a.display_name||a.handle||'reader')+'">Reply</button>';
-  if(mine){ actions+='<button class="cmt-act" data-cm-edit="'+esc(c.id)+'">Edit</button><button class="cmt-act" data-cm-del="'+esc(c.id)+'">Delete</button>'; }
-  else if(SESSION && SESSION.user){ actions+='<button class="cmt-act" data-cm-report="'+esc(c.id)+'">Report</button>'; }
-  if(isEditor()) actions+='<button class="cmt-act mod" data-cm-mod="'+esc(c.id)+'">Hide</button>';
+  if(!isReply && SESSION && SESSION.user) actions+='<button class="cmt-act" data-cm-reply="'+esc(c.id)+'" data-name="'+esc(a.display_name||a.handle||'reader')+'">'+esc(rt('btn_reply'))+'</button>';
+  if(mine){ actions+='<button class="cmt-act" data-cm-edit="'+esc(c.id)+'">'+esc(rt('btn_edit'))+'</button><button class="cmt-act" data-cm-del="'+esc(c.id)+'">'+esc(rt('btn_delete'))+'</button>'; }
+  else if(SESSION && SESSION.user){ actions+='<button class="cmt-act" data-cm-report="'+esc(c.id)+'">'+esc(rt('btn_report'))+'</button>'; }
+  if(isEditor()) actions+='<button class="cmt-act mod" data-cm-mod="'+esc(c.id)+'">'+esc(rt('btn_hide'))+'</button>';
   const hl = a.handle ? '#/u/'+esc(a.handle) : '';
-  const nameEl = hl ? '<a href="'+hl+'" class="cmt-name">'+esc(a.display_name||'Reader')+'</a>' : '<span class="cmt-name">'+esc(a.display_name||'Reader')+'</span>';
+  const nameEl = hl ? '<a href="'+hl+'" class="cmt-name">'+esc(a.display_name||rt('tier_reader'))+'</a>' : '<span class="cmt-name">'+esc(a.display_name||rt('tier_reader'))+'</span>';
   return '<div class="cmt'+(isReply?' reply':'')+'" data-cm="'+esc(c.id)+'">'+
     avatarHTML(a,40)+
     '<div class="cmt-main">'+
       '<div class="cmt-hd">'+nameEl+' '+badge+(a.handle?'<span class="cmt-handle">@'+esc(a.handle)+'</span>':'')+
-        '<span class="cmt-time">· '+esc(timeAgo(c.created_at))+(c.edited?' · edited':'')+'</span></div>'+
+        '<span class="cmt-time">· '+esc(timeAgo(c.created_at))+(c.edited?' · '+esc(rt('cmt_edited')):'')+'</span></div>'+
       '<div class="cmt-body" data-cm-body="'+esc(c.id)+'">'+esc(c.body).replace(/\n/g,'<br>')+'</div>'+
       '<div class="cmt-actions">'+actions+'</div>'+
     '</div>'+
@@ -3856,8 +4042,8 @@ async function fillComments(slug){
   if(!list) return;
   if(compose) compose.innerHTML=commentComposeHTML();
   const {comments,likes}=await loadComments(slug);
-  if(countEl) countEl.textContent = comments.length ? (comments.length+' comment'+(comments.length===1?'':'s')) : '';
-  if(!comments.length){ list.innerHTML='<div class="cmt-empty">💬 No comments yet — be the first to weigh in.</div>'; }
+  if(countEl) countEl.textContent = comments.length ? rt(comments.length===1?'cmt_count_one':'cmt_count_many',{s:comments.length}) : '';
+  if(!comments.length){ list.innerHTML='<div class="cmt-empty">'+esc(rt('cmt_empty'))+'</div>'; }
   else{
     const byParent={}; comments.forEach(function(c){ if(c.parent_id){ (byParent[c.parent_id]=byParent[c.parent_id]||[]).push(c); } });
     let html='';
@@ -3873,11 +4059,11 @@ function bindComments(slug){
   const post=document.getElementById('cmt-post'); const input=document.getElementById('cmt-input');
   if(post && input){
     post.addEventListener('click',async function(){
-      const body=input.value.trim(); if(!body){ toast('Write something first.'); return; }
-      post.disabled=true; post.textContent='Posting…';
+      const body=input.value.trim(); if(!body){ toast(rt('toast_writefirst')); return; }
+      post.disabled=true; post.textContent=rt('btn_posting');
       const r=await postComment(slug, body, COMMENT_REPLY_TO?COMMENT_REPLY_TO.id:null);
-      if(r.error){ toast('Could not post · '+r.error); post.disabled=false; post.textContent='Post comment'; return; }
-      COMMENT_REPLY_TO=null; await fillComments(slug); toast('Comment posted.');
+      if(r.error){ toast(rt('toast_couldnotpost',{s:r.error})); post.disabled=false; post.textContent=rt('btn_postcomment'); return; }
+      COMMENT_REPLY_TO=null; await fillComments(slug); toast(rt('toast_commentposted'));
     });
   }
   const rc=document.getElementById('cmt-reply-cancel');
@@ -3895,12 +4081,12 @@ function bindComments(slug){
         await fillComments(slug); const i=document.getElementById('cmt-input'); if(i){ i.focus(); i.scrollIntoView({block:'center'}); }
       } else if(t.hasAttribute('data-cm-report')){
         const r=await reportComment(t.getAttribute('data-cm-report'));
-        toast(r.error?('Could not report · '+r.error):'Reported — thank you. Our team will review it.');
+        toast(r.error?rt('toast_couldnotreport',{s:r.error}):rt('toast_reported'));
       } else if(t.hasAttribute('data-cm-del')){
-        if(!confirm('Delete your comment? This cannot be undone.')) return;
-        const r=await deleteComment(t.getAttribute('data-cm-del')); if(r.error){ toast(r.error); return; } fillComments(slug); toast('Comment deleted.');
+        if(!confirm(rt('confirm_delcomment'))) return;
+        const r=await deleteComment(t.getAttribute('data-cm-del')); if(r.error){ toast(r.error); return; } fillComments(slug); toast(rt('toast_commentdeleted'));
       } else if(t.hasAttribute('data-cm-mod')){
-        const r=await moderateComment(t.getAttribute('data-cm-mod'),'hidden'); if(r.error){ toast(r.error); return; } fillComments(slug); toast('Comment hidden.');
+        const r=await moderateComment(t.getAttribute('data-cm-mod'),'hidden'); if(r.error){ toast(r.error); return; } fillComments(slug); toast(rt('toast_commenthidden'));
       } else if(t.hasAttribute('data-cm-edit')){
         startInlineCommentEdit(t.getAttribute('data-cm-edit'), slug);
       }
@@ -3911,12 +4097,12 @@ function startInlineCommentEdit(id, slug){
   const bodyEl=document.querySelector('[data-cm-body="'+id+'"]'); if(!bodyEl) return;
   const cur=bodyEl.textContent;
   bodyEl.innerHTML='<textarea class="cmt-edit-ta" maxlength="2000" rows="3"></textarea>'+
-    '<div class="cmt-edit-row"><button class="cmt-post-btn" id="cmt-save-'+id+'" type="button">Save</button>'+
-    '<button class="cmt-act" id="cmt-cancel-'+id+'" type="button">Cancel</button></div>';
+    '<div class="cmt-edit-row"><button class="cmt-post-btn" id="cmt-save-'+id+'" type="button">'+esc(rt('btn_save'))+'</button>'+
+    '<button class="cmt-act" id="cmt-cancel-'+id+'" type="button">'+esc(rt('btn_cancel'))+'</button></div>';
   const ta=bodyEl.querySelector('textarea'); ta.value=cur; ta.focus();
   document.getElementById('cmt-save-'+id).addEventListener('click',async function(){
-    const nb=ta.value.trim(); if(!nb){ toast('Comment can’t be empty.'); return; }
-    const r=await editCommentBody(id,nb); if(r.error){ toast('Could not save · '+r.error); return; } fillComments(slug); toast('Comment updated.');
+    const nb=ta.value.trim(); if(!nb){ toast(rt('toast_commentempty')); return; }
+    const r=await editCommentBody(id,nb); if(r.error){ toast(rt('toast_couldnotsave',{s:r.error})); return; } fillComments(slug); toast(rt('toast_commentupdated'));
   });
   document.getElementById('cmt-cancel-'+id).addEventListener('click',function(){ fillComments(slug); });
 }
@@ -3939,34 +4125,36 @@ async function startCheckout(plan, interval){
       headers:{ 'Authorization':'Bearer '+SESSION.access_token, 'Content-Type':'application/json' },
       body:JSON.stringify({ plan:plan, interval:interval }) });
     const j=await res.json().catch(function(){ return null; });
-    if(!res.ok || !j || !j.ok || !j.url){ toast('Could not start checkout · '+((j&&j.error)||('HTTP '+res.status))); return; }
+    if(!res.ok || !j || !j.ok || !j.url){ toast(rt('toast_checkout_fail',{s:(j&&j.error)||('HTTP '+res.status)})); return; }
     window.location.href=j.url;   // hand off to Stripe's hosted checkout
-  }catch(e){ toast('Checkout unavailable.'); }
+  }catch(e){ toast(rt('toast_checkout_unavail')); }
 }
 async function openBillingPortal(){
   if(!isAuthed() || !SESSION || !SESSION.access_token){ location.hash='#/join'; return; }
   try{
     const res=await fetch('/api/billing-portal',{ method:'POST', headers:{ 'Authorization':'Bearer '+SESSION.access_token } });
     const j=await res.json().catch(function(){ return null; });
-    if(!res.ok || !j || !j.ok || !j.url){ toast('Could not open billing · '+((j&&j.error)||('HTTP '+res.status))); return; }
+    if(!res.ok || !j || !j.ok || !j.url){ toast(rt('toast_billing_fail',{s:(j&&j.error)||('HTTP '+res.status)})); return; }
     window.location.href=j.url;
-  }catch(e){ toast('Billing unavailable.'); }
+  }catch(e){ toast(rt('toast_billing_unavail')); }
 }
 
 function upgradeCard(key){
   const p=PRICING[key]; const price=UPGRADE_INTERVAL==='year'?p.year:p.month;
-  const per=UPGRADE_INTERVAL==='year'?'/year':'/month';
+  const per=rt(UPGRADE_INTERVAL==='year'?'per_year':'per_month');
   const feat = key==='insider';
   const current = PROFILE && PROFILE.tier===key;
-  let perks=p.perks.map(function(x){ return '<li>'+esc(x)+'</li>'; }).join('');
+  const name = rt(key==='insider'?'tier_insider':'tier_member');
+  const tagline = rt(key==='insider'?'insider_tagline':'member_tagline');
+  let perks=[1,2,3,4].map(function(n){ return '<li>'+esc(rt(key+'_perk'+n))+'</li>'; }).join('');
   const cta = current
-    ? '<button class="up-btn current" type="button" disabled>Your current plan</button>'
-    : '<button class="up-btn'+(feat?' primary':'')+'" type="button" data-checkout="'+key+'">Become '+(/^[aeiou]/i.test(p.name)?'an':'a')+' '+esc(p.name)+' →</button>';
+    ? '<button class="up-btn current" type="button" disabled>'+esc(rt('btn_currentplan'))+'</button>'
+    : '<button class="up-btn'+(feat?' primary':'')+'" type="button" data-checkout="'+key+'">'+esc(rt('btn_choose',{s:name}))+'</button>';
   return '<div class="up-card'+(feat?' feat':'')+'">'+
-    (feat?'<span class="up-flag">Most popular</span>':'')+
-    '<div class="up-tier">'+esc(p.name)+'</div>'+
-    '<div class="up-who">'+esc(p.tagline)+'</div>'+
-    '<div class="up-price"><span class="up-amt">$'+price+'</span><span class="up-per">'+per+'</span></div>'+
+    (feat?'<span class="up-flag">'+esc(rt('up_flag_popular'))+'</span>':'')+
+    '<div class="up-tier">'+esc(name)+'</div>'+
+    '<div class="up-who">'+esc(tagline)+'</div>'+
+    '<div class="up-price"><span class="up-amt">$'+price+'</span><span class="up-per">'+esc(per)+'</span></div>'+
     '<ul class="up-perks">'+perks+'</ul>'+
     cta+
   '</div>';
@@ -3974,22 +4162,22 @@ function upgradeCard(key){
 function viewUpgrade(){
   const isAnnual=UPGRADE_INTERVAL==='year';
   const paidBanner = isPaid()
-    ? '<div class="up-current-banner">You’re an <b>'+esc(PROFILE.tier==='insider'?'Insider':'Member')+'</b> — thank you for backing independent African journalism. '+
-      '<button class="up-mini" id="up-manage" type="button">Manage subscription</button></div>'
+    ? '<div class="up-current-banner">'+esc(rt('up_yourplan'))+' <b>'+esc(PROFILE.tier==='insider'?rt('tier_insider'):rt('tier_member'))+'</b> '+esc(rt('up_thankyou'))+' '+
+      '<button class="up-mini" id="up-manage" type="button">'+esc(rt('btn_managesub'))+'</button></div>'
     : '';
   return renderHeader(null)+renderTicker()+
     '<section class="up-hero">'+
-      '<div class="up-eyebrow">Membership · Back the mission</div>'+
-      '<h1 class="up-h">Real-time African journalism, <em>reader-funded.</em></h1>'+
-      '<p class="up-sub">Advertising keeps AfriPulse free to read. Membership keeps it <b>independent</b> — and gets you an ad-light experience plus deeper coverage. Cancel anytime.</p>'+
+      '<div class="up-eyebrow">'+esc(rt('up_eyebrow'))+'</div>'+
+      '<h1 class="up-h">'+esc(rt('up_h'))+' <em>'+esc(rt('up_h_em'))+'</em></h1>'+
+      '<p class="up-sub">'+esc(rt('up_sub'))+'</p>'+
       paidBanner+
       '<div class="up-toggle" role="tablist">'+
-        '<button class="up-tog'+(!isAnnual?' on':'')+'" data-interval="month" type="button">Monthly</button>'+
-        '<button class="up-tog'+(isAnnual?' on':'')+'" data-interval="year" type="button">Annual <span class="up-save">2 months free</span></button>'+
+        '<button class="up-tog'+(!isAnnual?' on':'')+'" data-interval="month" type="button">'+esc(rt('up_monthly'))+'</button>'+
+        '<button class="up-tog'+(isAnnual?' on':'')+'" data-interval="year" type="button">'+esc(rt('up_annual'))+' <span class="up-save">'+esc(rt('up_2months'))+'</span></button>'+
       '</div>'+
     '</section>'+
     '<div class="up-cards">'+upgradeCard('member')+upgradeCard('insider')+'</div>'+
-    '<div class="up-note">Secure payment by Stripe · your card details never touch our servers. Prices in USD.</div>'+
+    '<div class="up-note">'+esc(rt('up_note'))+'</div>'+
     renderFooter();
 }
 
@@ -3997,10 +4185,10 @@ function viewUpgrade(){
 function viewNotEditor(){
   return renderHeader(null)+
     '<div class="rp-wrap"><div class="rp-card">'+
-      '<div class="rp-eyebrow">Newsroom access</div>'+
-      '<h1 class="rp-h">This area is for editors.</h1>'+
-      '<p class="rp-sub">You’re signed in as a reader, so the newsroom CMS isn’t available on your account. Head to your profile, or contact us if you should have editor access.</p>'+
-      '<div class="rp-cta"><a class="rp-btn" href="#/me">Go to my profile →</a><a class="rp-mini ghost" href="#/">Back to the news</a></div>'+
+      '<div class="rp-eyebrow">'+esc(rt('ne_eyebrow'))+'</div>'+
+      '<h1 class="rp-h">'+esc(rt('ne_h'))+'</h1>'+
+      '<p class="rp-sub">'+esc(rt('ne_sub'))+'</p>'+
+      '<div class="rp-cta"><a class="rp-btn" href="#/me">'+esc(rt('ne_gotoprofile'))+'</a><a class="rp-mini ghost" href="#/">'+esc(rt('ne_backnews'))+'</a></div>'+
     '</div></div>'+renderFooter();
 }
 

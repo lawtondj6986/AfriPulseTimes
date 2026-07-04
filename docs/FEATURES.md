@@ -128,6 +128,13 @@ then a small honest ribbon tells readers translation is rolling out.
 - **UI wording** lives in the big `LANG` object (search `const LANG =`). Every key
   exists in all five languages — `npm test` fails if one is missing, so nothing
   can be half-translated.
+- **Reader-facing surfaces** added later — the live coverage map + its story
+  panel, sign-up/profile pages, comments, and the membership/upgrade pages — are
+  localized through a second dictionary, `RUI` (search `const RUI =`), read via
+  `rt('key')`. The five languages sit adjacent per key so they can't drift, and
+  `tests/reader-i18n.test.mjs` fails the build if any key is missing, blank, or
+  has mismatched `%s`/`%c` placeholders across languages. To add a string, add a
+  `key:{en,fr,ar,sw,pt}` row to `RUI` and reference it with `rt('key')`.
 
 ---
 
