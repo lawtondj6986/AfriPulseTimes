@@ -984,6 +984,10 @@ html[dir="rtl"] .nl-modal-x{right:auto;left:14px}
 .cc-node.q .ring{stroke:var(--cc-gold);opacity:.8}
 .cc-node.island .dot{fill:var(--cc-phos)}
 .cc-node.sel .ring{stroke:var(--cc-gold);opacity:1;stroke-width:.5}
+.cc-node.hl .ring{stroke:var(--cc-gold);opacity:1;stroke-width:.6}
+.cc-node.hl .dot{fill:var(--cc-gold)}
+.cc-node.hl .lbl{fill:var(--cc-gold)}
+.cc-card[data-ccorigin]{cursor:default}
 .cc-node .lbl{fill:var(--cc-phos-dim);font-size:2.1px;font-family:'JetBrains Mono',monospace;letter-spacing:.02em}
 .cc-node.q .lbl{fill:var(--cc-ink)}
 .cc-node .cnt{fill:#080D0C;font-size:2px;font-weight:700;text-anchor:middle;font-family:'JetBrains Mono',monospace}
@@ -4858,7 +4862,15 @@ function ccBulkHTML(arts){
     (sel? '<span style="color:var(--cc-gold)"> · '+sel+' selected</span>':'')+
     '<span class="sp"></span>'+
     (sel? '<button class="cc-mini go" data-ccbulk="approve-sel">✓ Approve selected ('+sel+')</button><button class="cc-mini" data-ccbulk="reject-sel">✕ Reject selected</button>' :
-      (arts.length? '<button class="cc-mini go" data-ccbulk="approve-all">✓ Approve all '+arts.length+'</button>':''));
+      (arts.length? '<button class="cc-mini go" data-ccbulk="approve-all">✓ Approve all '+(CC_HUB?('from '+esc(CC_HUB)+' ('+arts.length+')'):arts.length)+'</button>':''));
+}
+// The bureau a story most likely belongs to (city match beats country) — used to
+// light up the map when you hover its card in the queue.
+function primaryHub(a){
+  const txt=articleGeoText(a);
+  const cityHit=COMMAND_HUBS.find(function(h){ return textHasTerm(txt,h.city); });
+  if(cityHit) return cityHit;
+  return COMMAND_HUBS.find(function(h){ return h.country && textHasTerm(txt,h.country); }) || null;
 }
 function commandQueueHTML(arts){
   if(!arts.length){
@@ -4874,7 +4886,8 @@ function commandQueueHTML(arts){
     const origin=(a.dateline && a.dateline!=='Wire') ? a.dateline : (rs?rlabel(rs):'Unplaced');
     const src=(a.sourceLabel||a.byline||'wire');
     const snip=(a.standfirst||(a.body&&a.body[0])||'').slice(0,190);
-    html+='<div class="cc-card'+(sel?' sel':'')+'" data-cccard="'+esc(a.slug)+'">'+
+    const oh=primaryHub(a);
+    html+='<div class="cc-card'+(sel?' sel':'')+'" data-cccard="'+esc(a.slug)+'"'+(oh?' data-ccorigin="'+esc(oh.city)+'"':'')+'>'+
       '<div class="cc-card-top">'+
         '<input type="checkbox" class="cc-chk" data-ccsel="'+esc(a.slug)+'"'+(sel?' checked':'')+' aria-label="Select story">'+
         '<span class="cc-vtag">'+esc(vshort(a.vertical))+'</span>'+
@@ -4996,6 +5009,17 @@ function bindCommandCenter(){
     const rj=e.target.closest('[data-ccreject]'); if(rj){ ccAct(rj.getAttribute('data-ccreject'),'rejected'); return; }
     const ed=e.target.closest('[data-ccedit]'); if(ed){ location.hash='#/admin/edit/'+ed.getAttribute('data-ccedit'); return; }
   });
+  // Hover a story → light up its bureau on the map (the "locate" reflex).
+  function nodeHL(city, on){
+    if(!city) return;
+    document.querySelectorAll('.cc-node.hl').forEach(function(g){ if(!on || g.getAttribute('data-cchub')!==city) g.classList.remove('hl'); });
+    if(on){ const g=svg && svg.querySelector('[data-cchub="'+city.replace(/"/g,'')+'"]'); if(g) g.classList.add('hl'); }
+  }
+  if(queue){
+    queue.addEventListener('mouseover',function(e){ const c=e.target.closest('[data-ccorigin]'); if(c) nodeHL(c.getAttribute('data-ccorigin'),true); });
+    queue.addEventListener('mouseout',function(e){ const c=e.target.closest('[data-ccorigin]'); if(c) nodeHL(c.getAttribute('data-ccorigin'),false); });
+    queue.addEventListener('focusin',function(e){ const c=e.target.closest('[data-ccorigin]'); if(c) nodeHL(c.getAttribute('data-ccorigin'),true); });
+  }
   const panel=document.querySelector('.cc-panel');
   if(panel) panel.addEventListener('click',function(e){
     const b=e.target.closest('[data-ccbulk]'); if(!b) return;

@@ -36,7 +36,10 @@ still works, because `published` was always allowed).
 - **The map** spans the continent **and the island nations** (Cabo Verde, São
   Tomé, Comoros, Seychelles, Madagascar, Mauritius). A gold badge on a bureau =
   that many stories awaiting review from there. **Tap a bureau** to filter the
-  queue to that place; tap again (or **✕ clear**) to reset.
+  queue to that place; tap again (or **✕ clear**) to reset. **Hover a story in
+  the queue** and its bureau lights up on the map (the "locate" reflex). With a
+  bureau selected, the bulk button reads **"Approve all from [City]"** — the fast
+  way to fill the public coverage map one region at a time.
 - **Filter chips** (Mining, Markets, Tech…) narrow the queue by vertical.
 - **Per story:** ✓ Approve, ✕ Reject, **Source ↗** (read the original), **✎ Open**
   (edit in the CMS before approving).
