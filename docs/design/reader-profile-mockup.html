@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>AfriPulse Times — Reader Profile & Comments (design mockup)</title>
+<style>
+  :root{
+    --green:#1E6B3A; --green-d:#123f22; --gold:#C9A227; --gold-l:#E3C766;
+    --ink:#14110C; --bg:#F7F4EE; --bg-2:#EFEAE0; --card:#ffffff;
+    --muted:#6B6355; --line:#E1DACC; --accent:#E5484D;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--bg); color:var(--ink); font-family:'Segoe UI',system-ui,-apple-system,sans-serif; line-height:1.5}
+  .serif{font-family:Georgia,'Times New Roman',serif}
+  .wrap{max-width:1000px; margin:0 auto; padding:0 22px}
+  .screen-label{max-width:1000px; margin:36px auto 12px; padding:0 22px; font-size:12px; letter-spacing:.22em; text-transform:uppercase; font-weight:800; color:var(--green); display:flex; align-items:center; gap:12px}
+  .screen-label::before{content:''; width:26px; height:2px; background:var(--gold)}
+  .screen-label span{color:var(--muted); font-weight:600; letter-spacing:.02em; text-transform:none}
+
+  /* avatars */
+  .av{border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-weight:800; color:#fff; flex:none; font-family:Georgia,serif}
+  .av.g{background:linear-gradient(135deg,#1E6B3A,#2f9155)} .av.o{background:linear-gradient(135deg,#C9722A,#E39a4a)}
+  .av.p{background:linear-gradient(135deg,#6b3aa0,#9155c9)} .av.b{background:linear-gradient(135deg,#2a5ba0,#4a86d9)}
+
+  /* ── PROFILE DASHBOARD ── */
+  .pcard{background:var(--card); border:1px solid var(--line); border-radius:16px; overflow:hidden; box-shadow:0 10px 30px rgba(20,17,12,.06)}
+  .pcover{height:130px; background:radial-gradient(120% 200% at 85% -30%, rgba(201,162,39,.5), rgba(201,162,39,0) 55%), linear-gradient(120deg,#1E6B3A,#123f22); position:relative}
+  .pcover .mapdot{position:absolute; color:rgba(255,255,255,.14); font-size:11px; letter-spacing:.3em; right:20px; bottom:12px; font-family:'Courier New',monospace}
+  .phead{padding:0 28px 22px; display:flex; gap:22px; align-items:flex-end; margin-top:-46px}
+  .phead .av{width:96px; height:96px; font-size:34px; border:4px solid var(--card); box-shadow:0 4px 14px rgba(0,0,0,.15)}
+  .pname-row{flex:1; padding-bottom:4px}
+  .pname{font-family:Georgia,serif; font-size:26px; font-weight:800; letter-spacing:-.4px; display:flex; align-items:center; gap:10px}
+  .badge{font-size:10px; letter-spacing:.1em; text-transform:uppercase; font-weight:800; padding:3px 9px; border-radius:20px}
+  .badge.member{background:linear-gradient(135deg,#C9A227,#E3C766); color:#3a2c00}
+  .badge.insider{background:var(--ink); color:var(--gold-l)}
+  .phandle{color:var(--muted); font-size:13.5px; margin-top:3px}
+  .phandle b{color:var(--green); font-weight:600}
+  .pedit{align-self:flex-end; margin-bottom:6px; background:var(--ink); color:#fff; border:none; border-radius:8px; padding:10px 18px; font-size:12px; font-weight:700; letter-spacing:.04em; cursor:pointer}
+
+  .pbody{padding:4px 28px 26px}
+  .pbio{font-size:14.5px; color:#3f3a30; line-height:1.6; max-width:640px; margin-bottom:16px}
+  .pchips{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:20px}
+  .chip{font-size:12px; font-weight:600; color:var(--green); background:rgba(30,107,58,.08); border:1px solid rgba(30,107,58,.18); border-radius:20px; padding:5px 12px}
+  .chip.plus{color:var(--muted); background:transparent; border-style:dashed}
+  .pstats{display:grid; grid-template-columns:repeat(4,1fr); gap:2px; background:var(--line); border:1px solid var(--line); border-radius:12px; overflow:hidden; margin-bottom:22px}
+  .pstat{background:var(--card); padding:16px 14px; text-align:center}
+  .pstat .n{font-family:Georgia,serif; font-size:24px; font-weight:800; color:var(--green)}
+  .pstat .l{font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); margin-top:4px; font-weight:600}
+
+  .ptabs{display:flex; gap:26px; border-bottom:1px solid var(--line); margin-bottom:18px}
+  .ptab{padding:0 2px 12px; font-size:13.5px; font-weight:700; color:var(--muted); position:relative; cursor:pointer}
+  .ptab.on{color:var(--ink)} .ptab.on::after{content:''; position:absolute; left:0; right:0; bottom:-1px; height:2.5px; background:var(--gold)}
+
+  .mycomment{border-left:3px solid var(--gold); background:var(--bg); border-radius:0 8px 8px 0; padding:12px 16px; margin-bottom:12px}
+  .mycomment .on{font-size:12px; color:var(--muted); margin-bottom:5px}
+  .mycomment .on b{color:var(--accent); font-weight:600}
+  .mycomment .txt{font-size:14px; color:var(--ink); line-height:1.5}
+  .mycomment .meta{font-size:11.5px; color:var(--muted); margin-top:7px}
+
+  /* ── COMMENT THREAD ── */
+  .tcard{background:var(--card); border:1px solid var(--line); border-radius:16px; padding:26px 28px; box-shadow:0 10px 30px rgba(20,17,12,.06)}
+  .tcard h3{font-family:Georgia,serif; font-size:21px; font-weight:800; margin-bottom:4px}
+  .tsub{font-size:13px; color:var(--muted); margin-bottom:20px}
+  .compose{display:flex; gap:14px; align-items:flex-start; padding:16px; background:var(--bg); border:1px solid var(--line); border-radius:12px; margin-bottom:24px}
+  .compose .av{width:44px;height:44px;font-size:16px}
+  .compose .box{flex:1}
+  .compose .fake-input{background:var(--card); border:1px solid var(--line); border-radius:9px; padding:12px 14px; color:var(--muted); font-size:14px; min-height:44px}
+  .compose .row{display:flex; justify-content:space-between; align-items:center; margin-top:10px}
+  .compose .hint{font-size:11.5px; color:var(--muted)}
+  .compose .post{background:var(--green); color:#fff; border:none; border-radius:8px; padding:9px 20px; font-size:13px; font-weight:700; cursor:pointer}
+
+  .cmt{display:flex; gap:14px; padding:16px 0; border-top:1px solid var(--line)}
+  .cmt .av{width:44px;height:44px;font-size:16px}
+  .cmt .c-main{flex:1}
+  .cmt .c-head{display:flex; align-items:center; gap:9px; flex-wrap:wrap}
+  .cmt .c-name{font-weight:700; font-size:14px}
+  .cmt .c-loc{font-size:11.5px; color:var(--muted)}
+  .cmt .c-time{font-size:11.5px; color:var(--muted)}
+  .cmt .c-txt{font-size:14px; color:var(--ink); line-height:1.55; margin:6px 0 9px}
+  .cmt .c-actions{display:flex; gap:18px; font-size:12.5px; color:var(--muted); font-weight:600}
+  .cmt .c-actions span b{color:var(--green)}
+  .cmt.reply{margin-left:58px; border-top:1px dashed var(--line)}
+
+  /* ── CREATE PROFILE (data capture) ── */
+  .fcard{background:var(--card); border:1px solid var(--line); border-radius:16px; padding:28px; box-shadow:0 10px 30px rgba(20,17,12,.06)}
+  .fcard h3{font-family:Georgia,serif; font-size:22px; font-weight:800; margin-bottom:4px}
+  .fcard .fsub{font-size:13.5px; color:var(--muted); margin-bottom:22px; max-width:560px}
+  .fgrid{display:grid; grid-template-columns:1fr 1fr; gap:16px 20px}
+  .field{display:flex; flex-direction:column; gap:6px}
+  .field.full{grid-column:1 / -1}
+  .field label{font-size:12px; font-weight:700; letter-spacing:.03em; color:var(--ink)}
+  .field label .opt{color:var(--muted); font-weight:500}
+  .field .inp{border:1px solid var(--line); border-radius:9px; padding:11px 13px; font-size:13.5px; color:var(--muted); background:var(--bg)}
+  .field .inp.sel::after{content:'▾'; float:right; color:var(--muted)}
+  .pick{display:flex; flex-wrap:wrap; gap:8px}
+  .pick .p{font-size:12.5px; border:1px solid var(--line); border-radius:20px; padding:7px 13px; color:var(--muted); cursor:pointer}
+  .pick .p.on{background:rgba(30,107,58,.09); border-color:var(--green); color:var(--green); font-weight:600}
+  .fcta{margin-top:22px; display:flex; align-items:center; gap:16px}
+  .fcta button{background:var(--green); color:#fff; border:none; border-radius:9px; padding:13px 26px; font-size:14px; font-weight:700; cursor:pointer}
+  .fcta .note{font-size:11.5px; color:var(--muted); max-width:360px; line-height:1.45}
+  .capture-tag{display:inline-block; font-size:10px; letter-spacing:.08em; text-transform:uppercase; font-weight:800; color:var(--gold); background:rgba(201,162,39,.12); border-radius:4px; padding:2px 6px; margin-left:6px; vertical-align:middle}
+
+  .foot{max-width:1000px;margin:36px auto 50px;padding:0 22px;font-size:12px;color:var(--muted)}
+  .foot b{color:var(--ink)}
+</style>
+</head>
+<body>
+
+  <!-- ============ SCREEN 1: PROFILE DASHBOARD ============ -->
+  <div class="screen-label">Reader profile &amp; dashboard <span>— what a subscriber sees at #/me</span></div>
+  <div class="wrap">
+    <div class="pcard">
+      <div class="pcover"><div class="mapdot">· NAIROBI · 01°17′S</div></div>
+      <div class="phead">
+        <div class="av g">AO</div>
+        <div class="pname-row">
+          <div class="pname serif">Amara Okonkwo <span class="badge member">Member</span></div>
+          <div class="phandle">@amara · Nairobi, Kenya 🇰🇪 · Joined June 2026 · reads <b>Business &amp; Markets</b>, <b>Tech</b></div>
+        </div>
+        <button class="pedit">Edit profile</button>
+      </div>
+      <div class="pbody">
+        <div class="pbio">Economist and fintech founder based in Nairobi. I follow African capital markets, the AfCFTA rollout, and the mobile-money revolution across East Africa. Here for real-time coverage from the continent, in the continent's voice.</div>
+        <div class="pchips">
+          <span class="chip">Business &amp; Markets</span>
+          <span class="chip">Tech &amp; Innovation</span>
+          <span class="chip">Mining &amp; Energy</span>
+          <span class="chip">East Africa</span>
+          <span class="chip plus">+ interests power your feed</span>
+        </div>
+        <div class="pstats">
+          <div class="pstat"><div class="n">128</div><div class="l">Stories read</div></div>
+          <div class="pstat"><div class="n">34</div><div class="l">Comments</div></div>
+          <div class="pstat"><div class="n">17</div><div class="l">Saved</div></div>
+          <div class="pstat"><div class="n">21</div><div class="l">Day streak</div></div>
+        </div>
+        <div class="ptabs">
+          <div class="ptab on">My comments</div>
+          <div class="ptab">Saved stories</div>
+          <div class="ptab">Following</div>
+          <div class="ptab">About</div>
+        </div>
+        <div class="mycomment">
+          <div class="on">on <b>“Nairobi bourse hits a five-year high as foreign inflows return”</b></div>
+          <div class="txt">This tracks with what we're seeing on the ground — the NSE liquidity story is real, but the FX stability is what's actually pulling the diaspora money back in.</div>
+          <div class="meta">2 days ago · 12 likes · 3 replies</div>
+        </div>
+        <div class="mycomment">
+          <div class="on">on <b>“Safaricom expands AI-driven micro-lending across the region”</b></div>
+          <div class="txt">Huge. Credit-scoring off mobile-money history is the unlock for the informal economy. Watching how they handle default risk.</div>
+          <div class="meta">5 days ago · 8 likes · 1 reply</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ SCREEN 2: COMMENT THREAD ============ -->
+  <div class="screen-label">Comment thread on an article <span>— community + engagement, tied to real profiles</span></div>
+  <div class="wrap">
+    <div class="tcard">
+      <h3 class="serif">Join the conversation</h3>
+      <div class="tsub">42 comments · a real, signed-in community — no anonymous drive-bys</div>
+      <div class="compose">
+        <div class="av g">AO</div>
+        <div class="box">
+          <div class="fake-input">Share your perspective from the ground…</div>
+          <div class="row">
+            <div class="hint">Posting as <b>Amara Okonkwo</b> · be respectful — comments are moderated</div>
+            <button class="post">Post comment</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="cmt">
+        <div class="av o">KM</div>
+        <div class="c-main">
+          <div class="c-head"><span class="c-name">Kwame Mensah</span> <span class="badge insider">Insider</span> <span class="c-loc">· Accra, Ghana 🇬🇭</span> <span class="c-time">· 3h ago</span></div>
+          <div class="c-txt">The AfCFTA angle here is underrated. If intra-African trade settlement moves onto local rails, the whole cross-border cost structure changes. Great to see this covered from Accra and not from London.</div>
+          <div class="c-actions"><span>♥ <b>24</b></span><span>Reply</span><span>Share</span></div>
+        </div>
+      </div>
+      <div class="cmt reply">
+        <div class="av b">TN</div>
+        <div class="c-main">
+          <div class="c-head"><span class="c-name">Thandiwe Ndlovu</span> <span class="badge member">Member</span> <span class="c-loc">· Johannesburg 🇿🇦</span> <span class="c-time">· 2h ago</span></div>
+          <div class="c-txt">Agreed — and the JSE reaction shows the market is already pricing some of this in. Would love an AfriPulse data explainer on the settlement mechanics.</div>
+          <div class="c-actions"><span>♥ <b>9</b></span><span>Reply</span><span>Share</span></div>
+        </div>
+      </div>
+      <div class="cmt">
+        <div class="av p">LD</div>
+        <div class="c-main">
+          <div class="c-head"><span class="c-name">Lamine Diop</span> <span class="c-loc">· Dakar, Sénégal 🇸🇳</span> <span class="c-time">· 1h ago</span></div>
+          <div class="c-txt">Lecture depuis Dakar — enfin une couverture panafricaine en temps réel. Le bouton de traduction est excellent.</div>
+          <div class="c-actions"><span>♥ <b>15</b></span><span>Reply</span><span>Share</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ SCREEN 3: CREATE PROFILE / DATA CAPTURE ============ -->
+  <div class="screen-label">Create your free profile <span>— the data-capture engine (progressive, low-friction)</span></div>
+  <div class="wrap">
+    <div class="fcard">
+      <h3 class="serif">Create your free AfriPulse profile</h3>
+      <div class="fsub">Free forever. Comment, save stories, and get a feed tuned to you. We ask a little now and a little later — never all at once.</div>
+      <div class="fgrid">
+        <div class="field"><label>Full name</label><div class="inp">Amara Okonkwo</div></div>
+        <div class="field"><label>Email</label><div class="inp">amara@example.com</div></div>
+        <div class="field"><label>Country <span class="capture-tag">powers region ad sales</span></label><div class="inp sel">Kenya 🇰🇪</div></div>
+        <div class="field"><label>Preferred language <span class="capture-tag">EN·FR·AR·SW·PT</span></label><div class="inp sel">English</div></div>
+        <div class="field full"><label>What do you follow? <span class="opt">(pick a few)</span> <span class="capture-tag">powers feed + ad targeting</span></label>
+          <div class="pick">
+            <span class="p on">Business &amp; Markets</span><span class="p on">Tech &amp; Innovation</span><span class="p">Politics</span>
+            <span class="p on">Mining &amp; Energy</span><span class="p">Culture</span><span class="p">Sports</span><span class="p">Opinions</span>
+          </div>
+        </div>
+        <div class="field"><label>Occupation <span class="opt">(optional)</span> <span class="capture-tag">advertiser insight</span></label><div class="inp sel">Finance / Fintech</div></div>
+        <div class="field"><label>How did you hear about us? <span class="opt">(optional)</span></label><div class="inp sel">Twitter / X</div></div>
+      </div>
+      <div class="fcta">
+        <button>Create my profile →</button>
+        <div class="note">One click with a magic link — no password. By joining you agree to our community guidelines &amp; privacy policy. You control your data and can delete it anytime.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot"><b>Design mockup only</b> — not wired to the live site. Palette + type match AfriPulse Times. Nothing here is deployed. See the pricing &amp; implementation plan in chat.</div>
+
+</body>
+</html>
