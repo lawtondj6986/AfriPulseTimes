@@ -521,6 +521,8 @@ html[dir="rtl"] .art-side{padding:8px 22px 0 0;border-left:none;border-right:0.5
 .cmap-svg{width:100%;height:auto;display:block;filter:drop-shadow(0 0 26px rgba(30,107,58,.45))}
 .cmap-silhouette{fill:rgba(201,162,39,.05);stroke:rgba(201,162,39,.28);stroke-width:.4;stroke-linejoin:round}
 .cmap-spoke{stroke:rgba(201,162,39,.16);stroke-width:.22}
+.cmap-pulse{fill:#8CEBB0;filter:drop-shadow(0 0 1.2px rgba(140,235,176,.9));pointer-events:none}
+@media (prefers-reduced-motion: reduce){.cmap-pulse{display:none}}
 .cmap-node{fill:var(--gold)}
 .cmap-core{fill:#7BE3A0}
 .cmap-label{fill:rgba(255,255,255,.6);font-size:2.1px;font-family:'JetBrains Mono',monospace;letter-spacing:.02px}
@@ -2560,7 +2562,7 @@ function renderCoverageMap(){
   const nations=seen.size;
   const cx=40, cy=54;
   const hot=hottestHub();
-  let spokes='', nodes='';
+  let spokes='', nodes='', pulses='';
   COVERAGE_HUBS.forEach(function(h,i){
     const cnt=hubLocalCount(h);
     const r=(1.5+Math.min(cnt,6)*0.35).toFixed(2);
@@ -2568,6 +2570,15 @@ function renderCoverageMap(){
     const delay=(i*0.17).toFixed(2);
     const isHot=hot && hot.city===h.city;
     spokes+='<line class="cmap-spoke" x1="'+cx+'" y1="'+cy+'" x2="'+h.x+'" y2="'+h.y+'"/>';
+    // Active bureaux "file" a glowing pulse down the spoke into the central newsroom.
+    if(cnt>0){
+      const pb=(i*0.33).toFixed(2);
+      pulses+='<circle class="cmap-pulse" r="0.6" cx="'+h.x+'" cy="'+h.y+'">'+
+        '<animate attributeName="cx" from="'+h.x+'" to="'+cx+'" dur="2.6s" begin="'+pb+'s" repeatCount="indefinite" calcMode="spline" keyTimes="0;1" keySplines="0.45 0 0.55 1"/>'+
+        '<animate attributeName="cy" from="'+h.y+'" to="'+cy+'" dur="2.6s" begin="'+pb+'s" repeatCount="indefinite" calcMode="spline" keyTimes="0;1" keySplines="0.45 0 0.55 1"/>'+
+        '<animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.12;0.72;1" dur="2.6s" begin="'+pb+'s" repeatCount="indefinite"/>'+
+      '</circle>';
+    }
     const aria=esc(h.city+', '+(h.country||'')+' — '+cnt+' stor'+(cnt===1?'y':'ies')+', tap to read');
     const badge = cnt>0 ? '<g class="cmap-badge"><circle cx="'+h.x+'" cy="'+(h.y-Number(r)-1.9)+'" r="1.7"/><text x="'+h.x+'" y="'+(h.y-Number(r)-1.2)+'" text-anchor="middle">'+cnt+'</text></g>' : '';
     nodes+='<g class="cmap-hub'+(isHot?' hot':'')+'" data-hub="'+esc(h.city)+'" data-region="'+esc(h.region)+'" role="button" tabindex="0" aria-label="'+aria+'">'+
@@ -2599,6 +2610,7 @@ function renderCoverageMap(){
         '<svg class="cmap-svg" viewBox="0 0 100 105" role="img" aria-label="Interactive map of Africa — tap a city to read its stories">'+
           '<path class="cmap-silhouette" d="'+africaPath+'"/>'+
           spokes+
+          pulses+
           '<circle class="cmap-glow cmap-core-glow" cx="'+cx+'" cy="'+cy+'" r="3.4"/>'+
           '<circle class="cmap-core" cx="'+cx+'" cy="'+cy+'" r="1.9"/>'+
           nodes+
@@ -2700,12 +2712,15 @@ function bindCoverageMap(){
     refreshMap();
   });
   if(SELECTED_HUB){ fillHubPanel(); return; }   // restore an open panel across re-renders
-  // "Hottest bureau" — gently auto-open once per session on a clean home view.
-  const h=location.hash||'#/';
-  if(!AUTO_MAP_SHOWN && (h==='#/' || h==='#/' || h==='')){
+  // "Hottest bureau" — a one-time delight: gently auto-open on a visitor's FIRST
+  // ever visit only (the hot city keeps pulsing for everyone else).
+  const hh=location.hash||'#/';
+  let introSeen=false; try{ introSeen=!!localStorage.getItem('afripulse_map_intro'); }catch(e){}
+  if(!AUTO_MAP_SHOWN && !introSeen && (hh==='#/' || hh==='')){
     AUTO_MAP_SHOWN=true;
+    try{ localStorage.setItem('afripulse_map_intro','1'); }catch(e){}
     const hot=hottestHub();
-    if(hot) setTimeout(function(){ if(!SELECTED_HUB && document.querySelector('.cmap-svg')) openHubPanel(hot.city); }, 1300);
+    if(hot) setTimeout(function(){ if(!SELECTED_HUB && document.querySelector('.cmap-svg')) openHubPanel(hot.city); }, 1400);
   }
 }
 
