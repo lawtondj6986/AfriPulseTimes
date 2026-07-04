@@ -156,6 +156,25 @@ then click "Advertise" to reveal the media kit — proof there's a real revenue 
 
 ---
 
+## 👤 Reader accounts & profiles (Phase 1)
+
+Readers can create a free account and a public profile (photo, bio, country,
+language, interests, occupation). Guests see **Sign in** in the top bar →
+`#/join`; signed-in readers get an avatar menu → **My profile** (`#/me`); public
+profiles are at `#/u/<handle>`.
+
+- **Security:** `#/admin` and all sensitive tables (subscribers, leads, article
+  writes) are now gated on an **editor** role, enforced in the database (RLS) — a
+  normal reader can never reach the CMS or your subscriber/lead lists, and can't
+  promote themselves. Full setup + the important deploy order are in
+  [`PHASE1_READER_ACCOUNTS.md`](./PHASE1_READER_ACCOUNTS.md).
+- **Data capture:** the signup fields (country, language, interests) are the exact
+  segments that power the "sell by language & region" ad model.
+- **Editing:** reader-facing views live in `viewJoin` / `viewMe` /
+  `viewPublicProfile`; the role/tier model is in the `profiles` table.
+
+---
+
 ## Editing content in general
 
 - **Stories:** Admin → Articles (create / edit / publish / delete, upload images).

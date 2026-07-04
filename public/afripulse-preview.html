@@ -647,6 +647,71 @@ html[dir="rtl"] .art-side{padding:8px 22px 0 0;border-left:none;border-right:0.5
 .adv-final p{font-size:14px;color:rgba(247,244,238,.72);max-width:500px;margin:0 auto 24px;line-height:1.6}
 @media (max-width:820px){.adv-reach{grid-template-columns:repeat(2,1fr)}.adv-pkgs{grid-template-columns:1fr}.adv-trust{grid-template-columns:1fr}.adv-inv-row{grid-template-columns:1fr;gap:4px}}
 
+/* READER ACCOUNTS & PROFILES (Phase 1) */
+.rav{border-radius:50%;display:inline-flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-family:'Fraunces',Georgia,serif;background-size:cover;background-position:center;flex:none;vertical-align:middle}
+.acct-signin{font-size:12px;font-weight:700;letter-spacing:.04em;color:var(--ink);text-decoration:none;padding:5px 12px;border:1px solid var(--border);border-radius:20px;cursor:pointer;margin-left:4px}
+.acct-signin:hover{border-color:var(--accent);color:var(--accent)}
+.acct-menu{position:relative;display:inline-flex;margin-left:6px}
+.acct-btn{background:none;border:none;padding:0;cursor:pointer;display:inline-flex;border-radius:50%}
+.acct-btn:hover{box-shadow:0 0 0 2px var(--gold)}
+.acct-drop{position:absolute;top:38px;right:0;background:#fff;border:1px solid var(--border);border-radius:10px;box-shadow:0 12px 30px rgba(0,0,0,.14);min-width:170px;padding:6px;display:none;z-index:60;flex-direction:column}
+.acct-drop.open{display:flex}
+.acct-drop a,.acct-drop button{display:block;text-align:left;background:none;border:none;padding:9px 12px;font-size:13px;color:var(--ink);text-decoration:none;cursor:pointer;border-radius:6px;font-family:inherit;width:100%}
+.acct-drop a:hover,.acct-drop button:hover{background:var(--bg-2)}
+
+.rp-wrap{max-width:900px;margin:0 auto;padding:34px 22px 60px}
+.rp-card{background:#fff;border:1px solid var(--border);border-radius:16px;padding:34px 34px 30px;box-shadow:0 10px 30px rgba(20,17,12,.05)}
+.rp-eyebrow{font-size:11px;letter-spacing:.2em;text-transform:uppercase;font-weight:800;color:var(--green);margin-bottom:12px}
+.rp-h{font-family:'Fraunces',Georgia,serif;font-size:34px;font-weight:900;letter-spacing:-.8px;line-height:1.05;margin-bottom:10px;color:var(--ink)}
+.rp-sub{font-size:15px;color:var(--muted);line-height:1.6;max-width:560px;margin-bottom:22px}
+.rp-form .rp-grid,.rp-edit .rp-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px 20px}
+.rp-field{display:flex;flex-direction:column;gap:6px}
+.rp-field.rp-full{grid-column:1 / -1}
+.rp-field label{font-size:12px;font-weight:700;letter-spacing:.02em;color:var(--ink)}
+.rp-opt{color:var(--muted);font-weight:500}
+.rp-tag{display:inline-block;font-size:9px;letter-spacing:.06em;text-transform:uppercase;font-weight:800;color:var(--gold);background:rgba(201,162,39,.12);border-radius:4px;padding:2px 6px;vertical-align:middle}
+.rp-field input,.rp-field select,.rp-field textarea{border:1px solid var(--border);border-radius:9px;padding:11px 13px;font-size:14px;color:var(--ink);background:var(--bg);font-family:inherit}
+.rp-field input:focus,.rp-field select:focus,.rp-field textarea:focus{outline:none;border-color:var(--green);background:#fff}
+.pick{display:flex;flex-wrap:wrap;gap:8px}
+.pick-i{font-size:12.5px;border:1px solid var(--border);border-radius:20px;padding:7px 13px;color:var(--muted);cursor:pointer;background:#fff;font-family:inherit}
+.pick-i.on{background:rgba(30,107,58,.09);border-color:var(--green);color:var(--green);font-weight:600}
+.rp-cta{margin-top:22px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.rp-btn{background:var(--green);color:#fff;border:none;border-radius:9px;padding:13px 24px;font-size:14px;font-weight:700;cursor:pointer;text-decoration:none;display:inline-block;font-family:inherit}
+.rp-btn:hover{background:#17572f}
+.rp-mini{background:transparent;border:1px solid var(--border);color:var(--ink);border-radius:8px;padding:9px 16px;font-size:12.5px;font-weight:600;cursor:pointer;text-decoration:none;font-family:inherit}
+.rp-mini.ghost:hover{border-color:var(--accent);color:var(--accent)}
+.rp-note{font-size:11.5px;color:var(--muted);max-width:380px;line-height:1.45}
+.rp-note a{color:var(--accent)}
+
+.rp-profile{background:#fff;border:1px solid var(--border);border-radius:16px;overflow:hidden;box-shadow:0 10px 30px rgba(20,17,12,.05)}
+.rp-cover{height:120px;background:radial-gradient(120% 200% at 85% -30%, rgba(201,162,39,.5), rgba(201,162,39,0) 55%), linear-gradient(120deg,#1E6B3A,#123f22)}
+.rp-phead{display:flex;gap:20px;align-items:flex-end;padding:0 28px 20px;margin-top:-44px}
+.rp-phead .rav{border:4px solid #fff;box-shadow:0 4px 14px rgba(0,0,0,.15)}
+.rp-pname-row{flex:1;padding-bottom:4px}
+.rp-pname{font-family:'Fraunces',Georgia,serif;font-size:25px;font-weight:900;letter-spacing:-.4px;display:flex;align-items:center;gap:10px}
+.rp-badge{font-size:10px;letter-spacing:.08em;text-transform:uppercase;font-weight:800;padding:3px 9px;border-radius:20px}
+.rp-badge.reader{background:var(--bg-2);color:var(--muted)}
+.rp-badge.member{background:linear-gradient(135deg,#C9A227,#E3C766);color:#3a2c00}
+.rp-badge.insider{background:var(--ink);color:var(--gold)}
+.rp-phandle{color:var(--muted);font-size:13px;margin-top:3px}
+.rp-editbtn{align-self:flex-end;margin-bottom:6px;background:var(--ink);color:#fff;border:none;border-radius:8px;padding:9px 16px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit}
+.rp-pbody{padding:4px 28px 26px}
+.rp-bio{font-size:14.5px;color:#3f3a30;line-height:1.6;max-width:640px;margin-bottom:16px}
+.rp-bio-empty{color:var(--muted);font-style:italic}
+.rp-chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px}
+.rp-chip{font-size:12px;font-weight:600;color:var(--green);background:rgba(30,107,58,.08);border:1px solid rgba(30,107,58,.18);border-radius:20px;padding:5px 12px}
+.rp-chip.plus{color:var(--muted);background:transparent;border-style:dashed}
+.rp-editorlink{display:inline-block;font-size:12.5px;font-weight:700;color:var(--accent);text-decoration:none;margin-bottom:16px;border-bottom:1px solid rgba(229,72,77,.4)}
+.rp-tabs{display:flex;gap:24px;border-bottom:1px solid var(--border);margin-bottom:16px}
+.rp-tab{padding:0 2px 11px;font-size:13.5px;font-weight:700;color:var(--muted);position:relative}
+.rp-tab.on{color:var(--ink)}.rp-tab.on::after{content:'';position:absolute;left:0;right:0;bottom:-1px;height:2.5px;background:var(--gold)}
+.rp-empty{font-size:13.5px;color:var(--muted);background:var(--bg);border:1px dashed var(--border);border-radius:10px;padding:20px;text-align:center}
+.rp-edit{background:#fff;border:1px solid var(--border);border-radius:16px;padding:26px 28px;margin-top:18px;box-shadow:0 10px 30px rgba(20,17,12,.05)}
+.rp-edit.hidden{display:none}
+.rp-edit-h{font-family:'Fraunces',Georgia,serif;font-size:20px;font-weight:800;margin-bottom:18px}
+.rp-avatar-row{display:flex;align-items:center;gap:16px;margin-bottom:18px}
+@media (max-width:680px){.rp-form .rp-grid,.rp-edit .rp-grid{grid-template-columns:1fr}.rp-h{font-size:28px}.rp-phead{flex-wrap:wrap}}
+
 /* FOOTER */
 .footer{background:var(--ink);color:#A09890;padding:38px 22px 18px;margin-top:0;border-top:1px solid #1A1A1A}
 .footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr;gap:32px;max-width:1100px;margin:0 auto 24px}
@@ -813,6 +878,7 @@ const LANG = {
     media_none:'None', media_image:'Image', media_video:'Video (YouTube embed URL)',
     media_help:'Image URL or YouTube embed link. Leave blank to auto-generate a placeholder.',
     live:'Live', live_markets:'Live Markets', commodities:'Commodities', newsroom:'Newsroom',
+    signin_join:'Sign in', my_profile:'My profile', sign_out:'Sign out',
     cms:'CMS', daily_briefing:'Daily Briefing', preview:'Preview →',
     breaking:'Breaking', min_read:'min read', by:'By',
     more_from:'More from', read:'Read →', back_all:'← All',
@@ -896,6 +962,7 @@ const LANG = {
     media_none:'Aucun', media_image:'Image', media_video:'Vidéo (URL d\'intégration YouTube)',
     media_help:'URL d\'image ou lien YouTube intégré. Laissez vide pour générer un placeholder.',
     live:'Direct', live_markets:'Marchés en direct', commodities:'Matières premières', newsroom:'Rédaction',
+    signin_join:'Se connecter', my_profile:'Mon profil', sign_out:'Se déconnecter',
     cms:'CMS', daily_briefing:'Le brief quotidien', preview:'Aperçu →',
     breaking:'Dernière minute', min_read:'min de lecture', by:'Par',
     more_from:'Plus de', read:'Lire →', back_all:'← Tous les',
@@ -979,6 +1046,7 @@ const LANG = {
     media_none:'بدون', media_image:'صورة', media_video:'فيديو (رابط YouTube مضمن)',
     media_help:'رابط الصورة أو رابط YouTube. اتركه فارغاً لتوليد صورة افتراضية.',
     live:'مباشر', live_markets:'الأسواق المباشرة', commodities:'السلع', newsroom:'غرفة الأخبار',
+    signin_join:'تسجيل الدخول', my_profile:'ملفي الشخصي', sign_out:'تسجيل الخروج',
     cms:'نظام المحتوى', daily_briefing:'الموجز اليومي', preview:'معاينة ←',
     breaking:'عاجل', min_read:'دقيقة قراءة', by:'بقلم',
     more_from:'المزيد من', read:'اقرأ ←', back_all:'كل ←',
@@ -1062,6 +1130,7 @@ const LANG = {
     media_none:'Hakuna', media_image:'Picha', media_video:'Video (kiungo cha YouTube)',
     media_help:'URL ya picha au kiungo cha YouTube. Acha wazi ili kutengeneza kishika nafasi kiotomatiki.',
     live:'Moja kwa moja', live_markets:'Masoko ya Moja kwa Moja', commodities:'Bidhaa', newsroom:'Chumba cha Habari',
+    signin_join:'Ingia', my_profile:'Wasifu wangu', sign_out:'Toka',
     cms:'CMS', daily_briefing:'Muhtasari wa Kila Siku', preview:'Onyesho →',
     breaking:'Habari Mpya', min_read:'dakika za kusoma', by:'Na',
     more_from:'Zaidi kutoka', read:'Soma →', back_all:'← Zote',
@@ -1145,6 +1214,7 @@ const LANG = {
     media_none:'Nenhum', media_image:'Imagem', media_video:'Vídeo (URL de incorporação do YouTube)',
     media_help:'URL da imagem ou ligação de incorporação do YouTube. Deixe em branco para gerar um marcador automaticamente.',
     live:'Em direto', live_markets:'Mercados em Direto', commodities:'Matérias-primas', newsroom:'Redação',
+    signin_join:'Entrar', my_profile:'Meu perfil', sign_out:'Sair',
     cms:'CMS', daily_briefing:'Resumo Diário', preview:'Pré-visualizar →',
     breaking:'Última Hora', min_read:'min de leitura', by:'Por',
     more_from:'Mais de', read:'Ler →', back_all:'← Todos',
@@ -1809,33 +1879,40 @@ async function initAuth(){
   const sb=await ensureSupabase();
   if(!sb){ AUTH_READY=true; route(); return; }
   try{ const {data}=await sb.auth.getSession(); SESSION=data.session||null; }catch(e){ SESSION=null; }
+  if(SESSION) await loadProfile();
   AUTH_READY=true;
   // Keep auth state live (magic-link sign-in, sign-out, token refresh).
   sb.auth.onAuthStateChange(function(event,session){
     SESSION=session||null;
     AUTH_READY=true;
-    const hash=location.hash||'';
-    const isCallback=hash.indexOf('access_token')>-1 || hash.indexOf('error_description')>-1 || (location.search||'').indexOf('code=')>-1;
-    if(SESSION && (event==='SIGNED_IN' || isCallback)){
-      // Return the user to where they were headed before signing in.
-      let dest='#/admin';
-      try{ const d=localStorage.getItem(RETURN_KEY); if(d) dest=d; localStorage.removeItem(RETURN_KEY); }catch(e){}
-      LOGIN_SENT_EMAIL='';
-      if(location.hash!==dest) location.hash=dest;
-    }
-    route();
+    if(!SESSION){ PROFILE=null; route(); return; }
+    loadProfile().then(function(){
+      const hash=location.hash||'';
+      const isCallback=hash.indexOf('access_token')>-1 || hash.indexOf('error_description')>-1 || (location.search||'').indexOf('code=')>-1;
+      if(event==='SIGNED_IN' || isCallback){
+        // Return the user to where they were headed; readers land on their profile.
+        let dest='#/me';
+        try{ const d=localStorage.getItem(RETURN_KEY); if(d) dest=d; localStorage.removeItem(RETURN_KEY); }catch(e){}
+        if(dest.indexOf('#/admin')===0 && !isEditor()) dest='#/me';   // readers can't enter the CMS
+        LOGIN_SENT_EMAIL='';
+        if(location.hash!==dest) location.hash=dest;
+      }
+      route();
+    });
   });
   route();
 }
 
-async function sendMagicLink(email, returnHash){
+async function sendMagicLink(email, returnHash, meta){
   const sb=await ensureSupabase();
   if(!sb){ toast('Auth unavailable · check Supabase config.'); return false; }
-  try{ localStorage.setItem(RETURN_KEY, returnHash||'#/admin'); }catch(e){}
+  try{ localStorage.setItem(RETURN_KEY, returnHash||'#/me'); }catch(e){}
   // Token returns on a clean URL (no hash), then we restore the intended route.
   const redirect=location.origin+location.pathname;
+  const options={ emailRedirectTo:redirect };
+  if(meta && typeof meta==='object') options.data=meta;   // captured at /join, survives the round-trip
   try{
-    const {error}=await sb.auth.signInWithOtp({ email:email, options:{ emailRedirectTo:redirect } });
+    const {error}=await sb.auth.signInWithOtp({ email:email, options:options });
     if(error){ toast(error.message||'Could not send link.'); return false; }
     return true;
   }catch(e){ toast('Could not send link.'); return false; }
@@ -1845,9 +1922,113 @@ async function signOut(){
   const sb=await ensureSupabase();
   if(sb){ try{ await sb.auth.signOut(); }catch(e){} }
   SESSION=null;
+  PROFILE=null;
   toast('Signed out.');
   location.hash='#/';
   route();
+}
+
+// ── READER PROFILES (Phase 1) ─────────────────────────────────
+// PROFILE holds the signed-in user's row from public.profiles. role separates
+// ordinary readers from newsroom editors; the CMS gate + RLS both check it.
+let PROFILE=null;
+const AVATAR_BUCKET='avatars';
+function isEditor(){ return !!(PROFILE && (PROFILE.role==='editor' || PROFILE.role==='admin')); }
+function profileComplete(){ return !!(PROFILE && PROFILE.display_name && PROFILE.country && (PROFILE.interests||[]).length); }
+
+async function loadProfile(){
+  const sb=await ensureSupabase();
+  if(!sb || !SESSION || !SESSION.user){ PROFILE=null; return null; }
+  try{
+    const {data,error}=await sb.from('profiles').select('*').eq('id',SESSION.user.id).maybeSingle();
+    if(error){ console.warn('loadProfile',error.message); PROFILE=null; return null; }
+    PROFILE=data||null;
+    if(PROFILE) await hydrateProfileFromMetadata();  // fold in data captured at /join
+    return PROFILE;
+  }catch(e){ console.warn('loadProfile',e); PROFILE=null; return null; }
+}
+
+// On first sign-in after /join, the signup fields ride along in user_metadata
+// (they survive the magic-link round-trip). Copy any that the profile is missing.
+async function hydrateProfileFromMetadata(){
+  if(!PROFILE || !SESSION || !SESSION.user) return;
+  const m=SESSION.user.user_metadata||{};
+  const patch={};
+  if(m.full_name && !PROFILE.display_name) patch.display_name=String(m.full_name).slice(0,80);
+  if(m.country && !PROFILE.country) patch.country=String(m.country).slice(0,60);
+  if(m.language && (!PROFILE.language||PROFILE.language==='en')) patch.language=m.language;
+  if(m.occupation && !PROFILE.occupation) patch.occupation=String(m.occupation).slice(0,80);
+  if(Array.isArray(m.interests) && m.interests.length && !(PROFILE.interests||[]).length){
+    patch.interests=m.interests.filter(x=>VERTICAL_KEYS.indexOf(x)>-1).slice(0,9);
+  }
+  if(!Object.keys(patch).length) return;
+  const sb=await ensureSupabase();
+  try{
+    const {data}=await sb.from('profiles').update(patch).eq('id',SESSION.user.id).select('*').maybeSingle();
+    if(data) PROFILE=data;
+  }catch(e){ /* best-effort */ }
+}
+
+// Save edits to the current user's profile (never role/tier — RLS + column grants block those).
+async function saveProfile(patch){
+  const sb=await ensureSupabase();
+  if(!sb || !SESSION || !SESSION.user) return {error:'Not signed in.'};
+  const allowed={};
+  ['handle','display_name','bio','country','language','interests','occupation','avatar_url'].forEach(function(k){
+    if(patch[k]!==undefined) allowed[k]=patch[k];
+  });
+  try{
+    const {data,error}=await sb.from('profiles').update(allowed).eq('id',SESSION.user.id).select('*').maybeSingle();
+    if(error) return {error:error.message};
+    if(data) PROFILE=data;
+    return {ok:true};
+  }catch(e){ return {error:String((e&&e.message)||e)}; }
+}
+
+async function loadProfileByHandle(handle){
+  const sb=await ensureSupabase();
+  if(!sb) return null;
+  try{
+    const {data,error}=await sb.from('profiles').select('*').eq('handle',handle).maybeSingle();
+    if(error){ console.warn('loadProfileByHandle',error.message); return null; }
+    return data||null;
+  }catch(e){ return null; }
+}
+
+// Upload an avatar into the user's own folder ("<uid>/…"), matching the storage RLS.
+async function uploadAvatar(file){
+  const sb=await ensureSupabase();
+  if(!sb || !sb.storage) return {error:'Storage unavailable · check Supabase config.'};
+  if(!SESSION || !SESSION.user) return {error:'Sign in to upload a photo.'};
+  const dot=file.name.lastIndexOf('.');
+  let ext=(dot>-1?file.name.slice(dot+1):'').toLowerCase().replace(/[^a-z0-9]/g,'');
+  if(!ext){ ext=(file.type.split('/')[1]||'jpg').replace(/[^a-z0-9]/g,''); }
+  const path=SESSION.user.id+'/avatar-'+Date.now()+'-'+Math.random().toString(36).slice(2,7)+'.'+ext;
+  try{
+    const {error}=await sb.storage.from(AVATAR_BUCKET).upload(path,file,{cacheControl:'3600',upsert:true,contentType:file.type||undefined});
+    if(error) return {error:error.message||'Upload failed'};
+    const {data}=sb.storage.from(AVATAR_BUCKET).getPublicUrl(path);
+    const url=data&&data.publicUrl;
+    if(!url) return {error:'Uploaded but could not resolve public URL'};
+    return {url:url};
+  }catch(e){ return {error:String((e&&e.message)||e)}; }
+}
+
+// Deterministic avatar colour + initials for readers without a photo.
+function initialsOf(name){
+  const parts=String(name||'').trim().split(/\s+/).filter(Boolean);
+  if(!parts.length) return '·';
+  return (parts[0][0]+(parts.length>1?parts[parts.length-1][0]:'')).toUpperCase();
+}
+function avatarHue(seed){ let h=0; const s=String(seed||'x'); for(let i=0;i<s.length;i++) h=(h*31+s.charCodeAt(i))>>>0; return h%360; }
+function avatarHTML(p, size){
+  const px=size||44;
+  const name=p&&(p.display_name||p.handle)||'Reader';
+  if(p&&p.avatar_url){
+    return '<span class="rav" style="width:'+px+'px;height:'+px+'px;background-image:url('+esc(p.avatar_url)+')"></span>';
+  }
+  const hue=avatarHue((p&&(p.handle||p.display_name))||name);
+  return '<span class="rav" style="width:'+px+'px;height:'+px+'px;font-size:'+Math.round(px*0.4)+'px;background:hsl('+hue+',44%,42%)">'+esc(initialsOf(name))+'</span>';
 }
 
 // ── HELPERS ───────────────────────────────────────────────────
@@ -1989,6 +2170,24 @@ function langRibbon(){
          '</div>';
 }
 
+// Account entry in the top bar: "Sign in" for guests, an avatar menu for readers.
+function accountNav(){
+  if(!AUTH_READY) return '';
+  if(!isAuthed()){
+    return '<a class="acct-signin" href="#/join">'+esc(t('signin_join'))+'</a>';
+  }
+  const editorLink = isEditor() ? '<a href="#/admin" role="menuitem">'+esc(t('newsroom'))+'</a>' : '';
+  return ''+
+  '<span class="acct-menu" id="acct-menu">'+
+    '<button class="acct-btn" id="acct-btn" type="button" aria-haspopup="true" aria-expanded="false">'+avatarHTML(PROFILE,30)+'</button>'+
+    '<span class="acct-drop" id="acct-drop" role="menu">'+
+      '<a href="#/me" role="menuitem">'+esc(t('my_profile'))+'</a>'+
+      editorLink+
+      '<button type="button" id="acct-signout" role="menuitem">'+esc(t('sign_out'))+'</button>'+
+    '</span>'+
+  '</span>';
+}
+
 function renderHeader(activeVertical){
   const now=new Date();
   const locale = CURRENT_LANG==='fr'?'fr-FR':CURRENT_LANG==='ar'?'ar-EG':CURRENT_LANG==='sw'?'sw-KE':CURRENT_LANG==='pt'?'pt-PT':'en-GB';
@@ -2021,6 +2220,7 @@ function renderHeader(activeVertical){
       '<a class="lang-link'+(CURRENT_LANG==='sw'?' active':'')+'" data-lang="sw">SW</a>'+
       '<a class="lang-link'+(CURRENT_LANG==='pt'?' active':'')+'" data-lang="pt">PT</a>'+
       '<a class="btn-sub" id="subscribe-link">'+esc(t('subscribe'))+'</a>'+
+      accountNav()+
     '</div>'+
   '</div>'+
   langRibbon()+
@@ -2939,6 +3139,269 @@ function viewArticle(slug){
     renderFooter();
 }
 
+// ── READER ACCOUNTS: JOIN / PROFILE (Phase 1) ─────────────────
+// English copy (reader UI localization is a fast follow); the always-visible
+// header nav uses proper t() keys so it localizes on every page.
+const COUNTRIES=['Nigeria','Kenya','South Africa','Ghana','Egypt','Ethiopia','Tanzania','Uganda','Morocco','Senegal',
+  'Côte d’Ivoire','Cameroon','Rwanda','Zambia','Zimbabwe','Angola','Mozambique','Democratic Republic of Congo',
+  'Algeria','Tunisia','Sudan','Botswana','Namibia','Mali','Burkina Faso','Benin','Malawi','Somalia',
+  'United Kingdom','United States','Canada','France','United Arab Emirates','Other'];
+
+function interestPicker(selected){
+  selected=selected||[];
+  let h='<div class="pick" id="interest-pick">';
+  for(const k of VERTICAL_KEYS){
+    if(k==='front') continue;
+    const on=selected.indexOf(k)>-1;
+    h+='<button type="button" class="pick-i'+(on?' on':'')+'" data-int="'+esc(k)+'">'+esc(vlabel(k))+'</button>';
+  }
+  return h+'</div>';
+}
+function countryOptions(sel){
+  let h='<option value="">Select your country…</option>';
+  for(const c of COUNTRIES) h+='<option'+(c===sel?' selected':'')+'>'+esc(c)+'</option>';
+  return h;
+}
+function langOptions(sel){
+  const L=[['en','English'],['fr','Français'],['ar','العربية'],['sw','Kiswahili'],['pt','Português']];
+  return L.map(function(x){ return '<option value="'+x[0]+'"'+(x[0]===sel?' selected':'')+'>'+esc(x[1])+'</option>'; }).join('');
+}
+
+function viewJoin(){
+  if(AUTH_READY && isAuthed()){ setTimeout(function(){ location.hash='#/me'; },0); return renderHeader(null)+'<div class="rp-wrap"><div class="rp-card">Redirecting to your profile…</div></div>'+renderFooter(); }
+  return renderHeader(null)+renderTicker()+
+    '<div class="rp-wrap">'+
+      '<div class="rp-card" id="join-card">'+
+        '<div class="rp-eyebrow">Join AfriPulse Times · Free forever</div>'+
+        '<h1 class="rp-h">Create your free profile.</h1>'+
+        '<p class="rp-sub">Comment on stories, save what you read, and get a feed tuned to you. We ask a little now and a little later — never all at once. One click, no password.</p>'+
+        '<form id="join-form" class="rp-form" autocomplete="on">'+
+          '<div class="rp-grid">'+
+            '<div class="rp-field"><label>Full name</label><input type="text" name="name" required maxlength="80" placeholder="Your name"></div>'+
+            '<div class="rp-field"><label>Email</label><input type="email" name="email" required placeholder="you@example.com"></div>'+
+            '<div class="rp-field"><label>Country <span class="rp-tag">powers your region feed</span></label><select name="country" class="rp-sel">'+countryOptions('')+'</select></div>'+
+            '<div class="rp-field"><label>Preferred language</label><select name="language" class="rp-sel">'+langOptions(CURRENT_LANG)+'</select></div>'+
+            '<div class="rp-field rp-full"><label>What do you follow? <span class="rp-opt">pick a few</span> <span class="rp-tag">tunes your feed</span></label>'+interestPicker([])+'</div>'+
+            '<div class="rp-field rp-full"><label>Occupation <span class="rp-opt">optional</span></label><input type="text" name="occupation" maxlength="80" placeholder="e.g. Finance, Student, Journalist"></div>'+
+          '</div>'+
+          '<div class="rp-cta"><button type="submit" class="rp-btn">Create my profile →</button>'+
+            '<span class="rp-note">Already have an account? Enter your email and we’ll sign you in. By joining you agree to our <a href="#/terms">terms</a> &amp; <a href="#/privacy">privacy</a>. You control your data.</span></div>'+
+        '</form>'+
+      '</div>'+
+    '</div>'+
+    renderFooter();
+}
+
+function viewMe(){
+  if(!AUTH_READY) return viewAuthChecking();
+  if(!isAuthed()){ setTimeout(function(){ location.hash='#/join'; },0); return renderHeader(null)+'<div class="rp-wrap"><div class="rp-card">Please sign in…</div></div>'+renderFooter(); }
+  if(!PROFILE){
+    return renderHeader(null)+'<div class="rp-wrap"><div class="rp-card"><h1 class="rp-h">Finishing setup…</h1>'+
+      '<p class="rp-sub">We couldn’t load your profile. If this persists, the <code>profiles</code> table may not be set up yet.</p>'+
+      '<button class="rp-btn" id="me-retry" type="button">Retry</button></div></div>'+renderFooter();
+  }
+  const p=PROFILE;
+  const tierLabel = p.tier==='insider'?'Insider':p.tier==='member'?'Member':'Reader';
+  const tierCls = p.tier==='insider'?'insider':p.tier==='member'?'member':'reader';
+  const interests=(p.interests||[]);
+  let chips=interests.map(function(k){ return '<span class="rp-chip">'+esc(vlabel(k))+'</span>'; }).join('');
+  if(!chips) chips='<span class="rp-chip plus">+ add interests to tune your feed</span>';
+  const editorBar = isEditor() ? '<a class="rp-editorlink" href="#/admin">You’re an editor · open the Newsroom →</a>' : '';
+
+  return renderHeader(null)+renderTicker()+
+    '<div class="rp-wrap">'+
+      '<div class="rp-profile">'+
+        '<div class="rp-cover"></div>'+
+        '<div class="rp-phead">'+
+          avatarHTML(p,96)+
+          '<div class="rp-pname-row">'+
+            '<div class="rp-pname">'+esc(p.display_name||'Your name')+' <span class="rp-badge '+tierCls+'">'+tierLabel+'</span></div>'+
+            '<div class="rp-phandle">@'+esc(p.handle||'reader')+(p.country?' · '+esc(p.country):'')+(p.occupation?' · '+esc(p.occupation):'')+'</div>'+
+          '</div>'+
+          '<button class="rp-editbtn" id="me-edit-toggle" type="button">Edit profile</button>'+
+        '</div>'+
+        '<div class="rp-pbody">'+
+          (p.bio?'<div class="rp-bio">'+esc(p.bio)+'</div>':'<div class="rp-bio rp-bio-empty">Add a short bio so the community knows who you are.</div>')+
+          '<div class="rp-chips">'+chips+'</div>'+
+          editorBar+
+          '<div class="rp-tabs"><div class="rp-tab on">My comments</div><div class="rp-tab">Saved stories</div></div>'+
+          '<div class="rp-empty">💬 Your comments will appear here once commenting launches (next update).</div>'+
+        '</div>'+
+      '</div>'+
+
+      '<form class="rp-edit hidden" id="me-edit-form">'+
+        '<h3 class="rp-edit-h">Edit your profile</h3>'+
+        '<div class="rp-avatar-row">'+
+          '<span id="me-avatar-preview">'+avatarHTML(p,64)+'</span>'+
+          '<div><input type="file" id="me-avatar-file" accept="image/*" hidden><button type="button" class="rp-mini" id="me-avatar-btn">Upload photo</button>'+
+            '<div class="rp-opt" style="margin-top:4px">JPG/PNG/WebP, up to 2 MB</div></div>'+
+        '</div>'+
+        '<div class="rp-grid">'+
+          '<div class="rp-field"><label>Display name</label><input type="text" name="display_name" maxlength="80" value="'+esc(p.display_name||'')+'"></div>'+
+          '<div class="rp-field"><label>Handle</label><input type="text" name="handle" maxlength="30" value="'+esc(p.handle||'')+'"></div>'+
+          '<div class="rp-field"><label>Country</label><select name="country" class="rp-sel">'+countryOptions(p.country||'')+'</select></div>'+
+          '<div class="rp-field"><label>Preferred language</label><select name="language" class="rp-sel">'+langOptions(p.language||'en')+'</select></div>'+
+          '<div class="rp-field rp-full"><label>Occupation <span class="rp-opt">optional</span></label><input type="text" name="occupation" maxlength="80" value="'+esc(p.occupation||'')+'"></div>'+
+          '<div class="rp-field rp-full"><label>About you <span class="rp-opt">optional</span></label><textarea name="bio" maxlength="400" rows="3" placeholder="A sentence or two about yourself…">'+esc(p.bio||'')+'</textarea></div>'+
+          '<div class="rp-field rp-full"><label>Interests</label>'+interestPicker(interests)+'</div>'+
+        '</div>'+
+        '<div class="rp-cta"><button type="submit" class="rp-btn">Save changes</button>'+
+          '<button type="button" class="rp-mini ghost" id="me-edit-cancel">Cancel</button>'+
+          '<button type="button" class="rp-mini ghost" id="me-signout">Sign out</button></div>'+
+      '</form>'+
+    '</div>'+
+    renderFooter();
+}
+
+function viewPublicProfile(handle){
+  // Renders a shell; fillPublicProfile() loads the row and injects the content.
+  return renderHeader(null)+renderTicker()+
+    '<div class="rp-wrap"><div id="pub-profile" data-handle="'+esc(handle)+'">'+
+      '<div class="rp-card">Loading profile…</div>'+
+    '</div></div>'+renderFooter();
+}
+async function fillPublicProfile(handle){
+  const host=document.getElementById('pub-profile');
+  if(!host) return;
+  const p=await loadProfileByHandle(handle);
+  if(!p){ host.innerHTML='<div class="rp-card"><h1 class="rp-h">Profile not found</h1><p class="rp-sub">This reader doesn’t exist or hasn’t set up a public profile. <a href="#/">Back to the news →</a></p></div>'; return; }
+  const tierLabel=p.tier==='insider'?'Insider':p.tier==='member'?'Member':'Reader';
+  const tierCls=p.tier==='insider'?'insider':p.tier==='member'?'member':'reader';
+  let chips=(p.interests||[]).map(function(k){ return '<span class="rp-chip">'+esc(vlabel(k))+'</span>'; }).join('');
+  host.innerHTML='<div class="rp-profile">'+
+    '<div class="rp-cover"></div>'+
+    '<div class="rp-phead">'+avatarHTML(p,96)+
+      '<div class="rp-pname-row"><div class="rp-pname">'+esc(p.display_name||'Reader')+' <span class="rp-badge '+tierCls+'">'+tierLabel+'</span></div>'+
+      '<div class="rp-phandle">@'+esc(p.handle||'reader')+(p.country?' · '+esc(p.country):'')+(p.occupation?' · '+esc(p.occupation):'')+'</div></div>'+
+    '</div>'+
+    '<div class="rp-pbody">'+(p.bio?'<div class="rp-bio">'+esc(p.bio)+'</div>':'')+'<div class="rp-chips">'+chips+'</div></div>'+
+  '</div>';
+}
+
+// Event wiring for reader account views + the header account menu.
+function bindReaderView(){
+  // Interest chips (join + edit forms): toggle selected state.
+  document.querySelectorAll('.pick-i').forEach(function(b){
+    b.addEventListener('click',function(){ b.classList.toggle('on'); });
+  });
+  function selectedInterests(scope){
+    return Array.prototype.slice.call((scope||document).querySelectorAll('.pick-i.on')).map(function(b){ return b.getAttribute('data-int'); });
+  }
+
+  // Header account dropdown
+  const acctBtn=document.getElementById('acct-btn');
+  const acctDrop=document.getElementById('acct-drop');
+  if(acctBtn && acctDrop){
+    acctBtn.addEventListener('click',function(e){
+      e.stopPropagation();
+      const open=acctDrop.classList.toggle('open');
+      acctBtn.setAttribute('aria-expanded',open?'true':'false');
+    });
+    document.addEventListener('click',function(){ acctDrop.classList.remove('open'); });
+  }
+  const acctSignout=document.getElementById('acct-signout');
+  if(acctSignout) acctSignout.addEventListener('click',function(){ signOut(); });
+
+  // Join / create-profile form
+  const joinForm=document.getElementById('join-form');
+  if(joinForm){
+    joinForm.addEventListener('submit',async function(e){
+      e.preventDefault();
+      const fd=new FormData(joinForm);
+      const name=String(fd.get('name')||'').trim();
+      const email=String(fd.get('email')||'').trim();
+      if(!name){ toast('Please enter your name.'); return; }
+      if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ toast('Please enter a valid email.'); return; }
+      const meta={ full_name:name, country:String(fd.get('country')||'')||undefined,
+        language:String(fd.get('language')||'')||undefined, occupation:String(fd.get('occupation')||'')||undefined,
+        interests:selectedInterests(joinForm) };
+      const btn=joinForm.querySelector('button[type=submit]');
+      if(btn){ btn.disabled=true; btn.textContent='Sending…'; }
+      const ok=await sendMagicLink(email,'#/me',meta);
+      if(!ok){ if(btn){ btn.disabled=false; btn.textContent='Create my profile →'; } return; }
+      const card=document.getElementById('join-card');
+      if(card) card.innerHTML='<div class="rp-eyebrow">Check your inbox</div>'+
+        '<h1 class="rp-h">Almost there, '+esc(name.split(' ')[0])+'.</h1>'+
+        '<p class="rp-sub">We sent a one-click sign-in link to <strong>'+esc(email)+'</strong>. Open it on this device to finish creating your profile. You can close this tab.</p>'+
+        '<p class="rp-note">No email after a minute? Check spam, or <a href="#/join">try again</a>.</p>';
+    });
+  }
+
+  // My-profile: edit toggle, avatar upload, save, sign out, retry
+  const editToggle=document.getElementById('me-edit-toggle');
+  const editForm=document.getElementById('me-edit-form');
+  if(editToggle && editForm){
+    editToggle.addEventListener('click',function(){
+      editForm.classList.toggle('hidden');
+      if(!editForm.classList.contains('hidden')) editForm.scrollIntoView({behavior:'smooth',block:'start'});
+    });
+  }
+  const editCancel=document.getElementById('me-edit-cancel');
+  if(editCancel && editForm) editCancel.addEventListener('click',function(){ editForm.classList.add('hidden'); });
+  const meSignout=document.getElementById('me-signout');
+  if(meSignout) meSignout.addEventListener('click',function(){ signOut(); });
+  const meRetry=document.getElementById('me-retry');
+  if(meRetry) meRetry.addEventListener('click',async function(){ await loadProfile(); route(); });
+
+  const avatarBtn=document.getElementById('me-avatar-btn');
+  const avatarFile=document.getElementById('me-avatar-file');
+  if(avatarBtn && avatarFile){
+    avatarBtn.addEventListener('click',function(){ avatarFile.click(); });
+    avatarFile.addEventListener('change',async function(){
+      const f=avatarFile.files&&avatarFile.files[0]; if(!f) return;
+      if(f.size>2*1024*1024){ toast('Please choose an image under 2 MB.'); return; }
+      avatarBtn.disabled=true; avatarBtn.textContent='Uploading…';
+      const r=await uploadAvatar(f);
+      if(r.error){ toast('Upload failed · '+r.error); avatarBtn.disabled=false; avatarBtn.textContent='Upload photo'; return; }
+      const s=await saveProfile({avatar_url:r.url});
+      avatarBtn.disabled=false; avatarBtn.textContent='Upload photo';
+      if(s.error){ toast('Saved photo but could not update profile · '+s.error); return; }
+      const prev=document.getElementById('me-avatar-preview'); if(prev) prev.innerHTML=avatarHTML(PROFILE,64);
+      toast('Photo updated.');
+    });
+  }
+  if(editForm){
+    editForm.addEventListener('submit',async function(e){
+      e.preventDefault();
+      const fd=new FormData(editForm);
+      const patch={
+        display_name:String(fd.get('display_name')||'').trim(),
+        handle:String(fd.get('handle')||'').trim().toLowerCase().replace(/[^a-z0-9_-]/g,'').slice(0,30),
+        country:String(fd.get('country')||''),
+        language:String(fd.get('language')||'en'),
+        occupation:String(fd.get('occupation')||'').trim(),
+        bio:String(fd.get('bio')||'').trim(),
+        interests:selectedInterests(editForm)
+      };
+      const btn=editForm.querySelector('button[type=submit]');
+      if(btn){ btn.disabled=true; btn.textContent='Saving…'; }
+      const r=await saveProfile(patch);
+      if(btn){ btn.disabled=false; btn.textContent='Save changes'; }
+      if(r.error){
+        toast(/duplicate|unique/i.test(r.error)?'That handle is taken — try another.':('Could not save · '+r.error));
+        return;
+      }
+      toast('Profile saved.');
+      route();
+    });
+  }
+
+  // Public profile: load by handle into the shell.
+  const pub=document.getElementById('pub-profile');
+  if(pub){ try{ fillPublicProfile(pub.getAttribute('data-handle')); }catch(e){} }
+}
+
+// Signed in, but not a newsroom editor → the CMS is off-limits.
+function viewNotEditor(){
+  return renderHeader(null)+
+    '<div class="rp-wrap"><div class="rp-card">'+
+      '<div class="rp-eyebrow">Newsroom access</div>'+
+      '<h1 class="rp-h">This area is for editors.</h1>'+
+      '<p class="rp-sub">You’re signed in as a reader, so the newsroom CMS isn’t available on your account. Head to your profile, or contact us if you should have editor access.</p>'+
+      '<div class="rp-cta"><a class="rp-btn" href="#/me">Go to my profile →</a><a class="rp-mini ghost" href="#/">Back to the news</a></div>'+
+    '</div></div>'+renderFooter();
+}
+
 // ── VIEW: ADMIN (LTR always — newsroom workflow) ──────────────
 function adminShell(activeSlug, paneHTML, section){
   section=section||'articles';
@@ -3399,10 +3862,14 @@ function route(){
     else if(parts[0]==='search') html=viewSearch(decodeURIComponent(parts.slice(1).join('/')));
     else if(parts[0]==='journalists') html=viewJournalists();
     else if(parts[0]==='journalist' && parts[1]) html=viewJournalist(decodeURIComponent(parts[1]));
+    else if(parts[0]==='join') html=viewJoin();
+    else if(parts[0]==='me') html=viewMe();
+    else if(parts[0]==='u' && parts[1]) html=viewPublicProfile(decodeURIComponent(parts[1]));
     else if(parts[0]==='admin'){
-      // Gate every #/admin* route on an authenticated session.
+      // Gate every #/admin* route: must be signed in AND a newsroom editor.
       if(!AUTH_READY) html=viewAuthChecking();
       else if(!isAuthed()) html=viewAdminLogin('#'+hash);
+      else if(!isEditor()) html=viewNotEditor();
       else if(parts[1]==='new') html=viewNewArticle();
       else if(parts[1]==='leads') html=viewAdminLeads();
       else if(parts[1]==='metrics') html=viewAdminMetrics();
@@ -3563,6 +4030,8 @@ function bindView(){
     e.preventDefault();
     openSubscribeModal();
   });
+
+  bindReaderView();
 
   // Investor / partner enquiry → /api/contact (Supabase leads table)
   const investForm=document.getElementById('invest-form');
