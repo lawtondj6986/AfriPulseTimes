@@ -175,6 +175,19 @@ profiles are at `#/u/<handle>`.
 
 ---
 
+## 💬 Comments & moderation (Phase 2)
+
+Signed-in readers comment on articles (with one-level replies), like, and report;
+guests see a "Sign in to comment" prompt. Comments that get **3 reports
+auto-hide** for review. Editors moderate inline (a **Hide** button on each
+comment) and from **Admin → Comments** (all comments, most-reported first, with
+Approve / Hide / Delete). Readers can edit/delete only their own; the public only
+sees visible comments — all enforced in the database. Needs the
+`20260706120000_comments.sql` migration. Full details in
+[`PHASE2_COMMENTS.md`](./PHASE2_COMMENTS.md).
+
+---
+
 ## Editing content in general
 
 - **Stories:** Admin → Articles (create / edit / publish / delete, upload images).

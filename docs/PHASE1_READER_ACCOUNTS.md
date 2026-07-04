@@ -71,9 +71,9 @@ where role in ('editor','admin');
 - The SPA builds, `npm test` passes (36), and `#/join` + `#/me` render with zero
   page errors. Reference screenshots: `docs/design/phase1-*.png`.
 
-## Not in Phase 1 (next up, on your go-ahead)
+## Next phases
 
-- **Phase 2 — Comments** (threaded, with an admin moderation queue). The profile
-  page already reserves the "My comments" space.
+- **Phase 2 — Comments & moderation** ✅ built — see
+  [`PHASE2_COMMENTS.md`](./PHASE2_COMMENTS.md).
 - **Phase 3 — Paid tiers** (Stripe checkout; the `tier` column is ready).
-- Localizing the reader UI (join/profile) into FR/AR/SW/PT — currently English.
+- Localizing the reader UI (join/profile/comments) into FR/AR/SW/PT — currently English.

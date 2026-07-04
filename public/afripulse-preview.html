@@ -712,6 +712,61 @@ html[dir="rtl"] .art-side{padding:8px 22px 0 0;border-left:none;border-right:0.5
 .rp-avatar-row{display:flex;align-items:center;gap:16px;margin-bottom:18px}
 @media (max-width:680px){.rp-form .rp-grid,.rp-edit .rp-grid{grid-template-columns:1fr}.rp-h{font-size:28px}.rp-phead{flex-wrap:wrap}}
 
+/* COMMENTS (Phase 2) */
+.cmt-section{max-width:760px;margin:0 auto;padding:8px 22px 56px}
+.cmt-head{display:flex;align-items:baseline;gap:12px;border-top:1px solid var(--border);padding-top:26px;margin-bottom:18px}
+.cmt-head h3{font-family:'Fraunces',Georgia,serif;font-size:22px;font-weight:800;letter-spacing:-.3px}
+.cmt-count{font-size:13px;color:var(--muted);font-family:'JetBrains Mono',monospace}
+.cmt-signin{display:flex;align-items:center;gap:16px;flex-wrap:wrap;background:var(--bg-2);border:1px solid var(--border);border-radius:12px;padding:18px 20px;margin-bottom:22px}
+.cmt-signin span{font-size:13.5px;color:var(--muted)}
+.cmt-compose{display:flex;gap:14px;align-items:flex-start;background:var(--bg-2);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:24px}
+.cmt-compose-box{flex:1;min-width:0}
+.cmt-replying{font-size:12.5px;color:var(--muted);margin-bottom:8px}
+.cmt-replying b{color:var(--green)}
+.cmt-replying button{background:none;border:none;color:var(--accent);cursor:pointer;font-size:13px;font-weight:700}
+.cmt-compose textarea,.cmt-edit-ta{width:100%;border:1px solid var(--border);border-radius:9px;padding:11px 13px;font-size:14.5px;font-family:inherit;color:var(--ink);background:#fff;resize:vertical;line-height:1.5}
+.cmt-compose textarea:focus,.cmt-edit-ta:focus{outline:none;border-color:var(--green)}
+.cmt-compose-row,.cmt-edit-row{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:10px}
+.cmt-edit-row{justify-content:flex-start}
+.cmt-guides{font-size:11.5px;color:var(--muted)}
+.cmt-post-btn{background:var(--green);color:#fff;border:none;border-radius:8px;padding:9px 20px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap}
+.cmt-post-btn:hover{background:#17572f}
+.cmt-list{display:flex;flex-direction:column}
+.cmt-loading,.cmt-empty{font-size:13.5px;color:var(--muted);padding:18px 0}
+.cmt-empty{background:var(--bg);border:1px dashed var(--border);border-radius:10px;text-align:center;padding:22px}
+.cmt{display:flex;gap:14px;padding:16px 0;border-top:1px solid var(--border)}
+.cmt.reply{margin-left:54px;border-top:1px dashed var(--border)}
+.cmt-main{flex:1;min-width:0}
+.cmt-hd{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px}
+.cmt-name{font-weight:700;color:var(--ink);text-decoration:none}
+a.cmt-name:hover{color:var(--green);text-decoration:underline}
+.cmt-handle{color:var(--muted);font-size:12px}
+.cmt-time{color:var(--muted);font-size:12px}
+.cmt-body{font-size:14.5px;line-height:1.6;color:var(--ink);margin:6px 0 9px;word-wrap:break-word;overflow-wrap:anywhere}
+.cmt-actions{display:flex;gap:16px;flex-wrap:wrap}
+.cmt-act{background:none;border:none;padding:0;font-size:12.5px;font-weight:600;color:var(--muted);cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:4px}
+.cmt-act:hover{color:var(--ink)}
+.cmt-act.on{color:var(--accent)}
+.cmt-act.mod{color:var(--accent)}
+.cmt-act.mod:hover{text-decoration:underline}
+
+/* Admin comment moderation */
+.cm-mod-wrap{padding:16px 18px}
+.cm-mod-list{display:flex;flex-direction:column;gap:12px;margin-top:12px}
+.cm-mod-row{background:#1A1C1E;border:1px solid #2A2D31;border-radius:8px;padding:14px 16px}
+.cm-mod-row.s-flagged{border-color:#E5484D}
+.cm-mod-row.s-hidden{opacity:.7}
+.cm-mod-meta{font-size:12px;color:#9AA0A6;margin-bottom:8px;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.cm-mod-meta a{color:#7FB5FF;text-decoration:none}
+.cm-mod-meta b{color:#E4E6E8}
+.cm-mod-status{font-size:10px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;padding:2px 7px;border-radius:10px}
+.cm-mod-status.s-visible{background:#143d24;color:#7EE0A3}
+.cm-mod-status.s-hidden{background:#333;color:#bbb}
+.cm-mod-status.s-flagged{background:#4a1416;color:#FF9B9B}
+.cm-mod-reports{color:#FF9B9B;font-weight:700}
+.cm-mod-body{font-size:14px;color:#E4E6E8;line-height:1.5;margin-bottom:12px;white-space:pre-wrap;word-wrap:break-word}
+.cm-mod-actions{display:flex;gap:8px;flex-wrap:wrap}
+
 /* FOOTER */
 .footer{background:var(--ink);color:#A09890;padding:38px 22px 18px;margin-top:0;border-top:1px solid #1A1A1A}
 .footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr;gap:32px;max-width:1100px;margin:0 auto 24px}
@@ -3136,6 +3191,7 @@ function viewArticle(slug){
       '<div class="panel-head" style="margin-top:0;border-top:none">'+esc(t('more_from'))+' '+esc(vlabel(a.vertical))+'</div>'+
       '<div class="rel-grid">'+relHTML+'</div>'+
     '</section>'+
+    commentsSectionHTML(a.slug)+
     renderFooter();
 }
 
@@ -3391,6 +3447,173 @@ function bindReaderView(){
   if(pub){ try{ fillPublicProfile(pub.getAttribute('data-handle')); }catch(e){} }
 }
 
+// ── COMMENTS (Phase 2) ────────────────────────────────────────
+let COMMENT_REPLY_TO=null;   // {id,name} while composing a reply
+
+async function loadComments(slug){
+  const sb=await ensureSupabase();
+  if(!sb) return {comments:[], likes:new Set()};
+  try{
+    const {data,error}=await sb.from('comments')
+      .select('id,article_slug,user_id,parent_id,body,status,like_count,report_count,edited,created_at, author:profiles(display_name,handle,avatar_url,tier)')
+      .eq('article_slug',slug).eq('status','visible')
+      .order('created_at',{ascending:true});
+    if(error){ console.warn('loadComments',error.message); return {comments:[], likes:new Set()}; }
+    const likes=new Set();
+    if(SESSION && SESSION.user){
+      try{ const {data:ld}=await sb.from('comment_likes').select('comment_id').eq('user_id',SESSION.user.id);
+        (ld||[]).forEach(function(r){ likes.add(r.comment_id); }); }catch(e){}
+    }
+    return {comments:data||[], likes:likes};
+  }catch(e){ return {comments:[], likes:new Set()}; }
+}
+async function postComment(slug, body, parentId){
+  const sb=await ensureSupabase();
+  if(!sb || !SESSION || !SESSION.user) return {error:'Sign in to comment.'};
+  try{ const {error}=await sb.from('comments').insert({article_slug:slug, user_id:SESSION.user.id, body:body, parent_id:parentId||null});
+    return error?{error:error.message}:{ok:true}; }catch(e){ return {error:String((e&&e.message)||e)}; }
+}
+async function editCommentBody(id, body){
+  const sb=await ensureSupabase(); if(!sb) return {error:'Offline.'};
+  try{ const {error}=await sb.from('comments').update({body:body}).eq('id',id); return error?{error:error.message}:{ok:true}; }catch(e){ return {error:String(e)}; }
+}
+async function deleteComment(id){
+  const sb=await ensureSupabase(); if(!sb) return {error:'Offline.'};
+  try{ const {error}=await sb.from('comments').delete().eq('id',id); return error?{error:error.message}:{ok:true}; }catch(e){ return {error:String(e)}; }
+}
+async function toggleCommentLike(id, liked){
+  const sb=await ensureSupabase(); if(!sb||!SESSION||!SESSION.user) return {error:'Sign in to like.'};
+  try{
+    if(liked){ const {error}=await sb.from('comment_likes').delete().eq('comment_id',id).eq('user_id',SESSION.user.id); if(error) return {error:error.message}; }
+    else { const {error}=await sb.from('comment_likes').insert({comment_id:id,user_id:SESSION.user.id}); if(error) return {error:error.message}; }
+    return {ok:true};
+  }catch(e){ return {error:String(e)}; }
+}
+async function reportComment(id){
+  const sb=await ensureSupabase(); if(!sb||!SESSION||!SESSION.user) return {error:'Sign in to report.'};
+  try{ const {error}=await sb.from('comment_reports').insert({comment_id:id,user_id:SESSION.user.id});
+    if(error && !/duplicate/i.test(error.message||'')) return {error:error.message}; return {ok:true}; }catch(e){ return {error:String(e)}; }
+}
+async function moderateComment(id, status){
+  const sb=await ensureSupabase(); if(!sb) return {error:'Offline.'};
+  try{ const {error}=await sb.rpc('moderate_comment',{p_id:id,p_status:status}); return error?{error:error.message}:{ok:true}; }catch(e){ return {error:String(e)}; }
+}
+
+function commentsSectionHTML(slug){
+  return '<section class="cmt-section" id="comments" data-article="'+esc(slug)+'">'+
+    '<div class="cmt-head"><h3>Join the conversation</h3><span class="cmt-count" id="cmt-count"></span></div>'+
+    '<div id="cmt-compose"></div>'+
+    '<div id="cmt-list" class="cmt-list"><div class="cmt-loading">Loading comments…</div></div>'+
+  '</section>';
+}
+function commentComposeHTML(){
+  if(!AUTH_READY) return '';
+  if(!isAuthed()){
+    return '<div class="cmt-signin"><a href="#/join" class="rp-btn">Sign in to comment</a>'+
+      '<span>A real, signed-in community — join the conversation, it’s free.</span></div>';
+  }
+  const replying = COMMENT_REPLY_TO ? '<div class="cmt-replying">Replying to <b>'+esc(COMMENT_REPLY_TO.name)+'</b> <button type="button" id="cmt-reply-cancel" aria-label="Cancel reply">✕</button></div>' : '';
+  return '<div class="cmt-compose">'+avatarHTML(PROFILE,40)+
+    '<div class="cmt-compose-box">'+replying+
+      '<textarea id="cmt-input" maxlength="2000" rows="3" placeholder="Share your perspective from the ground…"></textarea>'+
+      '<div class="cmt-compose-row"><span class="cmt-guides">Posting as <b>'+esc((PROFILE&&PROFILE.display_name)||'you')+'</b> · be respectful — comments are moderated.</span>'+
+      '<button class="cmt-post-btn" id="cmt-post" type="button">Post comment</button></div>'+
+    '</div></div>';
+}
+function commentNodeHTML(c, likes, isReply){
+  const a=c.author||{}; const liked=likes.has(c.id);
+  const mine = SESSION && SESSION.user && SESSION.user.id===c.user_id;
+  const tier=a.tier==='insider'?'insider':a.tier==='member'?'member':'';
+  const badge=tier?'<span class="rp-badge '+tier+'">'+(tier==='insider'?'Insider':'Member')+'</span>':'';
+  let actions='<button class="cmt-act'+(liked?' on':'')+'" data-cm-like="'+esc(c.id)+'" data-liked="'+(liked?'1':'0')+'">♥ <span>'+c.like_count+'</span></button>';
+  if(!isReply && SESSION && SESSION.user) actions+='<button class="cmt-act" data-cm-reply="'+esc(c.id)+'" data-name="'+esc(a.display_name||a.handle||'reader')+'">Reply</button>';
+  if(mine){ actions+='<button class="cmt-act" data-cm-edit="'+esc(c.id)+'">Edit</button><button class="cmt-act" data-cm-del="'+esc(c.id)+'">Delete</button>'; }
+  else if(SESSION && SESSION.user){ actions+='<button class="cmt-act" data-cm-report="'+esc(c.id)+'">Report</button>'; }
+  if(isEditor()) actions+='<button class="cmt-act mod" data-cm-mod="'+esc(c.id)+'">Hide</button>';
+  const hl = a.handle ? '#/u/'+esc(a.handle) : '';
+  const nameEl = hl ? '<a href="'+hl+'" class="cmt-name">'+esc(a.display_name||'Reader')+'</a>' : '<span class="cmt-name">'+esc(a.display_name||'Reader')+'</span>';
+  return '<div class="cmt'+(isReply?' reply':'')+'" data-cm="'+esc(c.id)+'">'+
+    avatarHTML(a,40)+
+    '<div class="cmt-main">'+
+      '<div class="cmt-hd">'+nameEl+' '+badge+(a.handle?'<span class="cmt-handle">@'+esc(a.handle)+'</span>':'')+
+        '<span class="cmt-time">· '+esc(timeAgo(c.created_at))+(c.edited?' · edited':'')+'</span></div>'+
+      '<div class="cmt-body" data-cm-body="'+esc(c.id)+'">'+esc(c.body).replace(/\n/g,'<br>')+'</div>'+
+      '<div class="cmt-actions">'+actions+'</div>'+
+    '</div>'+
+  '</div>';
+}
+async function fillComments(slug){
+  const list=document.getElementById('cmt-list');
+  const compose=document.getElementById('cmt-compose');
+  const countEl=document.getElementById('cmt-count');
+  if(!list) return;
+  if(compose) compose.innerHTML=commentComposeHTML();
+  const {comments,likes}=await loadComments(slug);
+  if(countEl) countEl.textContent = comments.length ? (comments.length+' comment'+(comments.length===1?'':'s')) : '';
+  if(!comments.length){ list.innerHTML='<div class="cmt-empty">💬 No comments yet — be the first to weigh in.</div>'; }
+  else{
+    const byParent={}; comments.forEach(function(c){ if(c.parent_id){ (byParent[c.parent_id]=byParent[c.parent_id]||[]).push(c); } });
+    let html='';
+    comments.filter(function(c){ return !c.parent_id; }).forEach(function(c){
+      html+=commentNodeHTML(c,likes,false);
+      (byParent[c.id]||[]).forEach(function(r){ html+=commentNodeHTML(r,likes,true); });
+    });
+    list.innerHTML=html;
+  }
+  bindComments(slug);
+}
+function bindComments(slug){
+  const post=document.getElementById('cmt-post'); const input=document.getElementById('cmt-input');
+  if(post && input){
+    post.addEventListener('click',async function(){
+      const body=input.value.trim(); if(!body){ toast('Write something first.'); return; }
+      post.disabled=true; post.textContent='Posting…';
+      const r=await postComment(slug, body, COMMENT_REPLY_TO?COMMENT_REPLY_TO.id:null);
+      if(r.error){ toast('Could not post · '+r.error); post.disabled=false; post.textContent='Post comment'; return; }
+      COMMENT_REPLY_TO=null; await fillComments(slug); toast('Comment posted.');
+    });
+  }
+  const rc=document.getElementById('cmt-reply-cancel');
+  if(rc) rc.addEventListener('click',function(){ COMMENT_REPLY_TO=null; fillComments(slug); });
+  const list=document.getElementById('cmt-list');
+  if(list && !list._cmtBound){
+    list._cmtBound=true;
+    list.addEventListener('click',async function(e){
+      const t=e.target.closest('button'); if(!t) return;
+      if(t.hasAttribute('data-cm-like')){
+        const id=t.getAttribute('data-cm-like'); const liked=t.getAttribute('data-liked')==='1';
+        const r=await toggleCommentLike(id,liked); if(r.error){ toast(r.error); return; } fillComments(slug);
+      } else if(t.hasAttribute('data-cm-reply')){
+        COMMENT_REPLY_TO={id:t.getAttribute('data-cm-reply'), name:t.getAttribute('data-name')};
+        await fillComments(slug); const i=document.getElementById('cmt-input'); if(i){ i.focus(); i.scrollIntoView({block:'center'}); }
+      } else if(t.hasAttribute('data-cm-report')){
+        const r=await reportComment(t.getAttribute('data-cm-report'));
+        toast(r.error?('Could not report · '+r.error):'Reported — thank you. Our team will review it.');
+      } else if(t.hasAttribute('data-cm-del')){
+        if(!confirm('Delete your comment? This cannot be undone.')) return;
+        const r=await deleteComment(t.getAttribute('data-cm-del')); if(r.error){ toast(r.error); return; } fillComments(slug); toast('Comment deleted.');
+      } else if(t.hasAttribute('data-cm-mod')){
+        const r=await moderateComment(t.getAttribute('data-cm-mod'),'hidden'); if(r.error){ toast(r.error); return; } fillComments(slug); toast('Comment hidden.');
+      } else if(t.hasAttribute('data-cm-edit')){
+        startInlineCommentEdit(t.getAttribute('data-cm-edit'), slug);
+      }
+    });
+  }
+}
+function startInlineCommentEdit(id, slug){
+  const bodyEl=document.querySelector('[data-cm-body="'+id+'"]'); if(!bodyEl) return;
+  const cur=bodyEl.textContent;
+  bodyEl.innerHTML='<textarea class="cmt-edit-ta" maxlength="2000" rows="3"></textarea>'+
+    '<div class="cmt-edit-row"><button class="cmt-post-btn" id="cmt-save-'+id+'" type="button">Save</button>'+
+    '<button class="cmt-act" id="cmt-cancel-'+id+'" type="button">Cancel</button></div>';
+  const ta=bodyEl.querySelector('textarea'); ta.value=cur; ta.focus();
+  document.getElementById('cmt-save-'+id).addEventListener('click',async function(){
+    const nb=ta.value.trim(); if(!nb){ toast('Comment can’t be empty.'); return; }
+    const r=await editCommentBody(id,nb); if(r.error){ toast('Could not save · '+r.error); return; } fillComments(slug); toast('Comment updated.');
+  });
+  document.getElementById('cmt-cancel-'+id).addEventListener('click',function(){ fillComments(slug); });
+}
+
 // Signed in, but not a newsroom editor → the CMS is off-limits.
 function viewNotEditor(){
   return renderHeader(null)+
@@ -3410,6 +3633,7 @@ function adminShell(activeSlug, paneHTML, section){
   const navHTML='<div class="adm-nav">'+
     '<a class="adm-nav-tab'+(section==='articles'?' active':'')+'" href="#/admin">Articles</a>'+
     '<a class="adm-nav-tab'+(section==='leads'?' active':'')+'" href="#/admin/leads">Enquiries'+leadsBadge+'</a>'+
+    '<a class="adm-nav-tab'+(section==='comments'?' active':'')+'" href="#/admin/comments">Comments</a>'+
     '<a class="adm-nav-tab'+(section==='metrics'?' active':'')+'" href="#/admin/metrics">Dashboard</a>'+
   '</div>';
   const all=ARTICLES.slice().sort((a,b)=>new Date(b.publishedAt)-new Date(a.publishedAt));
@@ -3668,6 +3892,54 @@ function viewAdminLeads(){
   return adminShell(null, adminLeads(), 'leads');
 }
 
+// ── VIEW: ADMIN COMMENT MODERATION ────────────────────────────
+let ADMIN_COMMENTS=null; let ADMIN_COMMENTS_LOADING=false;
+async function refreshAdminComments(){
+  ADMIN_COMMENTS_LOADING=true;
+  const sb=await ensureSupabase();
+  if(!sb){ ADMIN_COMMENTS=[]; ADMIN_COMMENTS_LOADING=false; route(); return; }
+  try{
+    const {data,error}=await sb.from('comments')
+      .select('id,article_slug,body,status,like_count,report_count,created_at, author:profiles(display_name,handle)')
+      .order('report_count',{ascending:false}).order('created_at',{ascending:false}).limit(200);
+    ADMIN_COMMENTS = error ? [] : (data||[]);
+    if(error) console.warn('adminComments',error.message);
+  }catch(e){ ADMIN_COMMENTS=[]; }
+  ADMIN_COMMENTS_LOADING=false; route();
+}
+function admCommentRow(c){
+  const a=c.author||{}; const st=c.status;
+  const badge='<span class="cm-mod-status s-'+esc(st)+'">'+esc(st)+'</span>';
+  const flagged = c.report_count>0 ? '<span class="cm-mod-reports">⚑ '+c.report_count+'</span>' : '';
+  let actions='';
+  if(st!=='visible') actions+='<button class="adm-btn" data-cmod="'+esc(c.id)+'" data-cmv="visible">Approve</button>';
+  if(st!=='hidden')  actions+='<button class="adm-btn" data-cmod="'+esc(c.id)+'" data-cmv="hidden">Hide</button>';
+  actions+='<button class="adm-btn danger" data-cmdel="'+esc(c.id)+'">Delete</button>';
+  return '<div class="cm-mod-row s-'+esc(st)+'">'+
+    '<div class="cm-mod-meta">'+badge+flagged+' <b>'+esc(a.display_name||'Reader')+'</b>'+(a.handle?' <span class="cmt-handle">@'+esc(a.handle)+'</span>':'')+
+      ' · <a href="#/article/'+esc(c.article_slug)+'">'+esc(c.article_slug)+'</a> · '+esc(timeAgo(c.created_at))+' · ♥ '+c.like_count+'</div>'+
+    '<div class="cm-mod-body">'+esc(c.body)+'</div>'+
+    '<div class="cm-mod-actions">'+actions+'</div>'+
+  '</div>';
+}
+function adminCommentsPane(){
+  const bar='<div class="adm-bar"><span class="adm-crumb">Comments</span>'+
+    '<div class="adm-actions"><button class="adm-btn" id="cmod-refresh" type="button">Refresh ↻</button></div></div>';
+  if(ADMIN_COMMENTS===null) return bar+'<div class="cm-mod-wrap"><div class="adm-leads-empty">Loading comments…</div></div>';
+  if(!ADMIN_COMMENTS.length) return bar+'<div class="cm-mod-wrap"><div class="adm-leads-empty">'+
+    '<div class="ico">💬</div><h3>No comments yet</h3><p>Reader comments appear here for moderation — flagged ones (auto-hidden at 3 reports) rise to the top. '+
+    'Needs the <code>comments</code> migration (<code>supabase/migrations/20260706120000_comments.sql</code>).</p></div></div>';
+  const flagged=ADMIN_COMMENTS.filter(function(c){return c.status==='flagged';}).length;
+  const rows=ADMIN_COMMENTS.map(admCommentRow).join('');
+  return bar+'<div class="cm-mod-wrap">'+
+    '<div class="adm-leads-summary">'+ADMIN_COMMENTS.length+' shown · '+flagged+' flagged for review</div>'+
+    '<div class="cm-mod-list" id="cm-mod-list">'+rows+'</div></div>';
+}
+function viewAdminComments(){
+  if(ADMIN_COMMENTS===null && !ADMIN_COMMENTS_LOADING) refreshAdminComments();
+  return adminShell(null, adminCommentsPane(), 'comments');
+}
+
 // ── VIEW: ADMIN TRACTION DASHBOARD ("Command Center") ─────────
 function mxBars(buckets){
   const max=Math.max(1, ...buckets.map(function(b){return b.count;}));
@@ -3872,6 +4144,7 @@ function route(){
       else if(!isEditor()) html=viewNotEditor();
       else if(parts[1]==='new') html=viewNewArticle();
       else if(parts[1]==='leads') html=viewAdminLeads();
+      else if(parts[1]==='comments') html=viewAdminComments();
       else if(parts[1]==='metrics') html=viewAdminMetrics();
       else if(parts[1]==='edit' && parts[2]) html=viewAdmin(decodeURIComponent(parts[2]));
       else html=viewAdmin(null);
@@ -3937,10 +4210,14 @@ function bindView(){
     nums.forEach(function(n){ n.textContent='0'; io.observe(n); });
   })();
 
-  // Record a page view when an article is open (first-party counter).
+  // Record a page view when an article is open (first-party counter) + load comments.
   (function(){
     const h=location.hash||'';
-    if(h.indexOf('#/article/')===0){ try{ recordView(decodeURIComponent(h.slice('#/article/'.length))); }catch(e){} }
+    if(h.indexOf('#/article/')===0){
+      const slug=decodeURIComponent(h.slice('#/article/'.length));
+      try{ recordView(slug); }catch(e){}
+      try{ fillComments(slug); }catch(e){}
+    }
     else if(TTS_STATE.speaking){ stopTTS(); }   // stop reading when leaving an article
   })();
 
@@ -4215,6 +4492,26 @@ function bindView(){
   // Admin leads (investor / partner enquiries)
   const leadsRefresh=document.getElementById('leads-refresh');
   if(leadsRefresh) leadsRefresh.addEventListener('click',function(){ toast('Refreshing enquiries…'); refreshLeads(); });
+
+  // Comment moderation (admin → Comments)
+  const cmodRefresh=document.getElementById('cmod-refresh');
+  if(cmodRefresh) cmodRefresh.addEventListener('click',function(){ toast('Refreshing comments…'); refreshAdminComments(); });
+  const cmodList=document.getElementById('cm-mod-list');
+  if(cmodList){
+    cmodList.addEventListener('click',async function(e){
+      const t=e.target.closest('button'); if(!t) return;
+      if(t.hasAttribute('data-cmod')){
+        const r=await moderateComment(t.getAttribute('data-cmod'), t.getAttribute('data-cmv'));
+        if(r.error){ toast('Could not update · '+r.error); return; }
+        toast('Comment '+(t.getAttribute('data-cmv')==='visible'?'approved':'hidden')+'.'); refreshAdminComments();
+      } else if(t.hasAttribute('data-cmdel')){
+        if(!confirm('Delete this comment permanently?')) return;
+        const r=await deleteComment(t.getAttribute('data-cmdel'));
+        if(r.error){ toast('Could not delete · '+r.error); return; }
+        toast('Comment deleted.'); refreshAdminComments();
+      }
+    });
+  }
   const leadsFilter=document.getElementById('leads-filter');
   if(leadsFilter){
     leadsFilter.addEventListener('input',function(){
