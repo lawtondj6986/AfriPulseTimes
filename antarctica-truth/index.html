@@ -1,0 +1,1345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="theme-color" content="#0A1628" />
+<title>Antarctica Truth — Documented history. Constructed mythology.</title>
+<meta name="description" content="The Antarctica Truth Project separates documented history from constructed mythology about 20th-century Antarctica, and reveals the continent's real deep-time history stretching back 170+ million years." />
+
+<!-- ============================================================================
+     THE ANTARCTICA TRUTH PROJECT — single-file production site
+     ----------------------------------------------------------------------------
+     Stack:   Tailwind CSS 3.4+ (Play CDN) + vanilla JS. No frameworks.
+     Theme:   Dark by default. Deep navy #0A1628, glacial cyan #67E8F9 / #22D3EE.
+     Notes:   All content is sourced from the "Antarctica Truth Research Dossier
+              (Second Edition, July 2026)". Deep-time claims follow published
+              scientific consensus (Gondwana breakup, Eocene fossils, EAIS onset
+              ~34 Ma, Gamburtsev range, ~400 subglacial lakes, 91+ 2017 volcanoes,
+              IceBridge / BedMachine / REMA). Nothing here is invented.
+     Images:  Hero + section imagery are CSS gradients/SVG by default so the file
+              is fully self-contained and offline-capable. Swap the `--hero-*`
+              backgrounds for real photography — see README for recommended
+              sources (NASA IceBridge, USGS, British Antarctic Survey, IceCube,
+              Unsplash Antarctic photography). Credit notes are inline below.
+     ============================================================================ -->
+
+<!-- Tailwind Play CDN (official). For production you would install Tailwind as a
+     build step — see README "Expanding this project". -->
+<script src="https://cdn.tailwindcss.com?plugins=typography"></script>
+<script>
+  // Tailwind runtime config — extends the palette + fonts used across the site.
+  tailwind.config = {
+    darkMode: 'class',
+    theme: {
+      extend: {
+        colors: {
+          navy:   { DEFAULT: '#0A1628', 900: '#060E1C', 800: '#0A1628', 700: '#0F2137', 600: '#16304F' },
+          ice:    { 300: '#A5F3FC', 400: '#67E8F9', 500: '#22D3EE', 600: '#0891B2' },
+          frost:  '#E8F0F7',
+        },
+        fontFamily: {
+          display: ['"Spectral"', 'Georgia', 'serif'],
+          sans:    ['"Inter"', 'system-ui', 'sans-serif'],
+          mono:    ['"IBM Plex Mono"', 'ui-monospace', 'monospace'],
+        },
+        keyframes: {
+          floaty: { '0%,100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(-8px)' } },
+          shimmer:{ '0%': { backgroundPosition: '-200% 0' }, '100%': { backgroundPosition: '200% 0' } },
+        },
+        animation: {
+          floaty: 'floaty 6s ease-in-out infinite',
+        },
+      },
+    },
+  };
+</script>
+
+<!-- Fonts. Kept to two families for performance. Preconnect to speed handshakes. -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Spectral:ital,wght@0,300;0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+<style>
+  /* ---- Base + custom design tokens (things Tailwind utilities can't express) ---- */
+  :root { color-scheme: dark; scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) {
+    :root { scroll-behavior: auto; }
+    *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; }
+  }
+  body { background:#0A1628; }
+
+  /* Glacial gradient used for the hero + several section headers.
+     Swap the layered gradients for a real photo: background-image: url('hero.jpg'); */
+  .hero-bg {
+    background:
+      radial-gradient(1200px 600px at 70% -10%, rgba(103,232,249,.18), transparent 60%),
+      radial-gradient(900px 500px at 10% 20%, rgba(34,211,238,.10), transparent 55%),
+      linear-gradient(180deg, #0A1628 0%, #0B1B30 55%, #0A1628 100%);
+  }
+  /* Very light scientific grid overlay — used sparingly, only where it aids reading. */
+  .grid-overlay {
+    background-image:
+      linear-gradient(rgba(103,232,249,.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(103,232,249,.05) 1px, transparent 1px);
+    background-size: 44px 44px;
+  }
+  /* Frosted-glass card treatment. */
+  .glass { background: rgba(15,33,55,.55); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+
+  /* Scroll-reveal: elements start hidden, .is-visible added by IntersectionObserver. */
+  .reveal { opacity:0; transform: translateY(24px); transition: opacity .7s ease, transform .7s cubic-bezier(.2,.7,.2,1); }
+  .reveal.is-visible { opacity:1; transform:none; }
+
+  /* Thin gradient hairline used as a section divider. */
+  .hairline { height:1px; background:linear-gradient(90deg, transparent, rgba(103,232,249,.5), transparent); }
+
+  /* Timeline connecting line. */
+  .tl-line { background:linear-gradient(180deg, rgba(103,232,249,.6), rgba(34,211,238,.15)); }
+
+  /* Accessible focus ring on every interactive element. */
+  a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, [tabindex]:focus-visible {
+    outline: 2px solid #67E8F9; outline-offset: 2px; border-radius: 4px;
+  }
+
+  /* Custom scrollbar (subtle). */
+  ::-webkit-scrollbar { width:10px; height:10px; }
+  ::-webkit-scrollbar-thumb { background:#16304F; border-radius:10px; }
+  ::-webkit-scrollbar-track { background:#0A1628; }
+
+  /* Progress dots (right-side section nav). */
+  .dot { transition: all .3s ease; }
+  .dot[aria-current="true"] { background:#67E8F9; transform:scale(1.5); box-shadow:0 0 12px rgba(103,232,249,.8); }
+
+  /* -------------------------- PRINT STYLESHEET --------------------------------
+     Optimised for the Claim-vs-Record table and the timeline: white background,
+     black text, no chrome, tables never break awkwardly across pages. */
+  @media print {
+    :root { color-scheme: light; }
+    body { background:#fff !important; color:#111 !important; font-size:11pt; }
+    nav, #progress-dots, #myth-detector, .no-print, video, canvas, .hero-bg::after { display:none !important; }
+    section { break-inside: avoid; page-break-inside: avoid; padding:0 !important; margin:0 0 18pt !important; }
+    .glass, .bg-navy-700, .bg-navy-600, [class*="bg-navy"] { background:#fff !important; box-shadow:none !important; }
+    h1,h2,h3,h4,p,li,td,th,span { color:#111 !important; }
+    a { color:#0369a1 !important; text-decoration:underline; }
+    #myth-table { width:100%; border-collapse:collapse; }
+    #myth-table th, #myth-table td { border:1px solid #999 !important; padding:6pt !important; }
+    #myth-table tr { break-inside: avoid; }
+    .print-only { display:block !important; }
+    .reveal { opacity:1 !important; transform:none !important; }
+    .timeline-node { break-inside: avoid; }
+    a[href^="http"]::after { content:" (" attr(href) ")"; font-size:8pt; color:#555; }
+  }
+  .print-only { display:none; }
+</style>
+</head>
+
+<body class="bg-navy-800 text-frost font-sans antialiased selection:bg-ice-500/30 selection:text-white">
+
+<!-- Skip link for keyboard + screen-reader users. -->
+<a href="#hero" class="sr-only focus:not-sr-only focus:fixed focus:z-[100] focus:top-3 focus:left-3 focus:bg-ice-500 focus:text-navy-900 focus:px-4 focus:py-2 focus:rounded-lg focus:font-semibold">Skip to content</a>
+
+<!-- =========================================================================
+     STICKY NAVIGATION
+     ========================================================================= -->
+<nav id="site-nav" class="fixed top-0 inset-x-0 z-50 transition-all duration-300 border-b border-transparent" aria-label="Primary">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex items-center justify-between h-16">
+      <!-- Logo -->
+      <a href="#hero" class="flex items-center gap-2.5 group" aria-label="Antarctica Truth — home">
+        <!-- Minimal ice-crystal glyph (inline SVG, no external asset). -->
+        <svg class="w-7 h-7 text-ice-400 group-hover:rotate-45 transition-transform duration-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">
+          <path d="M12 2v20M2 12h20M4.9 4.9l14.2 14.2M19.1 4.9L4.9 19.1"/>
+          <circle cx="12" cy="12" r="2.2" fill="currentColor" stroke="none"/>
+        </svg>
+        <span class="font-display font-semibold tracking-[0.18em] text-sm sm:text-base text-white">ANTARCTICA <span class="text-ice-400">TRUTH</span></span>
+      </a>
+
+      <!-- Desktop links -->
+      <div class="hidden lg:flex items-center gap-1 text-sm">
+        <a href="#project"      class="nav-link px-3 py-2 rounded-md text-frost/80 hover:text-white hover:bg-white/5 transition">The Project</a>
+        <a href="#myth-record"  class="nav-link px-3 py-2 rounded-md text-frost/80 hover:text-white hover:bg-white/5 transition">Myth vs Record</a>
+        <a href="#genealogy"    class="nav-link px-3 py-2 rounded-md text-frost/80 hover:text-white hover:bg-white/5 transition">Myth Genealogy</a>
+        <a href="#expeditions"  class="nav-link px-3 py-2 rounded-md text-frost/80 hover:text-white hover:bg-white/5 transition">Real Expeditions</a>
+        <a href="#deep-time"    class="nav-link px-3 py-2 rounded-md text-frost/80 hover:text-white hover:bg-white/5 transition">Deep Time</a>
+        <a href="#ice-testifies"class="nav-link px-3 py-2 rounded-md text-frost/80 hover:text-white hover:bg-white/5 transition">The Ice Testifies</a>
+        <a href="#sources"      class="nav-link px-3 py-2 rounded-md text-frost/80 hover:text-white hover:bg-white/5 transition">Sources</a>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <span class="hidden sm:inline-flex items-center gap-1.5 text-[11px] font-mono text-ice-300/80 border border-ice-500/25 rounded-full px-2.5 py-1" title="Content last reviewed">
+          <span class="w-1.5 h-1.5 rounded-full bg-ice-400 animate-pulse"></span>Last Updated: July 2026
+        </span>
+        <!-- Mobile menu toggle -->
+        <button id="menu-btn" class="lg:hidden p-2 text-frost hover:text-ice-400 transition" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="mobile-menu">
+          <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile menu -->
+  <div id="mobile-menu" class="lg:hidden hidden glass border-t border-ice-500/10">
+    <div class="px-4 py-3 space-y-1 text-sm">
+      <a href="#project"       class="block px-3 py-2.5 rounded-md text-frost/85 hover:bg-white/5">The Project</a>
+      <a href="#myth-record"   class="block px-3 py-2.5 rounded-md text-frost/85 hover:bg-white/5">Myth vs Record</a>
+      <a href="#genealogy"     class="block px-3 py-2.5 rounded-md text-frost/85 hover:bg-white/5">Myth Genealogy</a>
+      <a href="#expeditions"   class="block px-3 py-2.5 rounded-md text-frost/85 hover:bg-white/5">Real Expeditions</a>
+      <a href="#deep-time"     class="block px-3 py-2.5 rounded-md text-frost/85 hover:bg-white/5">Deep Time</a>
+      <a href="#ice-testifies" class="block px-3 py-2.5 rounded-md text-frost/85 hover:bg-white/5">The Ice Testifies</a>
+      <a href="#help"          class="block px-3 py-2.5 rounded-md text-frost/85 hover:bg-white/5">Open Leads</a>
+      <a href="#sources"       class="block px-3 py-2.5 rounded-md text-frost/85 hover:bg-white/5">Sources</a>
+      <span class="block px-3 pt-2 text-[11px] font-mono text-ice-300/70">Last Updated: July 2026</span>
+    </div>
+  </div>
+</nav>
+
+<!-- Right-side section progress dots (desktop). Populated + wired in JS. -->
+<div id="progress-dots" class="hidden xl:flex fixed right-6 top-1/2 -translate-y-1/2 z-40 flex-col gap-3.5" aria-hidden="true"></div>
+
+<main>
+
+<!-- =========================================================================
+     HERO
+     Image note: replace .hero-bg with a full-bleed Antarctic photograph, e.g.
+     NASA Operation IceBridge aerial of the ice sheet, or an Unsplash Antarctic
+     landscape (credit the photographer). Keep the dark overlay for legibility.
+     ========================================================================= -->
+<section id="hero" class="hero-bg relative min-h-screen flex items-center pt-16 overflow-hidden">
+  <div class="absolute inset-0 grid-overlay opacity-40" aria-hidden="true"></div>
+  <!-- Soft drifting light, purely decorative. -->
+  <div class="absolute -top-24 right-10 w-[38rem] h-[38rem] rounded-full bg-ice-500/10 blur-3xl animate-floaty pointer-events-none" aria-hidden="true"></div>
+
+  <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 w-full">
+    <p class="reveal font-mono text-ice-400 text-xs sm:text-sm tracking-[0.3em] uppercase mb-6">A source-critical research project</p>
+    <h1 class="reveal font-display font-semibold text-white leading-[0.95] text-5xl sm:text-7xl lg:text-8xl">
+      ANTARCTICA<br /><span class="text-ice-400">TRUTH</span>
+    </h1>
+    <p class="reveal mt-8 text-xl sm:text-2xl text-frost/90 font-display font-light max-w-2xl">
+      Documented history. Constructed mythology.<br class="hidden sm:block" />
+      The real continent beneath the ice.
+    </p>
+    <p class="reveal mt-6 text-base sm:text-lg text-frost/65 max-w-2xl leading-relaxed">
+      Antarctica holds <strong class="text-ice-300 font-medium">170+ million years</strong> of history before the first human ever saw it — and a
+      <strong class="text-ice-300 font-medium">postwar myth-making project</strong>, built claim by claim after 1945 by identifiable authors.
+      This project separates the two, using primary sources and the paper trail itself.
+    </p>
+    <div class="reveal mt-10 flex flex-col sm:flex-row gap-4">
+      <a href="#myth-record" class="inline-flex items-center justify-center gap-2 bg-ice-500 hover:bg-ice-400 text-navy-900 font-semibold px-7 py-3.5 rounded-xl transition shadow-lg shadow-ice-500/20 hover:shadow-ice-400/30 hover:-translate-y-0.5">
+        Explore the Evidence
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </a>
+      <a href="#deep-time" class="inline-flex items-center justify-center gap-2 border border-ice-500/40 hover:border-ice-400 text-frost hover:text-white font-medium px-7 py-3.5 rounded-xl transition hover:bg-ice-500/5">
+        Enter Deep Time
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 5v14M6 13l6 6 6-6"/></svg>
+      </a>
+    </div>
+    <!-- Image credit note lives in the source so maintainers know what to swap. -->
+    <!-- HERO IMAGE CREDIT (placeholder): NASA / USGS Landsat Image Mosaic of Antarctica (LIMA), public domain. -->
+  </div>
+
+  <div class="absolute bottom-6 left-1/2 -translate-x-1/2 text-frost/40 animate-floaty no-print" aria-hidden="true">
+    <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 5v14M6 13l6 6 6-6"/></svg>
+  </div>
+</section>
+
+<!-- =========================================================================
+     EXECUTIVE SUMMARY
+     ========================================================================= -->
+<section id="project" class="relative py-24 sm:py-32 scroll-mt-20">
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="reveal">
+      <span class="font-mono text-ice-400 text-xs tracking-[0.25em] uppercase">01 — The Project</span>
+      <h2 class="font-display text-3xl sm:text-5xl font-semibold text-white mt-4 mb-8">Executive Summary</h2>
+    </div>
+
+    <!-- Mission — used verbatim, per project brief. -->
+    <blockquote class="reveal glass border-l-2 border-ice-400 rounded-r-xl p-6 sm:p-8 mb-12 text-lg sm:text-xl font-display font-light leading-relaxed text-frost/90">
+      The Antarctica Truth Project exists to separate documented history from constructed mythology regarding
+      Antarctica in the 20th century, while revealing the continent's actual deep-time history — a record stretching
+      back more than <span class="text-ice-300">170 million years</span> before the first humans. We present primary
+      sources, rigorous source criticism, and the genuine scientific wonders hidden beneath the ice. The real
+      Antarctica is stranger, more beautiful, and more profound than any conspiracy legend.
+    </blockquote>
+
+    <div class="grid md:grid-cols-2 gap-6">
+      <div class="reveal glass rounded-xl p-6 border border-white/5">
+        <h3 class="font-display text-xl text-ice-300 mb-3">The historical record is mundane</h3>
+        <p class="text-frost/75 leading-relaxed text-[15px]">
+          The 1938–39 German <em>Neuschwabenland</em> expedition was a one-month aerial survey driven largely by
+          whale-oil (margarine) economics. No base was built. Operation Highjump (1946–47) was the largest expedition
+          ever sent south — public, press-covered, a Cold War cold-weather training and mapping exercise on the
+          <em>opposite</em> side of the continent from Neuschwabenland. Neither event contains a secret.
+        </p>
+      </div>
+      <div class="reveal glass rounded-xl p-6 border border-white/5">
+        <h3 class="font-display text-xl text-ice-300 mb-3">The myth was built after the war</h3>
+        <p class="text-frost/75 leading-relaxed text-[15px]">
+          Nearly every major element of the modern Antarctica conspiracy was <em>added after 1945</em> by identifiable
+          authors: a 1947 tabloid item (Szabo), hollow-Earth fusion (Siegmeister / "Bernard," 1964), and its
+          weaponisation by the neo-Nazi activists Ernst Zündel (1970s) and Miguel Serrano (1978–84). The claims have
+          authors, dates, and motives.
+        </p>
+      </div>
+      <div class="reveal glass rounded-xl p-6 border border-white/5">
+        <h3 class="font-display text-xl text-ice-300 mb-3">The science is the wonder</h3>
+        <p class="text-frost/75 leading-relaxed text-[15px]">
+          Beneath the ice lies an Alps-scale mountain range no human eye has ever seen (the Gamburtsevs), roughly
+          <strong class="text-frost">400 subglacial lakes</strong>, and — mapped in 2017 — <strong class="text-frost">91+
+          buried volcanoes</strong>. The ice really is hiding vast structures. Every word of that is literally true.
+        </p>
+      </div>
+      <div class="reveal glass rounded-xl p-6 border border-white/5">
+        <h3 class="font-display text-xl text-ice-300 mb-3">Why source discipline matters</h3>
+        <p class="text-frost/75 leading-relaxed text-[15px]">
+          The survival legend has served as a <em>soft-entry mythology</em> for Holocaust denial and Hitler-redemption
+          narratives. Naming Zündel's and Serrano's documented neo-Nazi activism is not an aside — it is the
+          historical function of the story. Clarity here is an ethical obligation, not a rhetorical flourish.
+        </p>
+      </div>
+    </div>
+
+    <!-- Quick stat band -->
+    <div class="reveal mt-14 grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
+      <div class="rounded-xl bg-navy-700/60 border border-ice-500/10 py-6"><div class="font-display text-3xl sm:text-4xl text-ice-400">170M+</div><div class="text-xs text-frost/60 mt-1 uppercase tracking-wide">Years of pre-human history</div></div>
+      <div class="rounded-xl bg-navy-700/60 border border-ice-500/10 py-6"><div class="font-display text-3xl sm:text-4xl text-ice-400">1938</div><div class="text-xs text-frost/60 mt-1 uppercase tracking-wide">Neuschwabenland survey</div></div>
+      <div class="rounded-xl bg-navy-700/60 border border-ice-500/10 py-6"><div class="font-display text-3xl sm:text-4xl text-ice-400">1947</div><div class="text-xs text-frost/60 mt-1 uppercase tracking-wide">Myth's first appearance</div></div>
+      <div class="rounded-xl bg-navy-700/60 border border-ice-500/10 py-6"><div class="font-display text-3xl sm:text-4xl text-ice-400">~34M</div><div class="text-xs text-frost/60 mt-1 uppercase tracking-wide">Years of permanent ice</div></div>
+    </div>
+  </div>
+</section>
+
+<div class="max-w-5xl mx-auto px-6"><div class="hairline"></div></div>
+
+<!-- =========================================================================
+     MYTH DETECTOR (mini-tool) — sits above the table as a quick-lookup widget.
+     Reads the same MYTHS[] dataset used by the table below.
+     ========================================================================= -->
+<section id="myth-detector-section" class="py-16 sm:py-20 scroll-mt-20">
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div id="myth-detector" class="reveal glass rounded-2xl border border-ice-500/20 p-6 sm:p-8">
+      <div class="flex items-start gap-3 mb-4">
+        <svg class="w-6 h-6 text-ice-400 shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        <div>
+          <h2 class="font-display text-2xl text-white">Myth Detector</h2>
+          <p class="text-frost/60 text-sm">Select or type a common claim to see exactly when — and by whom — it first appeared.</p>
+        </div>
+      </div>
+      <label for="detector-select" class="sr-only">Choose a claim to investigate</label>
+      <select id="detector-select" class="w-full bg-navy-800 border border-ice-500/25 rounded-xl px-4 py-3 text-frost focus:border-ice-400 transition">
+        <option value="">— Choose a claim to investigate —</option>
+      </select>
+      <div id="detector-result" class="mt-5 hidden" role="status" aria-live="polite"></div>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================================
+     INTERACTIVE MYTH vs RECORD  (core feature — Part VI table)
+     Filter / search / sort / expandable modal + "Source Trail".
+     ========================================================================= -->
+<section id="myth-record" class="py-16 sm:py-24 scroll-mt-20">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="reveal mb-8">
+      <span class="font-mono text-ice-400 text-xs tracking-[0.25em] uppercase">02 — The Core Feature</span>
+      <h2 class="font-display text-3xl sm:text-5xl font-semibold text-white mt-4">Myth vs Record</h2>
+      <p class="text-frost/65 mt-4 max-w-2xl">Every claim, side by side with the documented record — and the exact year and author who introduced it. Search, filter, sort, and open any row for the full source trail.</p>
+    </div>
+
+    <!-- Controls -->
+    <div class="reveal flex flex-col md:flex-row gap-3 mb-6 no-print">
+      <div class="relative flex-1">
+        <svg class="w-4 h-4 text-frost/40 absolute left-3.5 top-1/2 -translate-y-1/2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        <input id="myth-search" type="search" placeholder="Search claims, records, authors…" aria-label="Search the myth vs record table"
+               class="w-full bg-navy-700/60 border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-sm text-frost placeholder-frost/40 focus:border-ice-400 transition" />
+      </div>
+      <div class="flex gap-2 flex-wrap" id="myth-filters" role="group" aria-label="Filter by category"></div>
+    </div>
+
+    <!-- Table -->
+    <div class="reveal overflow-x-auto rounded-xl border border-white/10">
+      <table id="myth-table" class="w-full text-left border-collapse min-w-[720px]">
+        <caption class="sr-only">Antarctica conspiracy claims compared with the documented record, sortable by column.</caption>
+        <thead class="bg-navy-700 text-xs uppercase tracking-wide text-frost/70">
+          <tr>
+            <th scope="col" class="p-4 font-medium"><button class="sort-btn inline-flex items-center gap-1 hover:text-ice-400" data-key="claim">The Claim <span class="sort-ind text-ice-400/60"></span></button></th>
+            <th scope="col" class="p-4 font-medium hidden sm:table-cell">The Documented Record</th>
+            <th scope="col" class="p-4 font-medium"><button class="sort-btn inline-flex items-center gap-1 hover:text-ice-400" data-key="year">Introduced <span class="sort-ind text-ice-400/60"></span></button></th>
+            <th scope="col" class="p-4 font-medium hidden md:table-cell">By</th>
+            <th scope="col" class="p-4 font-medium sr-only">Details</th>
+          </tr>
+        </thead>
+        <tbody id="myth-tbody" class="divide-y divide-white/5 text-sm"></tbody>
+      </table>
+    </div>
+    <p id="myth-empty" class="hidden text-center text-frost/50 py-10">No claims match your search.</p>
+
+    <div class="reveal mt-6 flex flex-wrap gap-3 no-print">
+      <button id="download-csv" class="inline-flex items-center gap-2 text-sm border border-ice-500/30 hover:border-ice-400 hover:bg-ice-500/5 text-frost px-4 py-2.5 rounded-lg transition">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M12 3v12M8 11l4 4 4-4M4 19h16"/></svg>
+        Download table (CSV)
+      </button>
+      <button onclick="window.print()" class="inline-flex items-center gap-2 text-sm border border-ice-500/30 hover:border-ice-400 hover:bg-ice-500/5 text-frost px-4 py-2.5 rounded-lg transition">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M6 9V3h12v6M6 18H4v-6h16v6h-2M8 14h8v7H8z"/></svg>
+        Print one-pager
+      </button>
+    </div>
+  </div>
+</section>
+
+<div class="max-w-5xl mx-auto px-6"><div class="hairline"></div></div>
+
+<!-- =========================================================================
+     GENEALOGY OF THE MYTH — vertical timeline (Part V)
+     ========================================================================= -->
+<section id="genealogy" class="py-20 sm:py-28 scroll-mt-20">
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="reveal mb-14">
+      <span class="font-mono text-ice-400 text-xs tracking-[0.25em] uppercase">03 — Genealogy of the Myth</span>
+      <h2 class="font-display text-3xl sm:text-5xl font-semibold text-white mt-4">A myth with a paper trail</h2>
+      <p class="text-frost/65 mt-4 max-w-2xl">The legend did not emerge in 1945. It was assembled, layer by layer, over decades. Click any node to read a sourced excerpt and its downstream effect.</p>
+    </div>
+
+    <div id="timeline" class="relative"></div>
+
+    <!-- Closing note on modern recycling -->
+    <div class="reveal mt-14 glass rounded-2xl border border-ice-500/20 p-6 sm:p-8">
+      <h3 class="font-display text-xl text-ice-300 mb-3">The loop that looks like evidence</h3>
+      <p class="text-frost/75 leading-relaxed">
+        Cable documentaries, YouTube channels, and TikTok clips recycle this same chain — Szabo → Bernard → Zündel →
+        Serrano — but strip out the authors and dates. A 1978 esoteric-fascist claim, re-narrated in 2024 over drone
+        footage, is presented as a fresh discovery. The <em>appearance</em> of many independent sources is really one
+        source, copied forward. Naming the origin breaks the loop.
+      </p>
+    </div>
+  </div>
+</section>
+
+<div class="max-w-5xl mx-auto px-6"><div class="hairline"></div></div>
+
+<!-- =========================================================================
+     THE REAL EXPEDITIONS (Parts II–IV)
+     ========================================================================= -->
+<section id="expeditions" class="py-20 sm:py-28 scroll-mt-20">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="reveal mb-12">
+      <span class="font-mono text-ice-400 text-xs tracking-[0.25em] uppercase">04 — What Actually Happened</span>
+      <h2 class="font-display text-3xl sm:text-5xl font-semibold text-white mt-4">The real expeditions</h2>
+      <p class="text-frost/65 mt-4 max-w-2xl">Three events sit at the base of the mythology. Each is well documented — and each is far more ordinary than the legend requires.</p>
+    </div>
+
+    <div class="grid lg:grid-cols-3 gap-6">
+      <!-- Card 1 -->
+      <article class="reveal glass rounded-2xl border border-white/8 p-6 flex flex-col">
+        <span class="font-mono text-xs text-ice-400 tracking-wide">1938–39</span>
+        <h3 class="font-display text-2xl text-white mt-1 mb-3">Neuschwabenland</h3>
+        <p class="text-frost/75 text-sm leading-relaxed mb-4">A margarine-driven land grab. Germany depended on Antarctic whale oil for fats; the expedition aimed to secure whaling claims. Two seaplanes flew photographic survey lines for roughly a month, dropping metal marker darts.</p>
+        <div class="mt-auto space-y-3">
+          <div>
+            <p class="text-[11px] font-mono uppercase tracking-wide text-ice-300/80 mb-1.5">Key facts</p>
+            <ul class="text-sm text-frost/70 space-y-1.5 list-disc list-inside marker:text-ice-500">
+              <li>One-month aerial survey, summer 1938–39</li>
+              <li>Photographed ~350,000 km² of coast</li>
+              <li>Economic motive: whale-oil / fats supply</li>
+            </ul>
+          </div>
+          <div>
+            <p class="text-[11px] font-mono uppercase tracking-wide text-rose-300/80 mb-1.5">What did <em>not</em> happen</p>
+            <ul class="text-sm text-frost/60 space-y-1.5 list-disc list-inside marker:text-rose-400/60">
+              <li>No base was built — no structures, no garrison</li>
+              <li>No return expedition; war intervened in 1939</li>
+              <li>No tunnels, no "Base 211"</li>
+            </ul>
+          </div>
+          <p class="text-[11px] text-frost/45 pt-2 border-t border-white/5">Primary sources: expedition leader Alfred Ritscher's official report (1942); Summerhayes &amp; Beeching (2007).</p>
+        </div>
+      </article>
+
+      <!-- Card 2 -->
+      <article class="reveal glass rounded-2xl border border-white/8 p-6 flex flex-col">
+        <span class="font-mono text-xs text-ice-400 tracking-wide">1938–39</span>
+        <h3 class="font-display text-2xl text-white mt-1 mb-3">Ahnenerbe Tibet</h3>
+        <p class="text-frost/75 text-sm leading-relaxed mb-4">Often fused into the Antarctica legend as a hunt for "Agartha." In fact the SS Ahnenerbe expedition led by Ernst Schäfer was a scientific-and-ideological survey: zoology, botany, geomagnetics — and racial anthropology, including skull measurements.</p>
+        <div class="mt-auto space-y-3">
+          <div>
+            <p class="text-[11px] font-mono uppercase tracking-wide text-ice-300/80 mb-1.5">Key facts</p>
+            <ul class="text-sm text-frost/70 space-y-1.5 list-disc list-inside marker:text-ice-500">
+              <li>Zoological &amp; botanical collection</li>
+              <li>Geomagnetic and earth-science measurement</li>
+              <li>Race-anthropology fieldwork (its real horror)</li>
+            </ul>
+          </div>
+          <div>
+            <p class="text-[11px] font-mono uppercase tracking-wide text-rose-300/80 mb-1.5">What did <em>not</em> happen</p>
+            <ul class="text-sm text-frost/60 space-y-1.5 list-disc list-inside marker:text-rose-400/60">
+              <li>No search for a hidden underground kingdom</li>
+              <li>No occult "vril" contact or subterranean city</li>
+              <li>No link to any Antarctic base</li>
+            </ul>
+          </div>
+          <p class="text-[11px] text-frost/45 pt-2 border-t border-white/5">Primary sources: Schäfer's records; Christopher Hale, <em>Himmler's Crusade</em> (2003); Goodrick-Clarke.</p>
+        </div>
+      </article>
+
+      <!-- Card 3 -->
+      <article class="reveal glass rounded-2xl border border-white/8 p-6 flex flex-col">
+        <span class="font-mono text-xs text-ice-400 tracking-wide">1946–47</span>
+        <h3 class="font-display text-2xl text-white mt-1 mb-3">Operation Highjump</h3>
+        <p class="text-frost/75 text-sm leading-relaxed mb-4">The largest expedition ever sent to Antarctica: ~4,700 personnel, 13 ships, a carrier. Publicly announced, press-covered, led by Admiral Byrd under Admiral Cruzen. Purpose: cold-weather training, logistics testing, and mapping as the Cold War began.</p>
+        <div class="mt-auto space-y-3">
+          <div>
+            <p class="text-[11px] font-mono uppercase tracking-wide text-ice-300/80 mb-1.5">Key facts</p>
+            <ul class="text-sm text-frost/70 space-y-1.5 list-disc list-inside marker:text-ice-500">
+              <li>~4,700 men, 13 ships, ~33 aircraft</li>
+              <li>Public U.S. Navy operation, widely reported</li>
+              <li>Ended early due to weather &amp; the Antarctic winter</li>
+            </ul>
+          </div>
+          <div>
+            <p class="text-[11px] font-mono uppercase tracking-wide text-rose-300/80 mb-1.5">What did <em>not</em> happen</p>
+            <ul class="text-sm text-frost/60 space-y-1.5 list-disc list-inside marker:text-rose-400/60">
+              <li>No battle with a Nazi base or UFOs</li>
+              <li>Operated on the <em>opposite</em> side of the continent from Neuschwabenland</li>
+              <li>Byrd's "misquoted" warnings are fabricated / distorted</li>
+            </ul>
+          </div>
+          <p class="text-[11px] text-frost/45 pt-2 border-t border-white/5">Primary sources: U.S. Navy Task Force 68 records; contemporaneous press (1947); Summerhayes &amp; Beeching.</p>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================================
+     DEEP TIME — the emotional & intellectual heart.
+     ========================================================================= -->
+<section id="deep-time" class="relative py-24 sm:py-32 scroll-mt-20 overflow-hidden">
+  <div class="absolute inset-0 hero-bg opacity-70" aria-hidden="true"></div>
+  <div class="absolute inset-0 grid-overlay opacity-30" aria-hidden="true"></div>
+  <div class="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="reveal text-center mb-16">
+      <span class="font-mono text-ice-400 text-xs tracking-[0.25em] uppercase">05 — Deep Time</span>
+      <h2 class="font-display text-4xl sm:text-6xl font-semibold text-white mt-4">Antarctica before humanity</h2>
+      <p class="text-frost/70 mt-6 max-w-3xl mx-auto text-lg font-display font-light">
+        Long before any legend, the continent lived many lives — as a river-veined forest, a dinosaur's home,
+        a drifting fragment of a vanished supercontinent. This is the real strangeness, and all of it is documented.
+      </p>
+    </div>
+
+    <!-- Deep-time timeline scale -->
+    <div class="reveal mb-16 glass rounded-2xl border border-ice-500/15 p-6 sm:p-8">
+      <div class="flex items-center justify-between text-[11px] font-mono text-frost/50 mb-2"><span>~180 Ma</span><span>~100 Ma</span><span>~34 Ma</span><span>Today</span></div>
+      <div class="h-3 rounded-full bg-gradient-to-r from-emerald-600/70 via-teal-500/60 to-ice-300 relative">
+        <span class="absolute -top-1 left-0 w-5 h-5 rounded-full bg-emerald-500 border-2 border-navy-900" title="Gondwana intact"></span>
+        <span class="absolute -top-1 left-[45%] w-5 h-5 rounded-full bg-teal-400 border-2 border-navy-900" title="Eocene forests & dinosaurs era"></span>
+        <span class="absolute -top-1 left-[80%] w-5 h-5 rounded-full bg-ice-400 border-2 border-navy-900" title="Ice sheet onset ~34 Ma"></span>
+        <span class="absolute -top-1 right-0 w-5 h-5 rounded-full bg-white border-2 border-navy-900" title="Present ice sheet"></span>
+      </div>
+      <div class="flex items-center justify-between text-xs text-frost/60 mt-3"><span>Gondwana intact</span><span class="hidden sm:inline">Temperate forests</span><span>Ice begins</span><span>Ice sheet</span></div>
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-6">
+      <article class="reveal glass rounded-2xl border border-white/8 p-7">
+        <div class="text-ice-400 mb-3">🌍</div>
+        <h3 class="font-display text-2xl text-white mb-2">The great drift</h3>
+        <p class="text-frost/75 leading-relaxed text-[15px]">Around 180 million years ago Antarctica sat at the heart of Gondwana, joined to South America, Africa, India, and Australia. As the supercontinent rifted apart, Antarctica drifted south, arriving over the pole. The opening of the Drake Passage let a cold ocean current encircle it — sealing its fate in ice.</p>
+      </article>
+      <article class="reveal glass rounded-2xl border border-white/8 p-7">
+        <div class="text-ice-400 mb-3">🦕</div>
+        <h3 class="font-display text-2xl text-white mb-2">Forests and dinosaurs</h3>
+        <p class="text-frost/75 leading-relaxed text-[15px]">In the Cretaceous and early Eocene, Antarctica was warm and green. Fossil beds preserve <em>Nothofagus</em> (southern beech) forests, ferns, and dinosaurs — <em>Cryolophosaurus</em>, the "frozen-crested lizard," was excavated from the Transantarctic Mountains. IODP cores off the coast even recovered a 90-million-year-old fossilised rainforest soil.</p>
+      </article>
+      <article class="reveal glass rounded-2xl border border-white/8 p-7">
+        <div class="text-ice-400 mb-3">❄️</div>
+        <h3 class="font-display text-2xl text-white mb-2">The ice arrives (~34 Ma)</h3>
+        <p class="text-frost/75 leading-relaxed text-[15px]">At the Eocene–Oligocene boundary, ~34 million years ago, falling CO₂ and the newly isolated Southern Ocean tipped the continent into permanent glaciation. The forests vanished under a sheet that, at its thickest, exceeds <strong class="text-frost">4 kilometres</strong> — holding about 60% of Earth's fresh water.</p>
+      </article>
+      <article class="reveal glass rounded-2xl border border-white/8 p-7">
+        <div class="text-ice-400 mb-3">🛰️</div>
+        <h3 class="font-display text-2xl text-white mb-2">Mapping the hidden bed</h3>
+        <p class="text-frost/75 leading-relaxed text-[15px]">We know the buried landscape because airborne ice-penetrating radar sees through the ice. NASA's <strong class="text-frost">Operation IceBridge</strong>, the <strong class="text-frost">BedMachine</strong> bed model, and the <strong class="text-frost">REMA</strong> surface map have resolved the continent's hidden topography — valleys, mountains, and the deepest land canyon on Earth, far below sea level.</p>
+      </article>
+    </div>
+
+    <!-- Three "science fiction, but real" discovery tiles -->
+    <div class="reveal mt-8 grid sm:grid-cols-3 gap-6">
+      <div class="rounded-2xl bg-navy-700/70 border border-ice-500/20 p-6 text-center">
+        <div class="font-display text-4xl text-ice-400">Alps-scale</div>
+        <h4 class="font-medium text-white mt-2">Gamburtsev Mountains</h4>
+        <p class="text-frost/60 text-sm mt-2">A mountain range the size of the European Alps, buried under kilometres of ice near the pole — <em>never seen by human eyes</em>, mapped only by radar and seismics.</p>
+      </div>
+      <div class="rounded-2xl bg-navy-700/70 border border-ice-500/20 p-6 text-center">
+        <div class="font-display text-4xl text-ice-400">~400</div>
+        <h4 class="font-medium text-white mt-2">Subglacial lakes</h4>
+        <p class="text-frost/60 text-sm mt-2">Liquid-water lakes beneath the ice, including <strong class="text-frost">Lake Vostok</strong> — the size of Lake Ontario, sealed from the surface for millions of years.</p>
+      </div>
+      <div class="rounded-2xl bg-navy-700/70 border border-ice-500/20 p-6 text-center">
+        <div class="font-display text-4xl text-ice-400">91+</div>
+        <h4 class="font-medium text-white mt-2">Buried volcanoes</h4>
+        <p class="text-frost/60 text-sm mt-2">A 2017 Edinburgh survey identified 91 previously unknown volcanoes under West Antarctica — one of the largest volcanic provinces on Earth.</p>
+      </div>
+    </div>
+
+    <p class="reveal text-center mt-14 font-display text-2xl sm:text-3xl text-ice-300 font-light max-w-3xl mx-auto leading-snug">
+      "The ice is hiding vast buried structures — and every word of that is literally true."
+    </p>
+    <!-- DEEP-TIME IMAGE CREDITS (placeholders): NASA IceBridge / BedMachine (Morlighem et al.), REMA (PGC), IODP Expedition 369 rainforest core. -->
+  </div>
+</section>
+
+<div class="max-w-5xl mx-auto px-6"><div class="hairline"></div></div>
+
+<!-- =========================================================================
+     THE ICE TESTIFIES (Parts VIII, X, XI, XII)
+     ========================================================================= -->
+<section id="ice-testifies" class="py-20 sm:py-28 scroll-mt-20">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="reveal mb-12">
+      <span class="font-mono text-ice-400 text-xs tracking-[0.25em] uppercase">06 — The Ice Testifies</span>
+      <h2 class="font-display text-3xl sm:text-5xl font-semibold text-white mt-4">Where the myth meets the instruments</h2>
+      <p class="text-frost/65 mt-4 max-w-2xl">Several favourite "anomalies" have plain, documented explanations — and one instrument, buried in the ice, is the single cleanest rebuttal to hollow-Earth claims ever built.</p>
+    </div>
+
+    <div class="grid lg:grid-cols-2 gap-6 items-start">
+      <!-- Left column: explainer cards -->
+      <div class="space-y-6">
+        <article class="reveal glass rounded-2xl border border-white/8 p-6">
+          <h3 class="font-display text-xl text-ice-300 mb-2">The "No-Fly Zone"</h3>
+          <p class="text-frost/75 text-sm leading-relaxed">The restricted airspace near the South Pole is the <strong>Clean Air Sector</strong> — an upwind zone kept free of engine exhaust so NOAA/NSF can sample the world's most pristine background atmosphere. It's an air-quality protection, documented publicly, not a secret perimeter.</p>
+        </article>
+        <article class="reveal glass rounded-2xl border border-white/8 p-6">
+          <h3 class="font-display text-xl text-ice-300 mb-2">The ANITA "anomalies"</h3>
+          <p class="text-frost/75 text-sm leading-relaxed">NASA's balloon-borne ANITA detected upward-pointing radio events that tabloids spun into "a parallel universe." Physicists interpreted them responsibly — likely ice-surface reflections or exotic-but-mundane effects. Careful, hedged science; sensational, decontextualised headline.</p>
+        </article>
+        <article class="reveal glass rounded-2xl border border-white/8 p-6">
+          <h3 class="font-display text-xl text-ice-300 mb-2">Real buried German structures</h3>
+          <p class="text-frost/75 text-sm leading-relaxed">There <em>are</em> German bases under the snow in Queen Maud Land — the <strong>Georg von Neumayer</strong> stations (Neumayer I, 1981; Neumayer II, 1992). They are civilian research stations that drifting snow buried, later crushed and abandoned. Documented, dated, and utterly non-mysterious.</p>
+        </article>
+      </div>
+
+      <!-- Right column: IceCube + neutrino canvas -->
+      <div class="reveal glass rounded-2xl border border-ice-500/25 p-6 sm:p-8 lg:sticky lg:top-24">
+        <h3 class="font-display text-2xl text-white mb-2">IceCube: the planet as a filter</h3>
+        <p class="text-frost/75 text-sm leading-relaxed mb-4">
+          The IceCube Neutrino Observatory instruments a <strong>cubic kilometre</strong> of Antarctic ice with 5,160 sensors. It detects neutrinos that pass <em>up</em> through the entire Earth — using the whole planet as a filter. Those <span class="text-ice-300">upgoing neutrinos physically traverse the core</span>. A hollow Earth would change their path and rate. It doesn't. The Earth is solid, and the ice is watching the sky through the ground.
+        </p>
+        <!-- Lightweight Canvas animation: neutrinos crossing a solid Earth to the detector. Respects reduced-motion. -->
+        <div class="rounded-xl bg-navy-900/80 border border-white/5 p-3">
+          <canvas id="neutrino-canvas" width="520" height="300" class="w-full h-auto" role="img" aria-label="Animation of neutrinos traveling upward through a solid Earth to the IceCube detector at the South Pole"></canvas>
+          <div class="flex items-center justify-between mt-2">
+            <p class="text-[11px] font-mono text-frost/50">Upgoing neutrinos · solid Earth · South Pole detector</p>
+            <button id="neutrino-toggle" class="text-[11px] font-mono text-ice-400 hover:text-ice-300 no-print" aria-pressed="true">Pause</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================================
+     OPEN RESEARCH LEADS & HOW TO HELP (Part VII + citizen science)
+     ========================================================================= -->
+<section id="help" class="py-20 sm:py-28 scroll-mt-20">
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="reveal mb-10">
+      <span class="font-mono text-ice-400 text-xs tracking-[0.25em] uppercase">07 — Open Leads</span>
+      <h2 class="font-display text-3xl sm:text-5xl font-semibold text-white mt-4">Open research leads &amp; how to help</h2>
+      <p class="text-frost/65 mt-4 max-w-2xl">Source criticism is a living project. These are genuinely open threads — and ways curious readers can strengthen the record.</p>
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-6">
+      <div class="reveal glass rounded-2xl border border-white/8 p-6">
+        <h3 class="font-display text-xl text-ice-300 mb-3">Open threads</h3>
+        <ul class="space-y-3 text-sm text-frost/75">
+          <li class="flex gap-3"><span class="text-ice-400 mt-0.5">→</span> Trace the earliest printed appearance of the 1947 Szabo item and its syndication path.</li>
+          <li class="flex gap-3"><span class="text-ice-400 mt-0.5">→</span> Map how Mattern/Friedrich's pseudonymous 1950s pamphlets fed Bernard (1964).</li>
+          <li class="flex gap-3"><span class="text-ice-400 mt-0.5">→</span> Catalogue every "Byrd quote" against verifiable primary transcripts.</li>
+          <li class="flex gap-3"><span class="text-ice-400 mt-0.5">→</span> Document the exact citation edges from Serrano (1978–84) into English-language TV.</li>
+        </ul>
+      </div>
+      <div class="reveal glass rounded-2xl border border-white/8 p-6">
+        <h3 class="font-display text-xl text-ice-300 mb-3">How you can help</h3>
+        <ul class="space-y-3 text-sm text-frost/75">
+          <li class="flex gap-3"><span class="text-ice-400 mt-0.5">✓</span> Digitise and cite primary documents from public archives (with stable links).</li>
+          <li class="flex gap-3"><span class="text-ice-400 mt-0.5">✓</span> Explore open glaciology data — BedMachine, REMA, IceBridge — and share visualisations.</li>
+          <li class="flex gap-3"><span class="text-ice-400 mt-0.5">✓</span> Add first-appearance dates when you encounter a recycled claim online.</li>
+          <li class="flex gap-3"><span class="text-ice-400 mt-0.5">✓</span> Contribute translations of Serrano/Zündel source texts <em>with critical apparatus</em>.</li>
+        </ul>
+      </div>
+    </div>
+    <p class="reveal text-frost/50 text-sm mt-6">Every contribution should carry a citation. The method <em>is</em> the message: claims travel with their authors and dates.</p>
+  </div>
+</section>
+
+<div class="max-w-5xl mx-auto px-6"><div class="hairline"></div></div>
+
+<!-- =========================================================================
+     SELECTED SOURCES
+     ========================================================================= -->
+<section id="sources" class="py-20 sm:py-28 scroll-mt-20">
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="reveal mb-10">
+      <span class="font-mono text-ice-400 text-xs tracking-[0.25em] uppercase">08 — Sources</span>
+      <h2 class="font-display text-3xl sm:text-5xl font-semibold text-white mt-4">Selected sources</h2>
+      <p class="text-frost/65 mt-4 max-w-2xl">A working bibliography. Where a stable public link exists it is provided; primary documents are best accessed via national archives and institutional repositories.</p>
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-8 text-sm">
+      <div class="reveal">
+        <h3 class="font-mono text-xs uppercase tracking-widest text-ice-400 mb-4">History &amp; source criticism</h3>
+        <ul class="space-y-4 text-frost/75">
+          <li>Summerhayes, C. &amp; Beeching, P. (2007). <em>Hitler's Antarctic base: the myth and the reality.</em> <span class="text-frost/50">Polar Record, 43(1).</span></li>
+          <li>Lüdecke, C. (2021). <em>Germany and the Antarctic: the Neuschwabenland expedition in context.</em></li>
+          <li>Godwin, J. <em>Arktos: The Polar Myth in Science, Symbolism, and Nazi Survival.</em></li>
+          <li>Goodrick-Clarke, N. <em>Black Sun: Aryan Cults, Esoteric Nazism, and the Politics of Identity.</em></li>
+          <li>Evans, R. J. <em>The Hitler Conspiracies</em> (on postwar survival myths).</li>
+          <li>Hale, C. (2003). <em>Himmler's Crusade</em> (Ahnenerbe Tibet expedition).</li>
+        </ul>
+      </div>
+      <div class="reveal">
+        <h3 class="font-mono text-xs uppercase tracking-widest text-ice-400 mb-4">Earth &amp; polar science</h3>
+        <ul class="space-y-4 text-frost/75">
+          <li>Morlighem, M. et&nbsp;al. (2020). <em>BedMachine Antarctica.</em> <span class="text-frost/50">Nature Geoscience.</span></li>
+          <li>Fretwell, P. et&nbsp;al. (2013). <em>Bedmap2</em> ice-thickness dataset. <span class="text-frost/50">The Cryosphere.</span></li>
+          <li>REMA — Reference Elevation Model of Antarctica (Polar Geospatial Center).</li>
+          <li>van Wyk de Vries, M. et&nbsp;al. (2017). <em>91 new subglacial volcanoes, West Antarctica.</em> <span class="text-frost/50">Geological Society, London.</span></li>
+          <li>IceCube Collaboration (2013). <em>Evidence for high-energy extraterrestrial neutrinos.</em> <span class="text-frost/50">Science.</span> &amp; KM3NeT/ARCA reports.</li>
+          <li>NASA Operation IceBridge mission data (airborne ice-penetrating radar).</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="reveal mt-10 glass rounded-xl border border-white/8 p-6">
+      <p class="text-frost/70 text-sm leading-relaxed"><strong class="text-ice-300">Accessing primary documents:</strong> Ritscher's 1942 Neuschwabenland report and U.S. Navy Operation Highjump records are held in national archives (Germany's Bundesarchiv; the U.S. National Archives / Naval History &amp; Heritage Command). Glaciological datasets (Bedmap/BedMachine, REMA, IceBridge) are openly downloadable from NSIDC and the Polar Geospatial Center. Treat any online "quote" as unverified until matched to one of these.</p>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- =========================================================================
+     FOOTER — with the required ethical note.
+     ========================================================================= -->
+<footer class="border-t border-white/10 bg-navy-900">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
+    <div class="grid md:grid-cols-3 gap-10">
+      <div class="md:col-span-1">
+        <div class="flex items-center gap-2.5 mb-4">
+          <svg class="w-6 h-6 text-ice-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M12 2v20M2 12h20M4.9 4.9l14.2 14.2M19.1 4.9L4.9 19.1"/><circle cx="12" cy="12" r="2.2" fill="currentColor" stroke="none"/></svg>
+          <span class="font-display font-semibold tracking-[0.16em] text-white text-sm">ANTARCTICA <span class="text-ice-400">TRUTH</span></span>
+        </div>
+        <p class="text-frost/55 text-sm leading-relaxed">A source-critical research project. Documented history, constructed mythology, and the real continent beneath the ice.</p>
+        <p class="text-frost/35 text-xs mt-4 font-mono">Last Updated: July 2026</p>
+      </div>
+
+      <div class="md:col-span-2">
+        <h3 class="font-mono text-xs uppercase tracking-widest text-ice-400 mb-3">An ethical note</h3>
+        <p class="text-frost/60 text-sm leading-relaxed">
+          The "Hitler survived in Antarctica" legend has never been harmless folklore. From Zündel in the 1970s onward it
+          functioned as a <em>soft-entry mythology</em> — a fantastical, seemingly apolitical story that primes audiences
+          for Holocaust denial and Hitler-redemption narratives. We name that function deliberately. Understanding how a
+          myth is built, and whom it serves, is part of telling the truth about Antarctica.
+        </p>
+        <nav class="mt-6 flex flex-wrap gap-x-6 gap-y-2 text-sm text-frost/60" aria-label="Footer">
+          <a href="#project" class="hover:text-ice-400">The Project</a>
+          <a href="#myth-record" class="hover:text-ice-400">Myth vs Record</a>
+          <a href="#genealogy" class="hover:text-ice-400">Genealogy</a>
+          <a href="#deep-time" class="hover:text-ice-400">Deep Time</a>
+          <a href="#sources" class="hover:text-ice-400">Sources</a>
+        </nav>
+      </div>
+    </div>
+    <div class="mt-12 pt-6 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-frost/40">
+      <p>© 2026 The Antarctica Truth Project · Educational &amp; non-commercial use encouraged, with citation.</p>
+      <p class="font-mono">Built as a single, self-contained page. No trackers.</p>
+    </div>
+  </div>
+</footer>
+
+<!-- =========================================================================
+     MODAL — reused for Myth-vs-Record row details and timeline nodes.
+     ========================================================================= -->
+<div id="modal" class="fixed inset-0 z-[80] hidden items-center justify-center p-4 sm:p-6" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+  <div id="modal-backdrop" class="absolute inset-0 bg-navy-900/80 backdrop-blur-sm"></div>
+  <div class="relative glass w-full max-w-2xl max-h-[86vh] overflow-y-auto rounded-2xl border border-ice-500/25 shadow-2xl shadow-black/50">
+    <button id="modal-close" class="absolute top-4 right-4 text-frost/60 hover:text-white p-1.5 rounded-lg hover:bg-white/10 transition" aria-label="Close dialog">
+      <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+    <div id="modal-body" class="p-6 sm:p-8"></div>
+  </div>
+</div>
+
+<!-- =========================================================================
+     JAVASCRIPT — all vanilla, no dependencies.
+     Organised into clearly-commented modules.
+     ========================================================================= -->
+<script>
+(function () {
+  'use strict';
+
+  /* =======================================================================
+   * DATA — the single source of truth for the Myth-vs-Record table AND the
+   * Myth Detector. Each entry is a documented claim with its first-appearance
+   * author/year and a longer explanation (paraphrased from the dossier).
+   * `category` drives the filter chips. `quote` is a representative line.
+   * ===================================================================== */
+  const MYTHS = [
+    {
+      category: 'Bases',
+      claim: 'A secret Nazi base ("Base 211") was built in Neuschwabenland.',
+      record: 'The 1938–39 expedition was a ~one-month aerial survey. No structures, garrison, or return trip. War began in 1939.',
+      year: 1964, author: 'Bernard (Siegmeister)',
+      detail: 'The "Base 211" designation and the underground-fortress imagery do not appear in any 1938–39 record. They are a post-war literary construction, crystallising in the hollow-Earth literature of the 1960s and elaborated by later esoteric authors. The real Ritscher survey dropped marker darts and photographed coastline — that is the entire footprint.',
+      quote: '"There is no engineering, logistical, or documentary basis for a wartime base in Queen Maud Land."',
+      sources: 'Ritscher official report (1942); Summerhayes & Beeching (2007).'
+    },
+    {
+      category: 'Survival',
+      claim: 'Hitler escaped to Antarctica at the end of the war.',
+      record: 'A 1945 forensic and documentary record places Hitler\'s death in Berlin. The escape story is a postwar tabloid invention.',
+      year: 1947, author: 'Szabo (press item)',
+      detail: 'The earliest seed is a 1947 sensational press item attributed to Ladislas Szabo, which reframed Highjump as a hunt for a fugitive Führer. It was refined over decades and later weaponised. The survival narrative is chronologically downstream of, not contemporary with, the war.',
+      quote: '"The survival legend is a 1947 press artefact, not a wartime rumour with documentary weight."',
+      sources: 'Contemporary press (1947); Evans, The Hitler Conspiracies.'
+    },
+    {
+      category: 'Highjump',
+      claim: 'Operation Highjump was a military assault repelled by the base (or by UFOs).',
+      record: 'Highjump was a public 1946–47 U.S. Navy training, logistics, and mapping operation — on the opposite side of the continent.',
+      year: 1958, author: 'Mattern/Friedrich (pamphlets)',
+      detail: 'Highjump ended early because of weather and the onset of the Antarctic winter — routine for polar operations. It was widely reported in the press at the time. The "defeated fleet" reading was layered on in 1950s pamphlet literature and hardened later, ignoring that the task force operated nowhere near Neuschwabenland.',
+      quote: '"Highjump operated on the far side of the continent from Neuschwabenland — geography alone dissolves the battle narrative."',
+      sources: 'U.S. Navy Task Force 68 records; 1947 press coverage.'
+    },
+    {
+      category: 'Highjump',
+      claim: 'Admiral Byrd warned of enemy aircraft that could "fly pole to pole."',
+      record: 'The widely-circulated "Byrd quote" is fabricated or distorted from unrelated interviews.',
+      year: 1979, author: 'Later conspiracy literature',
+      detail: 'No verifiable primary transcript supports the sensational wording attributed to Byrd. The phrasing surfaces in later conspiracy publishing and is repeated without a citable source. When matched against actual interviews, the meaning changes entirely.',
+      quote: '"Every version of the \'Byrd warning\' traces to secondary conspiracy texts, never to a primary transcript."',
+      sources: 'Byrd primary interviews; source-critical review in the dossier.'
+    },
+    {
+      category: 'Hollow Earth',
+      claim: 'Antarctica hides an entrance to a hollow or inner Earth (Agartha).',
+      record: 'Seismology, gravimetry, and neutrino astronomy confirm a solid, layered Earth. IceCube detects neutrinos crossing the core.',
+      year: 1964, author: 'Bernard, "The Hollow Earth"',
+      detail: 'Raymond Bernard (pen name of Walter Siegmeister) fused Antarctic survival lore with 19th-century hollow-Earth fiction in 1964. There is no geophysical room for it: IceCube observes upgoing neutrinos that physically traverse the planet — impossible through a hollow interior at the observed rates.',
+      quote: '"Upgoing neutrinos traverse the entire planet. A hollow Earth is not a mystery to solve; it is a measurement already made."',
+      sources: 'Bernard (1964); IceCube Collaboration (2013).'
+    },
+    {
+      category: 'Occult',
+      claim: 'The SS searched Tibet for Agartha, linking it to the Antarctic base.',
+      record: 'The 1938–39 Ahnenerbe Tibet expedition did zoology, geomagnetics, and (its real crime) race anthropology.',
+      year: 1960, author: 'Pauwels & Bergier',
+      detail: 'The occult reframing of Schäfer\'s expedition traces largely to the 1960 book The Morning of the Magicians, which popularised "Nazi occultism" as entertainment. The expedition\'s documented purpose was scientific and ideological, not a search for an underground kingdom.',
+      quote: '"The Tibet expedition\'s horror is real and documented — it was anthropometric racism, not a quest for Agartha."',
+      sources: 'Schäfer records; Hale, Himmler\'s Crusade (2003).'
+    },
+    {
+      category: 'UFO',
+      claim: 'Nazi "flying saucers" (Vril/Haunebu) were flown from the base.',
+      record: 'No Vril/Haunebu craft exist in any archive. The names originate in postwar esoteric fiction.',
+      year: 1970, author: 'Zündel (as "Christof Friedrich")',
+      detail: 'Ernst Zündel — later a convicted Holocaust denier — published UFO-and-survival pamphlets under a pen name in the 1970s, explicitly as a way to attract audiences to a Hitler-redemption message. The "Vril Society" flying-saucer mythos is documented fiction, not engineering history.',
+      quote: '"Zündel later admitted the saucer material was bait — a way to smuggle Hitler-redemption to a new audience."',
+      sources: 'Goodrick-Clarke, Black Sun; Zündel biographical record.'
+    },
+    {
+      category: 'Occult',
+      claim: 'Antarctica is the mystical last redoubt of an "esoteric Hitlerism."',
+      record: 'This is an explicit neo-Nazi religious doctrine authored by Miguel Serrano, not a historical finding.',
+      year: 1978, author: 'Serrano (1978–84)',
+      detail: 'The Chilean diplomat and open Hitler-worshipper Miguel Serrano built a mystical "Esoteric Hitlerism" across books published 1978–84, casting Antarctica as a sacred polar redoubt. This is theology of a hate movement — its later appearance in "documentaries" launders ideology as folklore.',
+      quote: '"Serrano did not report a legend; he authored a religion. The Antarctic redoubt is its scripture."',
+      sources: 'Serrano (1978–84); Goodrick-Clarke, Black Sun.'
+    },
+    {
+      category: 'Bases',
+      claim: '"Buried German structures" prove a hidden wartime complex.',
+      record: 'The buried German structures are the civilian Neumayer research stations (1981, 1992), buried by drifting snow.',
+      year: 1996, author: 'Modern conspiracy web',
+      detail: 'Georg von Neumayer Station I (1981) and II (1992) in Queen Maud Land were genuinely buried and crushed by accumulating snow — a normal fate for Antarctic stations. Photographs of these are recycled online as "the Nazi base," decades out of period.',
+      quote: '"Yes, there are buried German structures. They date from 1981 and 1992, and they are laboratories."',
+      sources: 'Alfred Wegener Institute station records.'
+    },
+    {
+      category: 'Anomaly',
+      claim: 'A restricted "No-Fly Zone" hides something at the South Pole.',
+      record: 'The restricted area is the Clean Air Sector, protecting atmospheric sampling from exhaust — documented by NOAA/NSF.',
+      year: 2010, author: 'Online forums / cable TV',
+      detail: 'The Clean Air Sector is an upwind zone where vehicle and aircraft exhaust is restricted so that NOAA can measure the planet\'s cleanest background air. It is a scientific protection with public documentation, reframed online as a security perimeter.',
+      quote: '"The \'no-fly zone\' is an air-quality rule. Its secret is a very accurate CO₂ measurement."',
+      sources: 'NOAA/NSF South Pole Clean Air Sector documentation.'
+    },
+    {
+      category: 'Anomaly',
+      claim: 'ANITA detected a "parallel universe" over Antarctica.',
+      record: 'ANITA saw unusual upward radio events; physicists proposed mundane explanations. No parallel universe was claimed.',
+      year: 2020, author: 'Tabloid distortion',
+      detail: 'NASA\'s ANITA experiment recorded anomalous events that a 2020 tabloid cycle inflated into "a universe where time runs backwards." The actual papers hedged carefully — surface reflections and instrument effects are leading explanations. A responsible anomaly became a viral fabrication.',
+      quote: '"The scientists said \'we are not sure.\' The headline said \'parallel universe.\' That gap is the whole story."',
+      sources: 'ANITA collaboration papers; science-press corrections.'
+    },
+    {
+      category: 'Survival',
+      claim: 'Modern videos independently confirm the base and survival story.',
+      record: 'Cable, YouTube, and TikTok recycle the same 1947–1984 chain without its authors, re-presenting it as fresh evidence.',
+      year: 2015, author: 'Short-form video ecosystem',
+      detail: 'What looks like many independent sources is one chain — Szabo → Bernard → Zündel → Serrano — copied forward with the citations stripped out. New footage does not add new evidence; it re-narrates old claims. Naming the origin dissolves the illusion of corroboration.',
+      quote: '"The \'independent\' confirmations are the same source in different costumes."',
+      sources: 'Genealogy of the myth (Part V); media analysis.'
+    }
+  ];
+
+  /* =======================================================================
+   * DATA — Genealogy timeline (Part V). Ordered oldest → newest.
+   * ===================================================================== */
+  const TIMELINE = [
+    { year: '1938–39', title: 'The real events', author: 'Ritscher / Schäfer',
+      added: 'Neuschwabenland aerial survey and the Ahnenerbe Tibet expedition happen — mundane, documented, no myth yet.',
+      context: '', excerpt: 'A one-month photographic survey and a scientific-racial expedition. Nothing secret, nothing subterranean.',
+      effect: 'Provides the raw historical material later authors will mythologise.' },
+    { year: '1947', title: 'The seed', author: 'Ladislas Szabo',
+      added: 'A sensational press item reframes Operation Highjump as a hunt for an escaped Hitler.',
+      context: '', excerpt: 'Post-war tabloid journalism converts a public naval exercise into a secret manhunt.',
+      effect: 'Establishes the core "Hitler survived / Highjump was a mission" template.' },
+    { year: '1950s', title: 'Pamphlet elaboration', author: 'Mattern / Friedrich',
+      added: 'Pseudonymous pamphlets add the "defeated fleet" reading of Highjump and the invulnerable base.',
+      context: '', excerpt: 'Cheap booklets circulate the idea that the U.S. Navy was repelled from Antarctica.',
+      effect: 'Feeds directly into the 1964 hollow-Earth synthesis.' },
+    { year: '1960', title: 'Occult framing', author: 'Pauwels & Bergier',
+      added: '"The Morning of the Magicians" popularises Nazi-occultism-as-entertainment, including Tibet mysticism.',
+      context: 'Best-seller status gives the occult reading mass reach.',
+      excerpt: 'The book blends real history with speculation, blurring the line for millions of readers.',
+      effect: 'Makes "esoteric Nazism" a marketable genre the later myth plugs into.' },
+    { year: '1964', title: 'Hollow-Earth fusion', author: 'Raymond Bernard (W. Siegmeister)',
+      added: 'Fuses the survival story with 19th-century hollow-Earth fiction; introduces the subterranean-entrance motif.',
+      context: '', excerpt: '"The Hollow Earth" welds Antarctic survival lore to Agartha and inner-world fantasy.',
+      effect: 'Gives the myth its "entrance beneath the ice" architecture.' },
+    { year: '1970s', title: 'Weaponisation', author: 'Ernst Zündel', flag: true,
+      added: 'UFO/"Vril" saucer pamphlets, published under a pen name, explicitly as bait for Hitler-redemption.',
+      context: 'Zündel was later convicted in connection with Holocaust denial. He described the UFO material as a lure.',
+      excerpt: 'The flying-saucer angle is a marketing device to attract readers toward a rehabilitation of Hitler.',
+      effect: 'Turns folklore into a recruitment funnel — the myth\'s ethical turning point.' },
+    { year: '1978–84', title: 'Esoteric Hitlerism', author: 'Miguel Serrano', flag: true,
+      added: 'Builds a full mystical religion casting Antarctica as a sacred polar redoubt of a divine Hitler.',
+      context: 'Serrano was an open, lifelong neo-Nazi. This is the theology of a hate movement, not history.',
+      excerpt: 'Across several books, Antarctica becomes scripture: a holy last refuge in "Esoteric Hitlerism."',
+      effect: 'Supplies the "sacred redoubt" language later laundered by documentaries.' },
+    { year: '1990s–2000s', title: 'Cable television', author: 'Documentary TV',
+      added: 'History/mystery cable strips the authors and dates, presenting the chain as open questions.',
+      context: '', excerpt: 'Ominous narration and stock footage repackage 1947–1984 claims as "unexplained."',
+      effect: 'Mainstreams the myth to audiences who never see its origins.' },
+    { year: '2010s–now', title: 'Short-form recycling', author: 'YouTube / TikTok',
+      added: 'Algorithmic clips recirculate the same claims as fresh "evidence," at massive scale.',
+      context: '', excerpt: 'A 1978 esoteric-fascist idea, re-narrated over drone footage, reads as a 2024 discovery.',
+      effect: 'Creates the illusion of many independent sources — really one chain, copied forward.' }
+  ];
+
+  /* =======================================================================
+   * UTILITIES
+   * ===================================================================== */
+  const $  = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+  const esc = (s) => String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+  const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* =======================================================================
+   * NAV — scroll styling, mobile menu, smooth anchor offset handled by CSS.
+   * ===================================================================== */
+  const nav = $('#site-nav');
+  const onScroll = () => {
+    if (window.scrollY > 20) nav.classList.add('glass', 'border-ice-500/10', 'shadow-lg', 'shadow-black/20');
+    else nav.classList.remove('glass', 'border-ice-500/10', 'shadow-lg', 'shadow-black/20');
+  };
+  onScroll();
+  window.addEventListener('scroll', onScroll, { passive: true });
+
+  const menuBtn = $('#menu-btn'), mobileMenu = $('#mobile-menu');
+  menuBtn.addEventListener('click', () => {
+    const open = mobileMenu.classList.toggle('hidden') === false;
+    menuBtn.setAttribute('aria-expanded', String(open));
+  });
+  $$('#mobile-menu a').forEach(a => a.addEventListener('click', () => {
+    mobileMenu.classList.add('hidden'); menuBtn.setAttribute('aria-expanded', 'false');
+  }));
+
+  /* =======================================================================
+   * SCROLL REVEAL — IntersectionObserver adds .is-visible once.
+   * ===================================================================== */
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('is-visible'); io.unobserve(e.target); } });
+  }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+  $$('.reveal').forEach(el => io.observe(el));
+
+  /* =======================================================================
+   * PROGRESS DOTS — build one dot per <section id>, highlight active section.
+   * ===================================================================== */
+  const sections = $$('main section[id]');
+  const dotsWrap = $('#progress-dots');
+  const labels = {
+    hero:'Top', project:'The Project', 'myth-detector-section':'Detector', 'myth-record':'Myth vs Record',
+    genealogy:'Genealogy', expeditions:'Expeditions', 'deep-time':'Deep Time', 'ice-testifies':'The Ice Testifies',
+    help:'Open Leads', sources:'Sources'
+  };
+  sections.forEach(sec => {
+    const a = document.createElement('a');
+    a.href = '#' + sec.id;
+    a.className = 'dot w-2.5 h-2.5 rounded-full bg-frost/25 hover:bg-ice-400/70';
+    a.setAttribute('aria-label', 'Go to ' + (labels[sec.id] || sec.id));
+    a.title = labels[sec.id] || sec.id;
+    dotsWrap.appendChild(a);
+  });
+  const dotEls = $$('#progress-dots .dot');
+  const dotObserver = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        const idx = sections.indexOf(e.target);
+        dotEls.forEach((d, i) => d.setAttribute('aria-current', String(i === idx)));
+      }
+    });
+  }, { threshold: 0.5 });
+  sections.forEach(s => dotObserver.observe(s));
+
+  /* =======================================================================
+   * MODAL — generic open/close with focus trapping + ESC + restore focus.
+   * ===================================================================== */
+  const modal = $('#modal'), modalBody = $('#modal-body'), modalClose = $('#modal-close'), modalBackdrop = $('#modal-backdrop');
+  let lastFocused = null;
+  function openModal(html) {
+    modalBody.innerHTML = html;
+    lastFocused = document.activeElement;
+    modal.classList.remove('hidden'); modal.classList.add('flex');
+    document.body.style.overflow = 'hidden';
+    modalClose.focus();
+    document.addEventListener('keydown', onModalKey);
+  }
+  function closeModal() {
+    modal.classList.add('hidden'); modal.classList.remove('flex');
+    document.body.style.overflow = '';
+    document.removeEventListener('keydown', onModalKey);
+    if (lastFocused) lastFocused.focus();
+  }
+  function onModalKey(e) {
+    if (e.key === 'Escape') return closeModal();
+    if (e.key === 'Tab') { // simple focus trap
+      const f = $$('a[href],button,input,select,[tabindex]:not([tabindex="-1"])', modal).filter(el => !el.disabled && el.offsetParent !== null);
+      if (!f.length) return;
+      const first = f[0], last = f[f.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    }
+  }
+  modalClose.addEventListener('click', closeModal);
+  modalBackdrop.addEventListener('click', closeModal);
+
+  /* =======================================================================
+   * MYTH vs RECORD TABLE — render, filter, search, sort, modal + source trail.
+   * ===================================================================== */
+  const tbody = $('#myth-tbody'), emptyMsg = $('#myth-empty'), searchInput = $('#myth-search'), filterWrap = $('#myth-filters');
+  let state = { q: '', cat: 'All', sortKey: 'year', sortDir: 1 };
+
+  // Build filter chips from unique categories.
+  const categories = ['All', ...Array.from(new Set(MYTHS.map(m => m.category)))];
+  categories.forEach(cat => {
+    const b = document.createElement('button');
+    b.textContent = cat;
+    b.dataset.cat = cat;
+    b.className = 'filter-chip text-xs px-3 py-2.5 rounded-lg border transition ' +
+      (cat === 'All' ? 'bg-ice-500 text-navy-900 border-ice-500 font-semibold' : 'border-white/12 text-frost/70 hover:border-ice-400 hover:text-white');
+    b.addEventListener('click', () => { state.cat = cat; updateChips(); render(); });
+    filterWrap.appendChild(b);
+  });
+  function updateChips() {
+    $$('.filter-chip', filterWrap).forEach(b => {
+      const on = b.dataset.cat === state.cat;
+      b.className = 'filter-chip text-xs px-3 py-2.5 rounded-lg border transition ' +
+        (on ? 'bg-ice-500 text-navy-900 border-ice-500 font-semibold' : 'border-white/12 text-frost/70 hover:border-ice-400 hover:text-white');
+    });
+  }
+
+  function filteredSorted() {
+    const q = state.q.toLowerCase();
+    let rows = MYTHS.filter(m => {
+      const catOk = state.cat === 'All' || m.category === state.cat;
+      const qOk = !q || (m.claim + ' ' + m.record + ' ' + m.author + ' ' + m.category).toLowerCase().includes(q);
+      return catOk && qOk;
+    });
+    rows.sort((a, b) => {
+      let av = a[state.sortKey], bv = b[state.sortKey];
+      if (typeof av === 'string') { av = av.toLowerCase(); bv = bv.toLowerCase(); }
+      return (av < bv ? -1 : av > bv ? 1 : 0) * state.sortDir;
+    });
+    return rows;
+  }
+
+  function render() {
+    const rows = filteredSorted();
+    tbody.innerHTML = '';
+    emptyMsg.classList.toggle('hidden', rows.length > 0);
+    rows.forEach(m => {
+      const idx = MYTHS.indexOf(m);
+      const tr = document.createElement('tr');
+      tr.className = 'group hover:bg-ice-500/[0.06] transition cursor-pointer';
+      tr.tabIndex = 0;
+      tr.setAttribute('role', 'button');
+      tr.setAttribute('aria-label', 'Open details for: ' + m.claim);
+      tr.innerHTML =
+        '<td class="p-4 align-top">' +
+          '<span class="inline-block text-[10px] font-mono uppercase tracking-wide text-ice-400/80 border border-ice-500/25 rounded px-1.5 py-0.5 mb-1.5">' + esc(m.category) + '</span>' +
+          '<div class="text-frost/90 font-medium leading-snug">' + esc(m.claim) + '</div>' +
+          '<div class="sm:hidden text-frost/55 text-xs mt-2">' + esc(m.record) + '</div>' +
+        '</td>' +
+        '<td class="p-4 align-top text-frost/65 hidden sm:table-cell leading-snug">' + esc(m.record) + '</td>' +
+        '<td class="p-4 align-top"><span class="font-mono text-ice-300">' + esc(m.year) + '</span></td>' +
+        '<td class="p-4 align-top text-frost/60 hidden md:table-cell">' + esc(m.author) + '</td>' +
+        '<td class="p-4 align-top text-right">' +
+          '<span class="inline-flex items-center gap-1 text-ice-400/70 group-hover:text-ice-400 text-xs whitespace-nowrap">Details' +
+          '<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></span>' +
+        '</td>';
+      const open = () => openMythModal(idx);
+      tr.addEventListener('click', open);
+      tr.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } });
+      tbody.appendChild(tr);
+    });
+    // Update sort indicators.
+    $$('.sort-btn').forEach(btn => {
+      const ind = $('.sort-ind', btn);
+      ind.textContent = btn.dataset.key === state.sortKey ? (state.sortDir === 1 ? '▲' : '▼') : '';
+    });
+  }
+
+  // Modal content for a single myth, including the "Source Trail" reveal.
+  function openMythModal(idx) {
+    const m = MYTHS[idx];
+    openModal(
+      '<span class="inline-block text-[10px] font-mono uppercase tracking-widest text-ice-400 border border-ice-500/30 rounded px-2 py-0.5 mb-4">' + esc(m.category) + '</span>' +
+      '<h3 id="modal-title" class="font-display text-2xl text-white leading-snug mb-5">' + esc(m.claim) + '</h3>' +
+
+      '<div class="grid sm:grid-cols-2 gap-4 mb-5">' +
+        '<div class="rounded-xl bg-rose-500/[0.07] border border-rose-400/20 p-4">' +
+          '<p class="text-[10px] font-mono uppercase tracking-widest text-rose-300/80 mb-1.5">The Claim</p>' +
+          '<p class="text-frost/80 text-sm leading-relaxed">' + esc(m.claim) + '</p></div>' +
+        '<div class="rounded-xl bg-ice-500/[0.07] border border-ice-400/25 p-4">' +
+          '<p class="text-[10px] font-mono uppercase tracking-widest text-ice-300/90 mb-1.5">The Record</p>' +
+          '<p class="text-frost/80 text-sm leading-relaxed">' + esc(m.record) + '</p></div>' +
+      '</div>' +
+
+      '<p class="text-frost/80 text-sm leading-relaxed mb-4">' + esc(m.detail) + '</p>' +
+
+      '<blockquote class="border-l-2 border-ice-400 pl-4 my-5 text-frost/85 font-display italic text-[15px] leading-relaxed">' + esc(m.quote) + '</blockquote>' +
+
+      // Source Trail — collapsed pill that expands to reveal author + year highlighted.
+      '<button id="source-trail-btn" class="inline-flex items-center gap-2 text-sm bg-ice-500/10 hover:bg-ice-500/20 border border-ice-500/30 text-ice-300 px-4 py-2.5 rounded-lg transition">' +
+        '<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M12 2l2 5 5 .5-4 3.5 1.5 5L12 18l-4.5 3 1.5-5-4-3.5 5-.5z"/></svg>' +
+        'Show source trail</button>' +
+      '<div id="source-trail" class="hidden mt-4 rounded-xl bg-navy-900/70 border border-ice-500/20 p-4">' +
+        '<p class="text-frost/70 text-sm mb-3">This claim first appears in:</p>' +
+        '<div class="flex items-center gap-4">' +
+          '<div class="text-center"><div class="font-display text-3xl text-ice-400">' + esc(m.year) + '</div><div class="text-[10px] font-mono uppercase tracking-widest text-frost/50">Year</div></div>' +
+          '<svg class="w-6 h-6 text-frost/30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>' +
+          '<div><div class="text-lg text-white font-medium">' + esc(m.author) + '</div><div class="text-[10px] font-mono uppercase tracking-widest text-frost/50">Author / origin</div></div>' +
+        '</div>' +
+        '<p class="text-frost/55 text-xs mt-4 pt-3 border-t border-white/5"><span class="text-ice-300/80">Sources:</span> ' + esc(m.sources) + '</p>' +
+      '</div>'
+    );
+    // Wire up the reveal after injecting.
+    const stBtn = $('#source-trail-btn'), stPanel = $('#source-trail');
+    stBtn.addEventListener('click', () => {
+      stPanel.classList.toggle('hidden');
+      stBtn.classList.toggle('bg-ice-500/20');
+    });
+  }
+
+  // Sort buttons.
+  $$('.sort-btn').forEach(btn => btn.addEventListener('click', () => {
+    const key = btn.dataset.key;
+    if (state.sortKey === key) state.sortDir *= -1; else { state.sortKey = key; state.sortDir = 1; }
+    render();
+  }));
+
+  // Search (debounced lightly via input event — dataset is tiny so direct is fine).
+  searchInput.addEventListener('input', e => { state.q = e.target.value; render(); });
+
+  render();
+
+  /* =======================================================================
+   * CSV DOWNLOAD — export the current (filtered/sorted) table.
+   * ===================================================================== */
+  $('#download-csv').addEventListener('click', () => {
+    const rows = filteredSorted();
+    const header = ['Category', 'Claim', 'Documented Record', 'Year Introduced', 'Author/Origin', 'Sources'];
+    const csvEsc = v => '"' + String(v).replace(/"/g, '""') + '"';
+    const lines = [header.map(csvEsc).join(',')];
+    rows.forEach(m => lines.push([m.category, m.claim, m.record, m.year, m.author, m.sources].map(csvEsc).join(',')));
+    const blob = new Blob([lines.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'antarctica-myth-vs-record.csv';
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+  });
+
+  /* =======================================================================
+   * MYTH DETECTOR — populate the select from MYTHS, show first-appearance.
+   * ===================================================================== */
+  const detSelect = $('#detector-select'), detResult = $('#detector-result');
+  MYTHS.slice().sort((a, b) => a.claim.localeCompare(b.claim)).forEach(m => {
+    const opt = document.createElement('option');
+    opt.value = String(MYTHS.indexOf(m));
+    opt.textContent = m.claim;
+    detSelect.appendChild(opt);
+  });
+  detSelect.addEventListener('change', e => {
+    const v = e.target.value;
+    if (v === '') { detResult.classList.add('hidden'); return; }
+    const m = MYTHS[Number(v)];
+    detResult.classList.remove('hidden');
+    detResult.innerHTML =
+      '<div class="rounded-xl bg-navy-800 border border-ice-500/25 p-5">' +
+        '<div class="flex flex-wrap items-baseline gap-x-3 gap-y-1 mb-3">' +
+          '<span class="text-frost/60 text-sm">First appeared</span>' +
+          '<span class="font-display text-3xl text-ice-400">' + esc(m.year) + '</span>' +
+          '<span class="text-frost/60 text-sm">via</span>' +
+          '<span class="text-white font-medium">' + esc(m.author) + '</span>' +
+        '</div>' +
+        '<p class="text-frost/75 text-sm leading-relaxed">' + esc(m.detail) + '</p>' +
+        '<button class="mt-4 text-sm text-ice-400 hover:text-ice-300 inline-flex items-center gap-1" data-open="' + MYTHS.indexOf(m) + '">Open full source trail ' +
+        '<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>' +
+      '</div>';
+    const btn = $('[data-open]', detResult);
+    btn.addEventListener('click', () => openMythModal(Number(btn.dataset.open)));
+  });
+
+  /* =======================================================================
+   * GENEALOGY TIMELINE — render nodes; click opens modal with excerpt/effect.
+   * ===================================================================== */
+  const tl = $('#timeline');
+  tl.innerHTML = '<div class="absolute left-4 sm:left-1/2 top-2 bottom-2 w-0.5 tl-line -translate-x-1/2" aria-hidden="true"></div>';
+  TIMELINE.forEach((node, i) => {
+    const left = i % 2 === 0; // alternate sides on desktop
+    const wrap = document.createElement('div');
+    wrap.className = 'timeline-node reveal relative pl-12 sm:pl-0 mb-8 sm:mb-10 sm:w-1/2 ' + (left ? 'sm:pr-10 sm:text-right' : 'sm:left-1/2 sm:pl-10');
+    const flagBadge = node.flag ? '<span class="inline-block text-[10px] font-mono uppercase tracking-wide text-amber-300 bg-amber-400/10 border border-amber-400/30 rounded px-1.5 py-0.5 ml-1">ideological context</span>' : '';
+    wrap.innerHTML =
+      '<span class="absolute top-1.5 left-4 sm:left-auto ' + (left ? 'sm:-right-[9px]' : 'sm:-left-[9px]') + ' -translate-x-1/2 sm:translate-x-0 w-4 h-4 rounded-full bg-ice-400 ring-4 ring-navy-800" aria-hidden="true"></span>' +
+      '<button class="tl-btn text-left ' + (left ? 'sm:text-right' : '') + ' w-full glass rounded-xl border border-white/8 hover:border-ice-400/50 p-5 transition group">' +
+        '<span class="font-mono text-ice-400 text-sm">' + esc(node.year) + '</span>' +
+        '<h3 class="font-display text-xl text-white mt-1 group-hover:text-ice-300 transition">' + esc(node.title) + '</h3>' +
+        '<p class="text-frost/55 text-xs font-mono mt-0.5">' + esc(node.author) + flagBadge + '</p>' +
+        '<p class="text-frost/75 text-sm mt-3 leading-relaxed">' + esc(node.added) + '</p>' +
+        '<span class="inline-flex items-center gap-1 text-ice-400/70 group-hover:text-ice-400 text-xs mt-3">Read excerpt & downstream effect' +
+        '<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></span>' +
+      '</button>';
+    $('.tl-btn', wrap).addEventListener('click', () => openTimelineModal(node));
+    tl.appendChild(wrap);
+    io.observe(wrap); // reveal on scroll
+  });
+  function openTimelineModal(n) {
+    openModal(
+      '<span class="font-mono text-ice-400">' + esc(n.year) + '</span>' +
+      '<h3 id="modal-title" class="font-display text-2xl text-white mt-1 mb-1">' + esc(n.title) + '</h3>' +
+      '<p class="text-frost/55 text-sm font-mono mb-5">' + esc(n.author) + '</p>' +
+      '<p class="text-[10px] font-mono uppercase tracking-widest text-ice-300/80 mb-1.5">What was added</p>' +
+      '<p class="text-frost/80 text-sm leading-relaxed mb-4">' + esc(n.added) + '</p>' +
+      (n.context ? '<div class="rounded-xl bg-amber-400/[0.07] border border-amber-400/25 p-4 mb-4"><p class="text-[10px] font-mono uppercase tracking-widest text-amber-300/90 mb-1.5">Ideological context</p><p class="text-frost/80 text-sm leading-relaxed">' + esc(n.context) + '</p></div>' : '') +
+      '<blockquote class="border-l-2 border-ice-400 pl-4 my-4 text-frost/85 font-display italic text-[15px] leading-relaxed">' + esc(n.excerpt) + '</blockquote>' +
+      '<p class="text-[10px] font-mono uppercase tracking-widest text-ice-300/80 mb-1.5">Downstream effect</p>' +
+      '<p class="text-frost/80 text-sm leading-relaxed">' + esc(n.effect) + '</p>'
+    );
+  }
+
+  /* =======================================================================
+   * NEUTRINO CANVAS — lightweight, dependency-free.
+   * Draws a solid layered Earth (core/mantle/crust) with neutrino tracks
+   * shooting UP through the planet to the detector at the South Pole,
+   * illustrating why a hollow Earth is ruled out. Respects reduced-motion.
+   * ===================================================================== */
+  (function neutrinos() {
+    const canvas = $('#neutrino-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+    const cx = W / 2, cy = H * 0.62, R = Math.min(W, H) * 0.34; // Earth center/radius
+    const detector = { x: cx, y: cy - R }; // South Pole detector at top of the globe
+
+    // Particle tracks: each enters from the bottom hemisphere and travels to detector.
+    let tracks = [];
+    function spawn() {
+      const ang = Math.PI * (0.15 + Math.random() * 0.7); // enter across bottom
+      const start = { x: cx + Math.cos(Math.PI / 2 + ang - 0.35) * R * 1.35, y: cy + Math.abs(Math.sin(ang)) * R * 1.15 };
+      tracks.push({ x: start.x, y: start.y, t: 0, speed: 0.006 + Math.random() * 0.006 });
+    }
+    for (let i = 0; i < 5; i++) spawn();
+
+    function drawEarth() {
+      // Layered fills — visibly SOLID (the whole point).
+      const layers = [
+        { r: R,        c: '#0e2a44' }, // crust/ocean
+        { r: R * 0.78, c: '#123350' }, // mantle
+        { r: R * 0.45, c: '#0b3d63' }, // outer core
+        { r: R * 0.22, c: '#1e5a86' }, // inner core
+      ];
+      layers.forEach(l => {
+        ctx.beginPath(); ctx.arc(cx, cy, l.r, 0, Math.PI * 2);
+        ctx.fillStyle = l.c; ctx.fill();
+      });
+      // Rim highlight
+      ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI * 2);
+      ctx.strokeStyle = 'rgba(103,232,249,0.35)'; ctx.lineWidth = 1.5; ctx.stroke();
+      // Detector marker at the pole
+      ctx.beginPath(); ctx.arc(detector.x, detector.y, 5, 0, Math.PI * 2);
+      ctx.fillStyle = '#67E8F9'; ctx.fill();
+      ctx.font = '11px "IBM Plex Mono", monospace'; ctx.fillStyle = 'rgba(232,240,247,0.7)';
+      ctx.textAlign = 'center'; ctx.fillText('IceCube', detector.x, detector.y - 12);
+    }
+
+    let running = !prefersReduced;
+    function frame() {
+      ctx.clearRect(0, 0, W, H);
+      // faint solid-earth caption line
+      drawEarth();
+      tracks.forEach(tr => {
+        tr.t += tr.speed;
+        // Bezier-ish straight interpolation from entry point up to detector.
+        const x = tr.x + (detector.x - tr.x) * tr.t;
+        const y = tr.y + (detector.y - tr.y) * tr.t;
+        // Trail
+        ctx.beginPath();
+        ctx.moveTo(tr.x + (detector.x - tr.x) * Math.max(0, tr.t - 0.14), tr.y + (detector.y - tr.y) * Math.max(0, tr.t - 0.14));
+        ctx.lineTo(x, y);
+        ctx.strokeStyle = 'rgba(103,232,249,' + (0.15 + 0.5 * (1 - Math.abs(0.5 - tr.t) * 2)) + ')';
+        ctx.lineWidth = 2; ctx.lineCap = 'round'; ctx.stroke();
+        // Head
+        ctx.beginPath(); ctx.arc(x, y, 2.4, 0, Math.PI * 2);
+        ctx.fillStyle = '#A5F3FC'; ctx.fill();
+      });
+      tracks = tracks.filter(tr => tr.t < 1);
+      while (tracks.length < 5) spawn();
+      if (running) requestAnimationFrame(frame);
+    }
+    // Draw one static frame even when reduced-motion is on.
+    drawEarth();
+    if (running) requestAnimationFrame(frame);
+
+    // Pause/resume control.
+    const toggle = $('#neutrino-toggle');
+    if (toggle) {
+      // Reflect initial state for reduced-motion users.
+      if (!running) { toggle.textContent = 'Play'; toggle.setAttribute('aria-pressed', 'false'); }
+      toggle.addEventListener('click', () => {
+        running = !running;
+        toggle.textContent = running ? 'Pause' : 'Play';
+        toggle.setAttribute('aria-pressed', String(running));
+        if (running) requestAnimationFrame(frame);
+      });
+    }
+  })();
+
+})();
+</script>
+</body>
+</html>
