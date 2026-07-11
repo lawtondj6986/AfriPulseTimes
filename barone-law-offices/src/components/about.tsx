@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { GraduationCap, Landmark, Languages } from "lucide-react";
 
 import { siteConfig } from "@/lib/site-config";
@@ -15,15 +16,21 @@ export function About() {
         <div className="grid items-start gap-12 lg:grid-cols-2 lg:gap-16">
           {/* Left column — portrait */}
           <FadeIn className="relative mx-auto w-full max-w-md lg:mx-0 lg:max-w-none">
-            {/* GROK IMAGINE IMAGE SLOT [ted-headshot]: replace with <Image src="/images/ted-headshot.jpg" .../>. Prompt in GROK_IMAGINE_PROMPTS.md */}
-            <div
-              className="relative flex aspect-[4/5] w-full items-center justify-center rounded-lg border border-gold/30 bg-gradient-to-br from-navy-deep via-navy to-navy-light shadow-xl"
-              role="img"
-              aria-label={`Portrait of ${attorney.name}, ${attorney.credential}`}
-            >
-              <span className="text-xs font-semibold uppercase tracking-[0.25em] text-gold/60">
-                Attorney Portrait
-              </span>
+            {/* Attorney headshot — to update, replace the file at public/images/ted-headshot.jpg */}
+            <div className="relative aspect-[4/5] w-full overflow-hidden rounded-lg border border-gold/30 bg-navy shadow-xl">
+              <Image
+                src="/images/ted-headshot.jpg"
+                alt={`Portrait of ${attorney.name}, ${attorney.credential} at Barone Law Offices`}
+                fill
+                sizes="(max-width: 1024px) 100vw, 40vw"
+                priority
+                className="object-cover object-[center_20%]"
+              />
+              {/* Subtle bottom gradient so the gold badge and border read cleanly */}
+              <div
+                className="pointer-events-none absolute inset-x-0 bottom-0 h-1/4 bg-gradient-to-t from-navy-deep/40 to-transparent"
+                aria-hidden="true"
+              />
             </div>
             {/* Gold years-of-experience accent overlapping the corner */}
             <div className="absolute -bottom-5 -right-4 flex flex-col items-center rounded-md bg-gold px-5 py-3 text-navy-deep shadow-lg md:-right-6">
