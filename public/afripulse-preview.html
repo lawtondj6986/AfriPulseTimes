@@ -19,6 +19,13 @@
 <meta name="twitter:image" content="https://afri-pulse-times.vercel.app/images/ai-rss-agents.jpg">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"NewsMediaOrganization","name":"AfriPulse Times","url":"https://afri-pulse-times.vercel.app/","logo":"https://afri-pulse-times.vercel.app/images/ai-rss-agents.jpg","slogan":"The continent's voice across 54 nations","areaServed":"Africa","knowsLanguage":["en","fr","ar"]}</script>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%230D0D0D'/%3E%3Ctext x='32' y='47' font-family='Georgia,serif' font-size='44' font-weight='bold' fill='%23C8401A' text-anchor='middle'%3EA%3C/text%3E%3C/svg%3E">
+<!-- Progressive Web App: installable + offline-first (see /sw.js, /manifest.webmanifest) -->
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/icons/icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="AfriPulse">
+<meta name="mobile-web-app-capable" content="yes">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Noto+Naskh+Arabic:wght@400;700&display=swap" rel="stylesheet">
@@ -5947,6 +5954,39 @@ console.log('%c AfriPulse Times ', 'background:#1E6B3A;color:#fff;font-size:16px
 console.log('Routes:','#/','· #/v/<vertical>','· #/article/<slug>','· #/admin','· #/admin/new','· #/admin/edit/<slug>','· #/newsletter');
 console.log('Languages: EN · FR · AR (RTL) · DevTools: window.__APT');
 
+})();
+</script>
+<script>
+/* AfriPulse PWA — register the offline-first service worker + a gentle install prompt.
+   The SW makes the app installable, data-light, and readable offline (see /sw.js). */
+(function(){
+  if('serviceWorker' in navigator){
+    window.addEventListener('load',function(){
+      navigator.serviceWorker.register('/sw.js',{updateViaCache:'none'}).catch(function(){});
+    });
+  }
+  // Android/Chromium fire beforeinstallprompt; we surface a dismissible pill.
+  // (iOS installs via Share → "Add to Home Screen" — no JS hook exists there.)
+  var deferred=null;
+  function dismissed(){ try{ return localStorage.getItem('ap_pwa_dismiss')==='1'; }catch(e){ return false; } }
+  function pill(){
+    var ex=document.getElementById('ap-install'); if(ex) return ex;
+    var b=document.createElement('button'); b.id='ap-install'; b.type='button';
+    b.setAttribute('aria-label','Install AfriPulse Times as an app');
+    b.style.cssText='position:fixed;left:50%;transform:translateX(-50%);bottom:18px;z-index:4000;'+
+      'display:none;align-items:center;gap:9px;background:#0E2818;color:#E3C766;border:1px solid #C9A227;'+
+      "padding:11px 18px;border-radius:999px;font-family:'DM Sans',system-ui,sans-serif;font-size:14px;font-weight:600;"+
+      'box-shadow:0 6px 22px rgba(0,0,0,.28);cursor:pointer';
+    var t=document.createElement('span'); t.innerHTML='📲 Install AfriPulse'; b.appendChild(t);
+    var x=document.createElement('span'); x.textContent='✕'; x.title='Not now';
+    x.style.cssText='margin-left:4px;opacity:.6;font-size:12px';
+    x.addEventListener('click',function(ev){ ev.stopPropagation(); b.style.display='none'; try{localStorage.setItem('ap_pwa_dismiss','1');}catch(e){} });
+    b.appendChild(x);
+    b.addEventListener('click',function(){ if(!deferred) return; deferred.prompt(); deferred.userChoice.then(function(){ deferred=null; b.style.display='none'; }); });
+    document.body.appendChild(b); return b;
+  }
+  window.addEventListener('beforeinstallprompt',function(e){ e.preventDefault(); deferred=e; if(dismissed()) return; pill().style.display='inline-flex'; });
+  window.addEventListener('appinstalled',function(){ var b=document.getElementById('ap-install'); if(b) b.style.display='none'; try{localStorage.setItem('ap_pwa_dismiss','1');}catch(e){} });
 })();
 </script>
 </body>
