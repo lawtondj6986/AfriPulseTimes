@@ -10,9 +10,12 @@
     { "path": "/api/translate", "schedule": "30 6 * * *" },
     { "path": "/api/sms-digest", "schedule": "0 7 * * *" }
   ],
+  "rewrites": [
+    { "source": "/desk", "destination": "/afripulse-preview.html" }
+  ],
   "headers": [
     {
-      "source": "/(afripulse-preview.html|supabase-config.js|sw.js|manifest.webmanifest)",
+      "source": "/(reader.html|afripulse-preview.html|supabase-config.js|sw.js|manifest.webmanifest)",
       "headers": [{ "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }]
     },
     {
