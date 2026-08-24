@@ -1,0 +1,712 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<!-- viewport-fit=cover lets the bottom nav sit above the phone's home indicator -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>AfriPulse Times — Phone Edition</title>
+<meta name="description" content="AfriPulse Times — the continent's news, built for any phone. Read offline, in five languages.">
+<meta name="theme-color" content="#0E2818">
+<!-- PWA install (shares the same manifest + icons as the newsroom) -->
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/icons/icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="AfriPulse">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%230E2818'/%3E%3Ctext x='32' y='46' font-family='Georgia,serif' font-size='42' font-weight='bold' fill='%23C9A227' text-anchor='middle'%3EA%3C/text%3E%3C/svg%3E">
+<style>
+  /* ── Paper-news palette. System fonts only — no web fonts, no network on first paint. ── */
+  :root{
+    --bg:#F4EFE4; --card:#FBF8F1; --ink:#1C1914; --muted:#6B6458; --line:#E4DCCE;
+    --gold:#C9A227; --gold-d:#9A7B1A; --forest:#0E2818; --forest-2:#12351F;
+    --sysfont:-apple-system,"Segoe UI",Roboto,"Noto Sans",sans-serif;
+    --navh:58px; --readsize:18px;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sysfont);line-height:1.55;
+    -webkit-font-smoothing:antialiased;font-size:17px;
+    padding-bottom:calc(var(--navh) + env(safe-area-inset-bottom,0px));}
+  html[dir="rtl"] body{text-align:right}
+  a{color:inherit;text-decoration:none}
+  button{font-family:inherit;font-size:inherit;cursor:pointer}
+
+  .wrap{max-width:42rem;margin:0 auto;padding:16px 18px 8px}
+  .screen{display:none;min-height:60vh}
+  .screen.on{display:block;animation:fade .18s ease}
+  @keyframes fade{from{opacity:.4}to{opacity:1}}
+  @media (prefers-reduced-motion:reduce){.screen.on{animation:none}}
+
+  .top{display:flex;align-items:center;gap:10px;padding:4px 0 12px;border-bottom:1px solid var(--line);margin-bottom:14px}
+  .top .mk{width:30px;height:30px;flex:0 0 auto}
+  .top .nm{font-family:Georgia,"Times New Roman",serif;font-weight:700;font-size:20px;letter-spacing:-.01em}
+  .top .nm .p{color:var(--gold-d)}
+  .top .date{margin-left:auto;font-size:12px;color:var(--muted);text-align:right;line-height:1.3}
+  html[dir="rtl"] .top .date{margin-left:0;margin-right:auto}
+
+  .bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+  .chip{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;
+    padding:5px 11px;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--muted)}
+  .chip .dot{width:8px;height:8px;border-radius:50%;background:var(--muted)}
+  .chip.good .dot{background:#2f8f57}.chip.good{color:#2f6b45;border-color:#bcd9c6}
+  .chip.mid .dot{background:var(--gold)}.chip.mid{color:var(--gold-d);border-color:#e6d3a0}
+  .chip.cell .dot{background:#c9772a}.chip.cell{color:#a85f1f;border-color:#e6c9a8}
+  .chip.off .dot{background:#b23b3b}.chip.off{color:#9a2f2f;border-color:#e6bcbc}
+  .toggle{margin-left:auto;display:inline-flex;align-items:center;gap:7px;font-size:12.5px;color:var(--muted)}
+  html[dir="rtl"] .toggle{margin-left:0;margin-right:auto}
+  .toggle button{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:5px 12px;font-size:12.5px;color:var(--ink);font-weight:600}
+  .toggle button.on{background:var(--forest);color:#F3EAD4;border-color:var(--forest)}
+  .packstrip{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--card);border:1px solid var(--line);
+    border-radius:10px;padding:9px 12px;margin-bottom:16px;font-size:12.5px;color:var(--muted)}
+  .packstrip .dl{margin-left:auto;background:var(--forest);color:#F3EAD4;border:0;border-radius:8px;padding:7px 13px;font-weight:600;font-size:12.5px}
+  .packstrip .dl:disabled{opacity:.55}
+  html[dir="rtl"] .packstrip .dl{margin-left:0;margin-right:auto}
+
+  .muted{color:var(--muted)}
+  .empty{padding:44px 8px;text-align:center;color:var(--muted);line-height:1.7}
+  .empty b{display:block;color:var(--ink);font-size:18px;margin-bottom:6px}
+  .h2{font-family:Georgia,serif;font-size:15px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--forest-2);
+    margin:22px 0 8px;padding-bottom:6px;border-bottom:2px solid var(--gold)}
+  .h2:first-of-type{margin-top:6px}
+  .placeholder{padding:40px 8px;text-align:center;color:var(--muted)}
+
+  /* Story cards (Today / region lists) */
+  .card{display:block;padding:15px 0;border-bottom:1px solid var(--line)}
+  .card:last-child{border-bottom:0}
+  .card .kick{font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--gold-d)}
+  .card h3{font-family:Georgia,serif;font-size:19px;line-height:1.28;font-weight:700;margin:3px 0 4px}
+  .card p{font-size:14.5px;color:var(--muted);line-height:1.45;margin-bottom:6px;
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .card .meta{font-size:12px;color:var(--muted)}
+  .card .meta b{color:var(--gold-d);font-weight:600}
+  .card:active{opacity:.6}
+
+  /* Story detail */
+  .backlink{display:inline-block;margin:2px 0 14px;font-size:14px;color:var(--gold-d);font-weight:600}
+  .st-kick{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--gold-d)}
+  .st-h{font-family:Georgia,serif;font-size:27px;line-height:1.22;font-weight:700;margin:6px 0 10px}
+  .st-meta{font-size:13px;color:var(--muted);margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--line)}
+  .st-dek{font-size:18px;color:var(--ink);font-weight:500;margin-bottom:18px;line-height:1.5}
+  .st-body p{margin-bottom:15px;font-size:var(--readsize,18px);line-height:1.64}
+  .related{margin-top:28px}
+
+  /* ── Bottom tab bar ── */
+  .tabbar{position:fixed;left:0;right:0;bottom:0;z-index:50;display:flex;background:var(--forest);
+    padding-bottom:env(safe-area-inset-bottom,0px);box-shadow:0 -2px 12px rgba(0,0,0,.18)}
+  .tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+    height:var(--navh);color:#9FB0A8;font-size:10.5px;font-weight:600;letter-spacing:.02em;background:none;border:0}
+  .tab .ic{font-size:20px;line-height:1}
+  .tab.on{color:var(--gold)}
+  .tab:active{opacity:.7}
+
+  /* ── Buttons / settings / listen / saved (Phase 4) ── */
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;
+    border:1px solid var(--line);background:var(--card);color:var(--ink);
+    border-radius:10px;padding:9px 15px;font-size:14.5px;font-weight:600}
+  .btn:active{opacity:.65}
+  .btn.primary{background:var(--forest);color:#F3EAD4;border-color:var(--forest)}
+  .btn.gold{background:var(--gold);color:#231b02;border-color:var(--gold)}
+  .btn:disabled{opacity:.5}
+  .btn.block{display:flex;width:100%}
+
+  /* Save/bookmark control on the story page */
+  .save-btn{margin:2px 0 16px;border:1px solid var(--line);background:var(--card);color:var(--gold-d);
+    border-radius:999px;padding:8px 15px;font-size:13.5px;font-weight:700}
+  .save-btn.on{background:var(--gold);color:#231b02;border-color:var(--gold)}
+
+  /* Me / settings rows */
+  .setrow{padding:15px 0;border-bottom:1px solid var(--line)}
+  .setrow:last-child{border-bottom:0}
+  .setrow .lab{font-size:13.5px;font-weight:700;color:var(--ink);margin-bottom:9px}
+  .setrow .hint{font-size:12.5px;color:var(--muted);line-height:1.5;margin-top:2px}
+  .seg{display:flex;flex-wrap:wrap;gap:7px}
+  .seg button{border:1px solid var(--line);background:var(--card);color:var(--ink);
+    border-radius:999px;padding:7px 13px;font-size:13px;font-weight:600}
+  .seg button.on{background:var(--forest);color:#F3EAD4;border-color:var(--forest)}
+  .linkrow{display:flex;align-items:center;gap:10px;padding:14px 0;border-bottom:1px solid var(--line);color:var(--ink)}
+  .linkrow .arw{margin-left:auto;color:var(--muted)}
+  html[dir="rtl"] .linkrow .arw{margin-left:0;margin-right:auto}
+  .metaline{font-size:12px;color:var(--muted);text-align:center;margin-top:22px;line-height:1.6}
+
+  /* Listen — Morning Pulse player */
+  .player{background:var(--forest);color:#F3EAD4;border-radius:14px;padding:18px;margin-bottom:18px}
+  .player .lede{font-size:14px;color:#CFe0d4;line-height:1.5;margin-bottom:14px}
+  .player .ctrls{display:flex;gap:10px}
+  .player .ctrls .btn{flex:1}
+  .player .btn{background:rgba(255,255,255,.10);border-color:rgba(255,255,255,.16);color:#F3EAD4}
+  .player .btn.gold{background:var(--gold);color:#231b02;border-color:var(--gold)}
+  .qrow{display:flex;gap:10px;padding:12px 0;border-bottom:1px solid var(--line);align-items:baseline}
+  .qrow:last-child{border-bottom:0}
+  .qrow .n{font-family:Georgia,serif;font-weight:700;color:var(--gold-d);font-size:15px;flex:0 0 auto;width:22px}
+  .qrow.on{background:linear-gradient(90deg,rgba(201,162,39,.14),transparent);border-radius:8px;padding-left:8px;padding-right:8px}
+  .qrow .qh{font-size:14.5px;font-weight:600;line-height:1.35}
+
+  /* Pulse — tappable Africa map (pure SVG/CSS, no images) */
+  .map{display:block;width:100%;max-width:340px;margin:2px auto 6px;height:auto}
+  .map .land{fill:url(#pulseFill);stroke:#9A7B1A;stroke-width:.5;stroke-opacity:.5}
+  .map .hot{cursor:pointer}
+  .map .hot .hit{fill:transparent}
+  .map .hot .pin{fill:var(--forest);stroke:#F4EFE4;stroke-width:1;transition:fill .15s}
+  .map .hot .lbl{fill:var(--forest);font-size:4.4px;font-weight:700;font-family:var(--sysfont);text-anchor:middle}
+  .map .hot .cnt{fill:#fff;font-size:3.4px;font-weight:700;text-anchor:middle;pointer-events:none}
+  .map .hot.on .pin{fill:var(--gold)}
+  .map .hot.on .lbl{fill:var(--gold-d)}
+  .map .hot:active{opacity:.7}
+  .pulsebar{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;margin:6px 0 14px}
+  .pulsebar button{border:1px solid var(--line);background:var(--card);color:var(--ink);
+    border-radius:999px;padding:6px 12px;font-size:12.5px;font-weight:600}
+  .pulsebar button .b{color:var(--gold-d)}
+  .pulsebar button.on{background:var(--forest);color:#F3EAD4;border-color:var(--forest)}
+  .pulsebar button.on .b{color:#E9D07A}
+</style>
+</head>
+<body>
+  <main id="app">
+    <section id="s-today" class="screen">
+      <div class="wrap">
+        <div class="top">
+          <svg class="mk" viewBox="0 0 100 100" aria-hidden="true"><defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E9D07A"/><stop offset="1" stop-color="#C9A227"/></linearGradient></defs>
+            <g transform="translate(5.6 -2.9) scale(0.911)"><path d="M16,12 Q24,7 33,9 Q48,9 60,11 L63,13 Q67,22 70,32 Q76,37 83,42 Q74,48 69,51 Q66,60 63,70 Q60,80 55,87 Q50,95 45,97 Q40,94 39,87 Q35,74 34,63 Q33,57 36,54 Q33,52 29,51 Q22,52 17,50 Q9,46 6,36 Q6,30 10,23 Q12,17 16,12 Z" fill="url(#g)"/></g></svg>
+          <div class="nm">Afri<span class="p">Pulse</span></div>
+          <div class="date" id="today-date"></div>
+        </div>
+        <div class="bar">
+          <span class="chip" id="conn-chip"><span class="dot"></span><span id="conn-label">…</span></span>
+          <span class="toggle"><span id="ds-label">Data saver</span><button id="ds-btn" type="button" aria-pressed="false">Off</button></span>
+        </div>
+        <div class="packstrip" id="packstrip" hidden></div>
+        <div id="today-body"><div class="placeholder">…</div></div>
+      </div>
+    </section>
+
+    <section id="s-pulse" class="screen">
+      <div class="wrap"><div class="h2" id="t-pulse">Pulse</div><div class="placeholder" id="pulse-body">Africa map — coming in this build.</div></div>
+    </section>
+
+    <section id="s-listen" class="screen">
+      <div class="wrap"><div class="h2" id="t-listen">Listen</div><div id="listen-body"></div></div>
+    </section>
+
+    <section id="s-saved" class="screen">
+      <div class="wrap"><div class="h2" id="t-saved">Saved</div><div id="saved-body"></div></div>
+    </section>
+
+    <section id="s-me" class="screen">
+      <div class="wrap"><div class="h2" id="t-me">Me</div><div id="me-body"></div></div>
+    </section>
+
+    <section id="s-story" class="screen">
+      <div class="wrap" id="story-body"></div>
+    </section>
+  </main>
+
+  <nav class="tabbar" id="tabbar" role="navigation">
+    <a class="tab" href="#/"       data-tab="today"><span class="ic">📰</span><span data-nav="today">Today</span></a>
+    <a class="tab" href="#/pulse"  data-tab="pulse"><span class="ic">🌍</span><span data-nav="pulse">Pulse</span></a>
+    <a class="tab" href="#/listen" data-tab="listen"><span class="ic">🎧</span><span data-nav="listen">Listen</span></a>
+    <a class="tab" href="#/saved"  data-tab="saved"><span class="ic">🔖</span><span data-nav="saved">Saved</span></a>
+    <a class="tab" href="#/me"     data-tab="me"><span class="ic">☰</span><span data-nav="me">Me</span></a>
+  </nav>
+
+  <!-- Supabase client is handed over by /supabase-config.js (same as the newsroom). -->
+  <script>window.__supabaseReady = new Promise(function(res){ window.__supabaseResolve = res; });</script>
+  <script type="module" src="/supabase-config.js"></script>
+
+  <script>
+  /* ═══════════════ AfriPulse Reader (lite) ═══════════════
+     Standalone vanilla PWA. No build step, no web fonts, no framework.
+     Small functions (rowToArticle, localize, region matching) are ported from
+     public/afripulse-preview.html so the two surfaces read articles identically. */
+  (function(){
+    'use strict';
+
+    // ── Reader-UI strings (5 languages) ──
+    var T = {
+      today:{en:'Today',fr:'Aujourd’hui',ar:'اليوم',sw:'Leo',pt:'Hoje'},
+      pulse:{en:'Pulse',fr:'Pouls',ar:'النبض',sw:'Mpigo',pt:'Pulso'},
+      listen:{en:'Listen',fr:'Écouter',ar:'استمع',sw:'Sikiliza',pt:'Ouvir'},
+      saved:{en:'Saved',fr:'Enregistrés',ar:'المحفوظة',sw:'Zilizohifadhiwa',pt:'Guardados'},
+      me:{en:'Me',fr:'Moi',ar:'حسابي',sw:'Mimi',pt:'Eu'},
+      back:{en:'Back',fr:'Retour',ar:'رجوع',sw:'Rudi',pt:'Voltar'},
+      related:{en:'Related',fr:'À lire aussi',ar:'ذات صلة',sw:'Zinazohusiana',pt:'Relacionadas'},
+      connected:{en:'Connected',fr:'Connecté',ar:'متصل',sw:'Mtandaoni',pt:'Ligado'},
+      offline:{en:'Offline',fr:'Hors ligne',ar:'غير متصل',sw:'Nje ya mtandao',pt:'Offline'},
+      empty_b:{en:'No stories yet',fr:'Pas encore d’articles',ar:'لا توجد أخبار بعد',sw:'Bado hakuna habari',pt:'Ainda sem notícias'},
+      empty_p:{en:'The newsroom is live and filing. Check back shortly.',fr:'La rédaction est en ligne et publie. Revenez bientôt.',ar:'غرفة الأخبار مباشرة وتنشر. عد قريبًا.',sw:'Chumba cha habari kiko hai. Rudi hivi karibuni.',pt:'A redação está a publicar. Volte em breve.'},
+      missing_b:{en:'Story not available',fr:'Article indisponible',ar:'الخبر غير متاح',sw:'Habari haipatikani',pt:'Notícia indisponível'},
+      missing_p:{en:'It is not in today’s edition. Open Today to browse.',fr:'Il n’est pas dans l’édition du jour. Ouvrez Aujourd’hui.',ar:'ليست في إصدار اليوم. افتح اليوم للتصفح.',sw:'Haipo katika toleo la leo. Fungua Leo.',pt:'Não está na edição de hoje. Abra Hoje.'},
+      conn_starlink:{en:'Starlink',fr:'Starlink',ar:'ستارلينك',sw:'Starlink',pt:'Starlink'},
+      conn_wifi:{en:'Community Wi-Fi',fr:'Wi-Fi communautaire',ar:'واي فاي مجتمعي',sw:'Wi-Fi ya jamii',pt:'Wi-Fi comunitário'},
+      conn_mobile:{en:'Mobile data',fr:'Données mobiles',ar:'بيانات الجوال',sw:'Data ya simu',pt:'Dados móveis'},
+      ds:{en:'Data saver',fr:'Éco données',ar:'توفير البيانات',sw:'Punguza data',pt:'Poupança de dados'},
+      on:{en:'On',fr:'Activé',ar:'مفعّل',sw:'Imewashwa',pt:'Ligado'},
+      off:{en:'Off',fr:'Désactivé',ar:'معطّل',sw:'Imezimwa',pt:'Desligado'},
+      pack_dl:{en:'Download today’s edition',fr:'Télécharger l’édition du jour',ar:'تنزيل إصدار اليوم',sw:'Pakua toleo la leo',pt:'Descarregar edição de hoje'},
+      pack_syncing:{en:'Syncing…',fr:'Synchronisation…',ar:'جارٍ المزامنة…',sw:'Inasawazisha…',pt:'A sincronizar…'},
+      pack_saved:{en:'Saved for offline',fr:'Enregistré hors ligne',ar:'محفوظ للعرض دون اتصال',sw:'Imehifadhiwa nje ya mtandao',pt:'Guardado para offline'},
+      pack_info:{en:'Today’s edition · ~%kb KB · %n stories · expires tonight',fr:'Édition du jour · ~%kb Ko · %n articles · expire ce soir',ar:'إصدار اليوم · ~%kb ك.ب · %n خبر · ينتهي الليلة',sw:'Toleo la leo · ~%kb KB · habari %n · litaisha usiku',pt:'Edição de hoje · ~%kb KB · %n notícias · expira à noite'},
+      // Saved
+      save:{en:'Save',fr:'Enregistrer',ar:'حفظ',sw:'Hifadhi',pt:'Guardar'},
+      saved_on:{en:'Saved ✓',fr:'Enregistré ✓',ar:'✓ محفوظ',sw:'Imehifadhiwa ✓',pt:'Guardado ✓'},
+      saved_empty_b:{en:'Nothing saved yet',fr:'Rien d’enregistré',ar:'لا شيء محفوظ بعد',sw:'Hakuna kilichohifadhiwa',pt:'Nada guardado ainda'},
+      saved_empty_p:{en:'Tap Save on any story to keep it here — it stays available offline.',fr:'Touchez Enregistrer sur un article pour le garder ici — disponible hors ligne.',ar:'اضغط حفظ على أي خبر ليبقى هنا — متاح دون اتصال.',sw:'Gusa Hifadhi kwenye habari yoyote ili ibaki hapa — inapatikana nje ya mtandao.',pt:'Toque em Guardar numa notícia para a manter aqui — fica disponível offline.'},
+      remove:{en:'Remove',fr:'Retirer',ar:'إزالة',sw:'Ondoa',pt:'Remover'},
+      // Me / settings
+      s_language:{en:'Language',fr:'Langue',ar:'اللغة',sw:'Lugha',pt:'Idioma'},
+      s_textsize:{en:'Reading size',fr:'Taille du texte',ar:'حجم النص',sw:'Ukubwa wa maandishi',pt:'Tamanho do texto'},
+      sz_s:{en:'Small',fr:'Petit',ar:'صغير',sw:'Ndogo',pt:'Pequeno'},
+      sz_m:{en:'Medium',fr:'Moyen',ar:'متوسط',sw:'Wastani',pt:'Médio'},
+      sz_l:{en:'Large',fr:'Grand',ar:'كبير',sw:'Kubwa',pt:'Grande'},
+      s_install:{en:'Install the app',fr:'Installer l’app',ar:'ثبّت التطبيق',sw:'Sakinisha programu',pt:'Instalar a app'},
+      s_install_p:{en:'Open the browser menu and choose “Add to Home screen” to read like an app — offline, one tap.',fr:'Ouvrez le menu du navigateur et choisissez « Ajouter à l’écran d’accueil » pour lire comme une app, hors ligne.',ar:'افتح قائمة المتصفح واختر «إضافة إلى الشاشة الرئيسية» للقراءة كتطبيق دون اتصال.',sw:'Fungua menyu ya kivinjari na uchague “Ongeza kwenye Skrini ya Nyumbani” usome kama programu, nje ya mtandao.',pt:'Abra o menu do navegador e escolha “Adicionar ao ecrã principal” para ler como uma app, offline.'},
+      s_storage:{en:'Offline storage',fr:'Stockage hors ligne',ar:'التخزين دون اتصال',sw:'Hifadhi ya nje ya mtandao',pt:'Armazenamento offline'},
+      s_storage_p:{en:'%n stories · ~%kb KB cached on this phone',fr:'%n articles · ~%kb Ko sur ce téléphone',ar:'%n خبر · ~%kb ك.ب على هذا الهاتف',sw:'habari %n · ~%kb KB kwenye simu hii',pt:'%n notícias · ~%kb KB neste telemóvel'},
+      s_clear:{en:'Clear cache',fr:'Vider le cache',ar:'مسح الذاكرة',sw:'Futa akiba',pt:'Limpar cache'},
+      s_desk:{en:'Newsroom desk',fr:'Salle de rédaction',ar:'غرفة الأخبار',sw:'Dawati la habari',pt:'Redação'},
+      s_desk_p:{en:'For editors — sign in to publish',fr:'Pour les éditeurs — connexion',ar:'للمحررين — تسجيل الدخول',sw:'Kwa wahariri — ingia',pt:'Para editores — iniciar sessão'},
+      s_about:{en:'AfriPulse Times — the continent’s news, built for any phone.',fr:'AfriPulse Times — l’actualité du continent, pour tout téléphone.',ar:'AfriPulse Times — أخبار القارة، لأي هاتف.',sw:'AfriPulse Times — habari za bara, kwa simu yoyote.',pt:'AfriPulse Times — as notícias do continente, para qualquer telemóvel.'},
+      // Listen
+      listen_lede:{en:'Your Morning Pulse — the top stories, read aloud.',fr:'Votre Pouls du matin — les grands titres, lus à voix haute.',ar:'نبض صباحك — أبرز الأخبار، مقروءة بصوت عالٍ.',sw:'Mpigo wako wa Asubuhi — habari kuu, zikisomwa kwa sauti.',pt:'O seu Pulso da Manhã — as principais notícias, lidas em voz alta.'},
+      l_play:{en:'Play',fr:'Écouter',ar:'تشغيل',sw:'Cheza',pt:'Ouvir'},
+      l_pause:{en:'Pause',fr:'Pause',ar:'إيقاف مؤقت',sw:'Sitisha',pt:'Pausar'},
+      l_resume:{en:'Resume',fr:'Reprendre',ar:'استئناف',sw:'Endelea',pt:'Retomar'},
+      l_stop:{en:'Stop',fr:'Arrêter',ar:'إيقاف',sw:'Simamisha',pt:'Parar'},
+      l_empty:{en:'No stories to read yet. Open Today to sync an edition.',fr:'Aucun article à lire. Ouvrez Aujourd’hui pour synchroniser.',ar:'لا أخبار للقراءة بعد. افتح اليوم للمزامنة.',sw:'Hakuna habari za kusoma bado. Fungua Leo kusawazisha.',pt:'Ainda sem notícias para ler. Abra Hoje para sincronizar.'},
+      l_unavail:{en:'Voice playback isn’t available on this phone.',fr:'La lecture vocale n’est pas disponible sur ce téléphone.',ar:'تشغيل الصوت غير متاح على هذا الهاتف.',sw:'Usomaji kwa sauti haupatikani kwenye simu hii.',pt:'A leitura por voz não está disponível neste telemóvel.'},
+      // Pulse (map)
+      p_all:{en:'All Africa',fr:'Toute l’Afrique',ar:'كل أفريقيا',sw:'Afrika Nzima',pt:'Toda a África'},
+      p_hint:{en:'Tap a region on the map to see its stories.',fr:'Touchez une région sur la carte pour voir ses articles.',ar:'اضغط منطقة على الخريطة لرؤية أخبارها.',sw:'Gusa eneo kwenye ramani kuona habari zake.',pt:'Toque numa região no mapa para ver as suas notícias.'},
+      p_empty:{en:'No stories from this region in today’s edition.',fr:'Aucun article de cette région dans l’édition du jour.',ar:'لا أخبار من هذه المنطقة في إصدار اليوم.',sw:'Hakuna habari kutoka eneo hili katika toleo la leo.',pt:'Sem notícias desta região na edição de hoje.'}
+    };
+
+    // ── Vertical + region labels (mirrors the newsroom, all 5 languages) ──
+    var VERTICAL_KEYS = ['front','politics','mining','markets','tech','culture','sports','opinions','podcasts'];
+    var VERT_LABELS = {
+      front:{en:'Front Page',fr:'À la une',ar:'الصفحة الأولى',sw:'Ukurasa wa Mbele',pt:'Primeira Página'},
+      politics:{en:'Politics',fr:'Politique',ar:'السياسة',sw:'Siasa',pt:'Política'},
+      mining:{en:'Mining & Energy',fr:'Mines & Énergie',ar:'التعدين والطاقة',sw:'Madini na Nishati',pt:'Mineração e Energia'},
+      markets:{en:'Business & Markets',fr:'Économie & Marchés',ar:'الأعمال والأسواق',sw:'Biashara na Masoko',pt:'Negócios e Mercados'},
+      tech:{en:'Tech & Innovation',fr:'Tech & Innovation',ar:'التكنولوجيا والابتكار',sw:'Teknolojia na Ubunifu',pt:'Tecnologia e Inovação'},
+      culture:{en:'Culture',fr:'Culture',ar:'الثقافة',sw:'Utamaduni',pt:'Cultura'},
+      sports:{en:'Sports',fr:'Sport',ar:'الرياضة',sw:'Michezo',pt:'Desporto'},
+      opinions:{en:'Opinions',fr:'Opinions',ar:'آراء',sw:'Maoni',pt:'Opinião'},
+      podcasts:{en:'Podcasts',fr:'Podcasts',ar:'بودكاست',sw:'Podikasti',pt:'Podcasts'}
+    };
+    var REGION_KEYS = ['west-africa','east-africa','southern-africa','north-africa','central-africa'];
+    var REG_LABELS = {
+      'west-africa':{en:'West Africa',fr:'Afrique de l’Ouest',ar:'غرب أفريقيا',sw:'Afrika Magharibi',pt:'África Ocidental'},
+      'east-africa':{en:'East Africa',fr:'Afrique de l’Est',ar:'شرق أفريقيا',sw:'Afrika Mashariki',pt:'África Oriental'},
+      'southern-africa':{en:'Southern Africa',fr:'Afrique australe',ar:'جنوب أفريقيا',sw:'Afrika Kusini',pt:'África Austral'},
+      'north-africa':{en:'North Africa',fr:'Afrique du Nord',ar:'شمال أفريقيا',sw:'Afrika Kaskazini',pt:'Norte de África'},
+      'central-africa':{en:'Central Africa',fr:'Afrique centrale',ar:'وسط أفريقيا',sw:'Afrika ya Kati',pt:'África Central'}
+    };
+    // Country/capital terms per region (ported), for placing wire stories by text.
+    var REGIONS = {
+      'west-africa':{c:['nigeria','ghana','senegal','côte d’ivoire','ivory coast','mali','burkina faso','niger','sierra leone','liberia','guinea','togo','benin','west africa','the gambia','gambia','cape verde','cabo verde','guinea-bissau','ecowas'],cap:['lagos','abuja','accra','dakar']},
+      'east-africa':{c:['kenya','ethiopia','tanzania','uganda','rwanda','burundi','south sudan','somalia','djibouti','eritrea','east africa','zanzibar'],cap:['nairobi','addis ababa','dar es salaam','kampala','kigali']},
+      'southern-africa':{c:['south africa','zimbabwe','zambia','botswana','mozambique','namibia','malawi','lesotho','eswatini','swaziland','angola','mauritius','madagascar','southern africa','sadc'],cap:['johannesburg','cape town','harare','lusaka','gaborone']},
+      'north-africa':{c:['egypt','morocco','algeria','tunisia','libya','sudan','mauritania','western sahara','maghreb','north africa'],cap:['cairo','rabat','algiers','tunis']},
+      'central-africa':{c:['drc','democratic republic of congo','dr congo','congo','cameroon','chad','car','central african republic','gabon','equatorial guinea','sao tome','são tomé','central africa'],cap:['kinshasa','yaoundé','bangui']}
+    };
+    var _rre = {};
+    function regionRe(slug){
+      if(_rre[slug]) return _rre[slug];
+      var r=REGIONS[slug]||{c:[],cap:[]};
+      var terms=r.c.concat(r.cap).map(function(t){ return String(t).replace(/[.*+?^${}()|[\]\\]/g,'\\$&'); });
+      _rre[slug]=new RegExp('(^|[^a-z])('+terms.join('|')+')([^a-z]|$)','i');
+      return _rre[slug];
+    }
+    function geoText(a){
+      var parts=[a.headline||'', a.dek||'', a.kicker||''];
+      if(Array.isArray(a.tags)) parts.push(a.tags.join(' '));
+      if(Array.isArray(a.body)) parts.push(a.body.join(' '));
+      return parts.join(' · ').toLowerCase();
+    }
+    function regionSlugFor(a){
+      var txt=geoText(a);
+      for(var i=0;i<REGION_KEYS.length;i++){ if(regionRe(REGION_KEYS[i]).test(txt)) return REGION_KEYS[i]; }
+      return null;
+    }
+
+    // ── Language (shared with the newsroom via the same localStorage key) ──
+    var LANGS=['en','fr','ar','sw','pt'];
+    function getLang(){ try{ var s=localStorage.getItem('afripulse_lang'); if(s&&LANGS.indexOf(s)>-1) return s; }catch(e){} return 'en'; }
+    var LANG=getLang();
+    function applyLang(code){ LANG=code; document.documentElement.lang=code; document.documentElement.dir=(code==='ar')?'rtl':'ltr'; }
+    function tr(key,subs){ var r=T[key]; var v=r?(r[LANG]||r.en):key; if(subs){ for(var k in subs){ v=v.split('%'+k).join(String(subs[k])); } } return v; }
+    function VL(v){ var r=VERT_LABELS[v]; return r?(r[LANG]||r.en):v; }
+    function RL(s){ var r=REG_LABELS[s]; return r?(r[LANG]||r.en):s; }
+
+    function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
+    function locale(){ return {en:'en-GB',fr:'fr-FR',ar:'ar-EG',sw:'sw-KE',pt:'pt-PT'}[LANG]||'en-GB'; }
+    function fmtShort(iso){ try{ return new Date(iso).toLocaleDateString(locale(),{day:'numeric',month:'short'}); }catch(e){ return ''; } }
+    function fmtLong(iso){ try{ return new Date(iso).toLocaleDateString(locale(),{weekday:'short',day:'numeric',month:'long',year:'numeric'}); }catch(e){ return ''; } }
+
+    // ── Data: Supabase client + text-only cache ──
+    var SUPA=null;
+    async function sbClient(){
+      if(SUPA) return SUPA;
+      try{ SUPA=await Promise.race([ (window.__supabaseReady||Promise.resolve(null)),
+        new Promise(function(r){ setTimeout(function(){ r(null); },6000); }) ]); }catch(e){ SUPA=null; }
+      return SUPA;
+    }
+    var PACK_KEY='afripulse_reader_pack_v1';
+    function loadPack(){ try{ var raw=localStorage.getItem(PACK_KEY); if(!raw) return null; var d=JSON.parse(raw); return (d&&Array.isArray(d.items))?d.items:null; }catch(e){ return null; } }
+    function savePack(items){ try{ localStorage.setItem(PACK_KEY, JSON.stringify({saved:Date.now(),items:items})); return true; }catch(e){ return false; } }
+
+    // Strip a Supabase row to a lite, text-only article — NO images, NO media,
+    // NO fat payload. Ported shape from rowToArticle()/localizeArticle().
+    function rowToLite(r){
+      var p=(r.payload&&typeof r.payload==='object')?r.payload:{};
+      var raw = Array.isArray(p.body)?p.body : (typeof r.body==='string'&&r.body ? r.body.split(/\n{2,}/) : (Array.isArray(r.body)?r.body:[]));
+      var a={
+        slug:r.slug,
+        headline:p.headline||r.headline||'',
+        dek:p.standfirst||p.dek||r.dek||'',
+        body:raw.map(function(x){return String(x).trim();}).filter(Boolean),
+        vertical:p.vertical||r.vertical||'front',
+        kicker:p.kicker||'',
+        byline:p.byline||r.author_slug||'',
+        tags:Array.isArray(p.tags)?p.tags.slice(0,8):[],
+        region:r.region||null,
+        published_at:r.published_at||p.publishedAt||null,
+        translations:r.translations||p.translations||null
+      };
+      if(a.vertical==='voices') a.vertical='opinions';
+      if(!a.region) a.region=regionSlugFor(a);
+      return a;
+    }
+    // Swap to the current language when a server-generated translation exists.
+    function localize(a){
+      if(LANG==='en' || !a.translations) return a;
+      var t=a.translations[LANG]; if(!t) return a;
+      return {
+        slug:a.slug, vertical:a.vertical, region:a.region, byline:a.byline, tags:a.tags,
+        published_at:a.published_at, translations:a.translations,
+        kicker:t.kicker||a.kicker, headline:t.headline||a.headline,
+        dek:t.standfirst||t.dek||a.dek,
+        body:(Array.isArray(t.body)&&t.body.length)?t.body:a.body
+      };
+    }
+
+    var ARTICLES = loadPack() || [];   // lite, published, newest-first
+    var FETCHED = false;
+
+    var SYNCING=false;
+    // Under data saver, the edition fetch omits the image column entirely.
+    async function fetchEdition(){
+      if(SYNCING) return;
+      // Offline: never touch the network — paint from the cached pack instead.
+      if(navigator.onLine===false){ FETCHED=true; renderCurrent(); return; }
+      SYNCING=true; renderPackStrip();
+      var cols = DATASAVER
+        ? 'slug,headline,dek,body,vertical,region,author_slug,published_at,translations,payload,status'
+        : 'slug,headline,dek,body,vertical,region,author_slug,published_at,translations,payload,hero_image,status';
+      var sb=await sbClient();
+      if(!sb){ SYNCING=false; FETCHED=true; renderCurrent(); return; }
+      try{
+        var res=await sb.from('articles').select(cols).eq('status','published').order('published_at',{ascending:false}).limit(40);
+        FETCHED=true; SYNCING=false;
+        if(res.error){ renderCurrent(); return; }
+        ARTICLES=trimPack((res.data||[]).map(rowToLite));   // strip to text-only, cap ~50KB
+        savePack(ARTICLES);
+        renderCurrent();
+      }catch(e){ FETCHED=true; SYNCING=false; renderCurrent(); }
+    }
+
+    // ── Rendering ──
+    function emptyState(b,p){ return '<div class="empty"><b>'+esc(b)+'</b>'+esc(p)+'</div>'; }
+    function storyCard(a){
+      var region=a.region?RL(a.region):'';
+      var meta=(region?('<b>'+esc(region)+'</b> · '):'')+esc(fmtShort(a.published_at));
+      return '<a class="card" href="#/story/'+encodeURIComponent(a.slug)+'">'+
+        '<div class="kick">'+esc(VL(a.vertical))+'</div>'+
+        '<h3>'+esc(a.headline)+'</h3>'+
+        (a.dek?'<p>'+esc(a.dek)+'</p>':'')+
+        '<div class="meta">'+meta+'</div></a>';
+    }
+    function renderToday(){
+      var body=document.getElementById('today-body'); if(!body) return;
+      renderPackStrip();
+      if(!ARTICLES.length){ body.innerHTML = FETCHED ? emptyState(tr('empty_b'),tr('empty_p')) : '<div class="placeholder">…</div>'; return; }
+      var loc=ARTICLES.map(localize);
+      var html='';
+      VERTICAL_KEYS.forEach(function(v){
+        var items=loc.filter(function(a){ return (a.vertical||'front')===v; });
+        if(!items.length) return;
+        html+='<div class="h2">'+esc(VL(v))+'</div>';
+        items.forEach(function(a){ html+=storyCard(a); });
+      });
+      body.innerHTML = html || emptyState(tr('empty_b'),tr('empty_p'));
+    }
+    function relatedFor(base){
+      return ARTICLES.filter(function(a){ return a.slug!==base.slug && (a.region===base.region || a.vertical===base.vertical); }).slice(0,3).map(localize);
+    }
+    function renderStory(slug){
+      var body=document.getElementById('story-body'); if(!body) return;
+      var base=null; for(var i=0;i<ARTICLES.length;i++){ if(ARTICLES[i].slug===slug){ base=ARTICLES[i]; break; } }
+      if(!base){ body.innerHTML='<a class="backlink" href="#/">‹ '+esc(tr('back'))+'</a>'+emptyState(tr('missing_b'),tr('missing_p')); return; }
+      var a=localize(base);
+      var region=a.region?RL(a.region):'';
+      var meta=[a.byline?esc(a.byline):'', region?esc(region):'', esc(fmtLong(a.published_at))].filter(Boolean).join(' · ');
+      var bodyHtml=(a.body||[]).map(function(p){ return '<p>'+esc(p)+'</p>'; }).join('') || (a.dek?'<p class="muted">'+esc(a.dek)+'</p>':'');
+      var rel=relatedFor(base).map(storyCard).join('');
+      var sv=isSaved(a.slug);
+      body.innerHTML=
+        '<a class="backlink" href="#/">‹ '+esc(tr('back'))+'</a>'+
+        '<div class="st-kick">'+esc(VL(a.vertical))+'</div>'+
+        '<h1 class="st-h">'+esc(a.headline)+'</h1>'+
+        '<div class="st-meta">'+meta+'</div>'+
+        '<button class="save-btn'+(sv?' on':'')+'" id="save-btn">'+esc(sv?tr('saved_on'):('☆ '+tr('save')))+'</button>'+
+        (a.dek?'<div class="st-dek">'+esc(a.dek)+'</div>':'')+
+        '<div class="st-body">'+bodyHtml+'</div>'+
+        (rel?('<div class="related"><div class="h2">'+esc(tr('related'))+'</div>'+rel+'</div>'):'');
+      var sb=document.getElementById('save-btn');
+      if(sb) sb.addEventListener('click', function(){ var now=toggleSave(a.slug);
+        sb.className='save-btn'+(now?' on':''); sb.textContent=now?tr('saved_on'):('☆ '+tr('save')); });
+    }
+
+    function paintLabels(){
+      document.querySelectorAll('[data-nav]').forEach(function(el){ el.textContent=tr(el.getAttribute('data-nav')); });
+      ['pulse','listen','saved','me'].forEach(function(k){ var el=document.getElementById('t-'+k); if(el) el.textContent=tr(k); });
+    }
+    function paintDate(){ var el=document.getElementById('today-date'); if(!el) return;
+      try{ el.textContent=new Date().toLocaleDateString(locale(),{weekday:'long',day:'numeric',month:'long'}); }catch(e){ el.textContent=new Date().toDateString(); } }
+    // ── Connection chip (Network Information API when the phone exposes it) ──
+    function detectConn(){
+      if(navigator.onLine===false) return {c:'off',label:tr('offline')};
+      var n=navigator.connection||navigator.mozConnection||navigator.webkitConnection;
+      if(n){
+        var type=n.type, down=(typeof n.downlink==='number')?n.downlink:null;
+        if(type==='wifi'||type==='ethernet') return (down!=null&&down>=10)?{c:'good',label:tr('conn_starlink')}:{c:'mid',label:tr('conn_wifi')};
+        if(type==='cellular') return {c:'cell',label:tr('conn_mobile')};
+        if(down!=null) return down>=10?{c:'good',label:tr('conn_starlink')}:{c:'cell',label:tr('conn_mobile')}; // type hidden on most Androids → use speed
+      }
+      return {c:'cell',label:tr('conn_mobile')};
+    }
+    function paintConn(){ var chip=document.getElementById('conn-chip'), label=document.getElementById('conn-label'); if(!chip) return;
+      var d=detectConn(); chip.className='chip '+d.c; label.textContent=d.label; }
+    window.addEventListener('online', function(){ paintConn(); fetchEdition(); });   // auto-sync when back online
+    window.addEventListener('offline', function(){ paintConn(); renderPackStrip(); });
+    try{ if(navigator.connection && navigator.connection.addEventListener) navigator.connection.addEventListener('change', paintConn); }catch(e){}
+
+    // ── Data saver (persisted; when on, edition fetch omits the image column) ──
+    var DATASAVER=false; try{ DATASAVER = localStorage.getItem('afripulse_datasaver')==='1'; }catch(e){}
+    function paintDS(){ var b=document.getElementById('ds-btn'), l=document.getElementById('ds-label'); if(l) l.textContent=tr('ds');
+      if(b){ b.textContent=DATASAVER?tr('on'):tr('off'); b.className=DATASAVER?'on':''; b.setAttribute('aria-pressed',DATASAVER?'true':'false'); } }
+    function toggleDS(){ DATASAVER=!DATASAVER; try{ localStorage.setItem('afripulse_datasaver',DATASAVER?'1':'0'); }catch(e){} paintDS(); fetchEdition(); }
+
+    // ── Edition pack strip (honest size, download/refresh) ──
+    function packBytes(items){ try{ return new Blob([JSON.stringify({items:items})]).size; }catch(e){ return JSON.stringify(items||[]).length; } }
+    // Keep the cached JSON light: full body for the newest 15, headline+dek only after.
+    function trimPack(items){ if(packBytes(items)<=50000) return items; return items.map(function(a,i){ return i<15?a:Object.assign({},a,{body:[]}); }); }
+    function renderPackStrip(){
+      var el=document.getElementById('packstrip'); if(!el) return;
+      if(!ARTICLES.length){ el.hidden=true; return; }
+      el.hidden=false;
+      var kb=Math.max(1,Math.round(packBytes(ARTICLES)/1024));
+      var info = (navigator.onLine===false) ? (tr('pack_saved')+' · '+ARTICLES.length) : tr('pack_info',{kb:kb,n:ARTICLES.length});
+      var label = SYNCING ? tr('pack_syncing') : tr('pack_dl');
+      el.innerHTML = '<span>'+esc(info)+'</span><button class="dl" id="pack-dl"'+(SYNCING?' disabled':'')+'>'+esc(label)+'</button>';
+      var btn=document.getElementById('pack-dl'); if(btn) btn.addEventListener('click', function(){ if(!SYNCING) fetchEdition(); });
+    }
+
+    // ── Bookmarks (Saved) — store a lite snapshot so saved stories survive
+    //    pack refresh/expiry and stay readable offline. ──
+    var SAVE_KEY='afripulse_saved_v1';
+    function loadSaved(){ try{ var d=JSON.parse(localStorage.getItem(SAVE_KEY)); return Array.isArray(d)?d:[]; }catch(e){ return []; } }
+    function writeSaved(list){ try{ localStorage.setItem(SAVE_KEY, JSON.stringify(list)); }catch(e){} }
+    function isSaved(slug){ return loadSaved().some(function(s){ return s.slug===slug; }); }
+    function snapshot(a){ return {slug:a.slug,headline:a.headline,dek:a.dek,body:a.body,vertical:a.vertical,region:a.region,byline:a.byline,tags:a.tags||[],published_at:a.published_at,translations:a.translations||null,saved_at:Date.now()}; }
+    function toggleSave(slug){
+      var base=null; for(var i=0;i<ARTICLES.length;i++){ if(ARTICLES[i].slug===slug){ base=ARTICLES[i]; break; } }
+      var list=loadSaved(); var idx=-1; for(var j=0;j<list.length;j++){ if(list[j].slug===slug){ idx=j; break; } }
+      if(idx>-1){ list.splice(idx,1); } else if(base){ list.unshift(snapshot(base)); }
+      writeSaved(list); return idx===-1; // true = now saved
+    }
+
+    // ── Reading text size (persisted; applied to the story --readsize var) ──
+    var SIZES={s:'16px',m:'18px',l:'21px'};
+    function getSize(){ try{ var s=localStorage.getItem('afripulse_textsize'); if(SIZES[s]) return s; }catch(e){} return 'm'; }
+    function applySize(k){ try{ document.documentElement.style.setProperty('--readsize', SIZES[k]||SIZES.m); }catch(e){} }
+
+    // ── Saved screen ──
+    function renderSaved(){
+      var body=document.getElementById('saved-body'); if(!body) return;
+      var list=loadSaved();
+      if(!list.length){ body.innerHTML=emptyState(tr('saved_empty_b'),tr('saved_empty_p')); return; }
+      body.innerHTML=list.map(function(a){ return storyCard(localize(a)); }).join('');
+    }
+
+    // ── Me / settings screen ──
+    function renderMe(){
+      var body=document.getElementById('me-body'); if(!body) return;
+      var langNames={en:'English',fr:'Français',ar:'العربية',sw:'Kiswahili',pt:'Português'};
+      var kb=Math.max(1,Math.round(packBytes(ARTICLES)/1024)), sz=getSize();
+      var h='';
+      // Language
+      h+='<div class="setrow"><div class="lab">'+esc(tr('s_language'))+'</div><div class="seg" id="seg-lang">'+
+        LANGS.map(function(c){ return '<button data-l="'+c+'"'+(c===LANG?' class="on"':'')+'>'+esc(langNames[c])+'</button>'; }).join('')+'</div></div>';
+      // Reading size
+      h+='<div class="setrow"><div class="lab">'+esc(tr('s_textsize'))+'</div><div class="seg" id="seg-size">'+
+        [['s','sz_s'],['m','sz_m'],['l','sz_l']].map(function(p){ return '<button data-s="'+p[0]+'"'+(p[0]===sz?' class="on"':'')+'>'+esc(tr(p[1]))+'</button>'; }).join('')+'</div></div>';
+      // Data saver (mirror of the Today toggle)
+      h+='<div class="setrow"><div class="lab">'+esc(tr('ds'))+'</div><div class="seg" id="seg-ds">'+
+        '<button data-d="0"'+(!DATASAVER?' class="on"':'')+'>'+esc(tr('off'))+'</button>'+
+        '<button data-d="1"'+(DATASAVER?' class="on"':'')+'>'+esc(tr('on'))+'</button></div></div>';
+      // Install
+      h+='<div class="setrow"><div class="lab">'+esc(tr('s_install'))+'</div><div class="hint">'+esc(tr('s_install_p'))+'</div></div>';
+      // Offline storage + clear
+      h+='<div class="setrow"><div class="lab">'+esc(tr('s_storage'))+'</div>'+
+        '<div class="hint">'+esc(tr('s_storage_p',{n:ARTICLES.length,kb:kb}))+'</div>'+
+        '<div style="margin-top:11px"><button class="btn" id="clear-cache">'+esc(tr('s_clear'))+'</button></div></div>';
+      // Newsroom desk link
+      h+='<a class="linkrow" href="/desk"><div><div class="lab" style="margin:0">'+esc(tr('s_desk'))+'</div><div class="hint">'+esc(tr('s_desk_p'))+'</div></div><span class="arw">›</span></a>';
+      // About
+      h+='<div class="metaline">'+esc(tr('s_about'))+'<br>afri-pulse-times.vercel.app</div>';
+      body.innerHTML=h;
+
+      var segL=document.getElementById('seg-lang');
+      if(segL) segL.addEventListener('click', function(e){ var b=e.target.closest('button'); if(!b) return; var c=b.getAttribute('data-l');
+        try{ localStorage.setItem('afripulse_lang',c); }catch(err){} applyLang(c); paintLabels(); paintDate(); paintConn(); paintDS(); renderMe(); });
+      var segS=document.getElementById('seg-size');
+      if(segS) segS.addEventListener('click', function(e){ var b=e.target.closest('button'); if(!b) return; var k=b.getAttribute('data-s');
+        try{ localStorage.setItem('afripulse_textsize',k); }catch(err){} applySize(k); renderMe(); });
+      var segD=document.getElementById('seg-ds');
+      if(segD) segD.addEventListener('click', function(e){ var b=e.target.closest('button'); if(!b) return; var want=b.getAttribute('data-d')==='1';
+        if(want!==DATASAVER){ toggleDS(); } renderMe(); });
+      var cc=document.getElementById('clear-cache');
+      if(cc) cc.addEventListener('click', function(){ try{ localStorage.removeItem(PACK_KEY); }catch(err){} ARTICLES=[]; FETCHED=false; renderMe(); fetchEdition(); });
+    }
+
+    // ── Listen / Morning Pulse (Web Speech; no network, no cost) ──
+    var SPEAK={ playing:false, paused:false, idx:-1 };
+    function speakSupported(){ return typeof window.speechSynthesis!=='undefined' && typeof window.SpeechSynthesisUtterance!=='undefined'; }
+    function pickVoice(){ try{ var vs=window.speechSynthesis.getVoices()||[]; for(var i=0;i<vs.length;i++){ if(vs[i].lang && vs[i].lang.toLowerCase().indexOf(LANG)===0) return vs[i]; } }catch(e){} return null; }
+    function briefItems(){ return ARTICLES.slice(0,5).map(localize); }
+    function stopSpeak(){ try{ window.speechSynthesis.cancel(); }catch(e){} SPEAK.playing=false; SPEAK.paused=false; SPEAK.idx=-1; renderListen(); }
+    function speakFrom(items,i){
+      if(i>=items.length){ SPEAK.playing=false; SPEAK.paused=false; SPEAK.idx=-1; renderListen(); return; }
+      SPEAK.idx=i; renderListen();
+      var a=items[i]; var text=a.headline+'. '+(a.dek||'');
+      var u=new SpeechSynthesisUtterance(text); u.lang={en:'en-GB',fr:'fr-FR',ar:'ar-EG',sw:'sw-KE',pt:'pt-PT'}[LANG]||'en-GB';
+      var v=pickVoice(); if(v) u.voice=v; u.rate=.98;
+      u.onend=function(){ if(SPEAK.playing && !SPEAK.paused) speakFrom(items,i+1); };
+      try{ window.speechSynthesis.speak(u); }catch(e){}
+    }
+    function playBrief(){ var items=briefItems(); if(!items.length) return; SPEAK.playing=true; SPEAK.paused=false;
+      try{ window.speechSynthesis.cancel(); }catch(e){}
+      // Intro line, then the stories.
+      var intro=new SpeechSynthesisUtterance(tr('listen_lede')); intro.lang={en:'en-GB',fr:'fr-FR',ar:'ar-EG',sw:'sw-KE',pt:'pt-PT'}[LANG]||'en-GB';
+      var v=pickVoice(); if(v) intro.voice=v; intro.onend=function(){ if(SPEAK.playing) speakFrom(items,0); };
+      try{ window.speechSynthesis.speak(intro); }catch(e){} renderListen();
+    }
+    function pauseSpeak(){ try{ window.speechSynthesis.pause(); }catch(e){} SPEAK.paused=true; renderListen(); }
+    function resumeSpeak(){ try{ window.speechSynthesis.resume(); }catch(e){} SPEAK.paused=false; renderListen(); }
+    function renderListen(){
+      var body=document.getElementById('listen-body'); if(!body) return;
+      if(!speakSupported()){ body.innerHTML=emptyState(tr('listen'),tr('l_unavail')); return; }
+      var items=briefItems();
+      if(!items.length){ body.innerHTML=emptyState(tr('listen'),tr('l_empty')); return; }
+      var ctrls;
+      if(!SPEAK.playing){ ctrls='<button class="btn gold" id="l-play">▶ '+esc(tr('l_play'))+'</button>'; }
+      else if(SPEAK.paused){ ctrls='<button class="btn gold" id="l-resume">▶ '+esc(tr('l_resume'))+'</button><button class="btn" id="l-stop">■ '+esc(tr('l_stop'))+'</button>'; }
+      else { ctrls='<button class="btn" id="l-pause">‖ '+esc(tr('l_pause'))+'</button><button class="btn" id="l-stop">■ '+esc(tr('l_stop'))+'</button>'; }
+      var q=items.map(function(a,i){ return '<div class="qrow'+(i===SPEAK.idx?' on':'')+'"><span class="n">'+(i+1)+'</span><span class="qh">'+esc(a.headline)+'</span></div>'; }).join('');
+      body.innerHTML='<div class="player"><div class="lede">'+esc(tr('listen_lede'))+'</div><div class="ctrls">'+ctrls+'</div></div>'+q;
+      var e;
+      if((e=document.getElementById('l-play'))) e.addEventListener('click', playBrief);
+      if((e=document.getElementById('l-pause'))) e.addEventListener('click', pauseSpeak);
+      if((e=document.getElementById('l-resume'))) e.addEventListener('click', resumeSpeak);
+      if((e=document.getElementById('l-stop'))) e.addEventListener('click', stopSpeak);
+    }
+
+    // ── Pulse — tappable Africa map (same silhouette as the newsroom) ──
+    var AFRICA_PATH='M16,12 Q24,7 33,9 Q48,9 60,11 L63,13 Q67,22 70,32 Q76,37 83,42 Q74,48 69,51 Q66,60 63,70 Q60,80 55,87 Q50,95 45,97 Q40,94 39,87 Q35,74 34,63 Q33,57 36,54 Q33,52 29,51 Q22,52 17,50 Q9,46 6,36 Q6,30 10,23 Q12,17 16,12 Z';
+    var MADAGASCAR='M71,70 Q75,72 74,78 Q72,85 69,83 Q66,76 71,70 Z';
+    // Pin placement over the silhouette (viewBox 0 0 90 100), short compass tags.
+    var PULSE_PINS=[
+      {r:'north-africa',   x:46, y:23, s:'N'},
+      {r:'west-africa',    x:18, y:41, s:'W'},
+      {r:'central-africa', x:44, y:56, s:'C'},
+      {r:'east-africa',    x:64, y:48, s:'E'},
+      {r:'southern-africa',x:50, y:80, s:'S'}
+    ];
+    var PULSE_REGION=null;
+    function regionCounts(){ var m={}; REGION_KEYS.forEach(function(k){ m[k]=0; }); ARTICLES.forEach(function(a){ if(a.region&&m.hasOwnProperty(a.region)) m[a.region]++; }); return m; }
+    function renderPulse(){
+      var body=document.getElementById('pulse-body'); if(!body) return;
+      body.className='';
+      var cnt=regionCounts();
+      // Map SVG
+      var pins=PULSE_PINS.map(function(p){
+        var on=(PULSE_REGION===p.r)?' on':'';
+        return '<g class="hot'+on+'" data-r="'+p.r+'" role="button" tabindex="0" aria-label="'+esc(RL(p.r))+'">'+
+          '<circle class="hit" cx="'+p.x+'" cy="'+p.y+'" r="12"/>'+
+          '<circle class="pin" cx="'+p.x+'" cy="'+p.y+'" r="4.6"/>'+
+          '<text class="cnt" x="'+p.x+'" y="'+(p.y+1.2)+'">'+cnt[p.r]+'</text>'+
+          '<text class="lbl" x="'+p.x+'" y="'+(p.y+9)+'">'+p.s+'</text></g>';
+      }).join('');
+      var svg='<svg class="map" viewBox="0 0 90 100" role="img" aria-label="Africa — coverage by region">'+
+        '<defs><radialGradient id="pulseFill" cx="42%" cy="40%" r="72%">'+
+          '<stop offset="0%" stop-color="#C9A227" stop-opacity="0.22"/>'+
+          '<stop offset="55%" stop-color="#1E6B3A" stop-opacity="0.14"/>'+
+          '<stop offset="100%" stop-color="#0c2419" stop-opacity="0.05"/></radialGradient></defs>'+
+        '<path class="land" d="'+AFRICA_PATH+'"/><path class="land" d="'+MADAGASCAR+'"/>'+pins+'</svg>';
+      // Region chips (All + 5), with counts
+      var chips='<button data-r="all"'+(PULSE_REGION===null?' class="on"':'')+'>'+esc(tr('p_all'))+'</button>';
+      REGION_KEYS.forEach(function(k){ chips+='<button data-r="'+k+'"'+(PULSE_REGION===k?' class="on"':'')+'>'+esc(RL(k))+' <span class="b">'+cnt[k]+'</span></button>'; });
+      // Filtered list
+      var loc=ARTICLES.map(localize);
+      var items=(PULSE_REGION===null)?loc:loc.filter(function(a){ return a.region===PULSE_REGION; });
+      var list;
+      if(!ARTICLES.length){ list='<div class="placeholder">…</div>'; }
+      else if(!items.length){ list=emptyState(PULSE_REGION?RL(PULSE_REGION):tr('p_all'), tr('p_empty')); }
+      else { list=(PULSE_REGION===null?('<div class="hint" style="text-align:center;margin:2px 0 10px">'+esc(tr('p_hint'))+'</div>'):'')+items.map(storyCard).join(''); }
+      body.innerHTML=svg+'<div class="pulsebar">'+chips+'</div>'+list;
+      // Wire map + chips
+      var map=body.querySelector('.map');
+      if(map) map.addEventListener('click', function(e){ var g=e.target.closest('.hot'); if(!g) return; var r=g.getAttribute('data-r'); PULSE_REGION=(PULSE_REGION===r)?null:r; renderPulse(); });
+      var bar=body.querySelector('.pulsebar');
+      if(bar) bar.addEventListener('click', function(e){ var b=e.target.closest('button'); if(!b) return; var r=b.getAttribute('data-r'); PULSE_REGION=(r==='all')?null:r; renderPulse(); });
+    }
+
+    // ── Router ──
+    var SCREENS={'':'today','pulse':'pulse','listen':'listen','saved':'saved','me':'me'};
+    function showScreen(name){ document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('on'); }); var s=document.getElementById('s-'+name); if(s) s.classList.add('on'); }
+    function setTab(name){ document.querySelectorAll('.tab').forEach(function(t){ t.classList.toggle('on', t.getAttribute('data-tab')===name); }); }
+    function route(){
+      var h=(location.hash||'#/').replace(/^#\/?/,'');
+      var parts=h.split('/'); var head=parts[0];
+      // Stop any spoken briefing when navigating away from Listen.
+      if(head!=='listen' && SPEAK.playing) stopSpeak();
+      if(head==='story' && parts[1]){ showScreen('story'); setTab(null); renderStory(decodeURIComponent(parts.slice(1).join('/'))); try{window.scrollTo(0,0);}catch(e){} return; }
+      var tab=SCREENS.hasOwnProperty(head)?SCREENS[head]:'today';
+      showScreen(tab); setTab(tab);
+      if(tab==='today') renderToday();
+      else if(tab==='pulse') renderPulse();
+      else if(tab==='saved') renderSaved();
+      else if(tab==='me') renderMe();
+      else if(tab==='listen') renderListen();
+      try{window.scrollTo(0,0);}catch(e){}
+    }
+    // Re-render the screen currently shown (used after data or language changes).
+    function renderCurrent(){ route(); }
+    window.addEventListener('hashchange', route);
+
+    // ── Service worker (offline app shell). v2 shell lands in Phase 6. ──
+    if('serviceWorker' in navigator){ window.addEventListener('load', function(){ navigator.serviceWorker.register('/sw.js',{updateViaCache:'none'}).catch(function(){}); }); }
+
+    // ── Boot ──
+    applyLang(getLang());
+    applySize(getSize());
+    paintLabels(); paintDate(); paintConn(); paintDS();
+    var _ds=document.getElementById('ds-btn'); if(_ds) _ds.addEventListener('click', toggleDS);
+    if(!location.hash) location.replace('#/');
+    route();            // paint from cache instantly (ARTICLES may already be loaded)
+    fetchEdition();     // then refresh from Supabase
+  })();
+  </script>
+</body>
+</html>
