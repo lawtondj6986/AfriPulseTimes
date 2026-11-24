@@ -226,6 +226,41 @@
   .tab.on{color:var(--gold)}
   .tab:active{opacity:.7}
 
+  /* ── Desktop edition (laptops and up): a broadsheet, not a stretched phone ── */
+  @media (min-width:960px){
+    body{padding-bottom:0;padding-top:54px}
+    .tabbar{top:0;bottom:auto;justify-content:center;gap:6px;padding-bottom:0;box-shadow:0 2px 12px rgba(0,0,0,.18)}
+    .tab{flex:0 0 auto;flex-direction:row;gap:8px;height:54px;padding:0 20px;font-size:13.5px}
+    .tab .ic{font-size:17px}
+    .tab:hover{color:#E9D07A}
+    .wrap{max-width:68rem;padding:26px 28px 40px}
+    #s-story .wrap,#s-me .wrap,#s-listen .wrap,#s-saved .wrap{max-width:44rem}
+    .top{padding-bottom:16px;margin-bottom:18px}
+    .top .mk{width:40px;height:40px}
+    .top .nm{font-size:28px}
+    .top .date{font-size:13.5px}
+    .greet{font-size:17px}
+    .tools{display:flex;gap:14px;align-items:stretch;margin-bottom:16px}
+    .tools .searchrow{flex:1;margin:0}
+    .tools .fpbtn{width:auto;margin:0;padding-left:22px;padding-right:22px;white-space:nowrap}
+    .hero{padding:30px 32px 24px;margin-bottom:22px}
+    .hero h2{font-size:40px;line-height:1.12;max-width:20em}
+    .hero p{font-size:17.5px;max-width:42em}
+    .cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0 32px}
+    .cards .card{border-bottom:1px solid var(--line)}
+    .card:hover h3{color:var(--gold-d)}
+    .hero:hover h2{color:var(--gold-d)}
+    .secchips button:hover,.pulsebar button:hover{border-color:var(--gold-d)}
+    .st-h{font-size:38px;line-height:1.16}
+    .st-dek{font-size:20px}
+    .map{max-width:440px}
+    .toast{bottom:28px}
+    .natday,.instbar{max-width:44rem}
+  }
+  @media (min-width:960px) and (max-width:1180px){
+    .cards{grid-template-columns:repeat(2,minmax(0,1fr))}
+  }
+
   /* ── Buttons / settings / listen / saved (Phase 4) ── */
   .btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;
     border:1px solid var(--line);background:var(--card);color:var(--ink);
@@ -330,8 +365,10 @@
           <span class="toggle"><span id="ds-label">Data saver</span><button id="ds-btn" type="button" aria-pressed="false">Off</button></span>
         </div>
         <div class="packstrip" id="packstrip" hidden></div>
-        <div class="searchrow"><input id="q" type="search" autocomplete="off" placeholder="Search…" aria-label="Search today's stories"></div>
-        <button class="fpbtn" id="fp-btn" type="button">📸</button>
+        <div class="tools">
+          <div class="searchrow"><input id="q" type="search" autocomplete="off" placeholder="Search…" aria-label="Search today's stories"></div>
+          <button class="fpbtn" id="fp-btn" type="button">📸</button>
+        </div>
         <div id="today-body"><div class="placeholder">…</div></div>
       </div>
     </section>
@@ -805,8 +842,8 @@
         var items=loc.filter(function(a){ return (a.vertical||'front')===v && a.slug!==hero.slug; });
         if(!items.length) return;
         rendered.push(v);
-        sections+='<div class="h2" id="sec-'+v+'">'+esc(VL(v))+'</div>';
-        items.forEach(function(a){ sections+=storyCard(a); });
+        sections+='<div class="h2" id="sec-'+v+'">'+esc(VL(v))+'</div><div class="cards">'+
+          items.map(storyCard).join('')+'</div>';
       });
       var chips=rendered.length>1
         ? '<div class="secchips">'+rendered.map(function(v){ return '<button type="button" data-v="'+v+'">'+esc(VL(v))+'</button>'; }).join('')+'</div>'
