@@ -205,6 +205,7 @@
   .edprog{color:var(--muted);font-size:12.5px;text-align:center;margin:12px 0 0}
   .edbar{height:4px;background:var(--line);border-radius:2px;margin:7px auto 0;max-width:220px;overflow:hidden}
   .edbar i{display:block;height:100%;background:linear-gradient(90deg,var(--gold-d),#E9D07A)}
+  .edprog.done{color:var(--gold-d);font-weight:600}
 
   /* ── Bottom tab bar ── */
   .tabbar{position:fixed;left:0;right:0;bottom:0;z-index:50;display:flex;background:var(--forest);
@@ -465,6 +466,7 @@
       inst_ios:{en:'Tap Share, then “Add to Home Screen”.',fr:'Touchez Partager, puis « Sur l’écran d’accueil ».',ar:'اضغط «مشاركة» ثم «إضافة إلى الشاشة الرئيسية».',sw:'Gusa Shiriki, kisha “Ongeza kwenye Skrini ya Mwanzo”.',pt:'Toque em Partilhar e depois em “Adicionar ao ecrã principal”.'},
       inst_later:{en:'Not now',fr:'Plus tard',ar:'لاحقًا',sw:'Baadaye',pt:'Agora não'},
       read_aloud:{en:'🔊 Read this to me',fr:'🔊 Lire à voix haute',ar:'🔊 اقرأ لي هذا',sw:'🔊 Nisomee hii',pt:'🔊 Ler em voz alta'},
+      ed_done:{en:'🏁 Edition complete — you’ve read all %t stories today.',fr:'🏁 Édition terminée — vous avez lu les %t articles du jour.',ar:'🏁 اكتمل الإصدار — قرأت كل أخبار اليوم الـ%t.',sw:'🏁 Toleo limekamilika — umesoma habari zote %t za leo.',pt:'🏁 Edição completa — leu todas as %t notícias de hoje.'},
       stop_read:{en:'■ Stop reading',fr:'■ Arrêter la lecture',ar:'■ إيقاف القراءة',sw:'■ Simamisha kusoma',pt:'■ Parar a leitura'}
     };
 
@@ -797,7 +799,8 @@
       // Never a dead end: the next unread story + how far through today's edition.
       var nx=nextStoryFor(slug), ep=editionProgress();
       var nxHtml=nx?('<div class="nextup"><div class="h2">'+esc(tr('next_up'))+'</div>'+storyCard(localize(nx))+
-        '<div class="edprog">'+esc(tr('edition_prog',{r:ep.r,t:ep.t}))+
+        '<div class="edprog'+(ep.t>0&&ep.r>=ep.t?' done':'')+'">'+
+        esc(ep.t>0&&ep.r>=ep.t?tr('ed_done',{t:ep.t}):tr('edition_prog',{r:ep.r,t:ep.t}))+
         '<div class="edbar"><i style="width:'+(ep.t?Math.round(ep.r*100/ep.t):0)+'%"></i></div></div></div>'):'';
       var sv=isSaved(a.slug);
       var qr=quickReadFor(base);
@@ -1387,6 +1390,30 @@
     window.addEventListener('hashchange', route);
     window.addEventListener('scroll', paintReadbar, {passive:true});
     window.addEventListener('resize', paintReadbar);
+    // ── Swipe between stories (story screen only; RTL-aware) ──
+    (function(){
+      var sx=0, sy=0, armed=false;
+      document.addEventListener('touchstart', function(e){
+        var sc=document.getElementById('s-story');
+        if(!sc || !sc.classList.contains('on') || !e.touches || e.touches.length!==1){ armed=false; return; }
+        armed=true; sx=e.touches[0].clientX; sy=e.touches[0].clientY;
+      }, {passive:true});
+      document.addEventListener('touchend', function(e){
+        if(!armed) return; armed=false;
+        var t=e.changedTouches && e.changedTouches[0]; if(!t) return;
+        var dx=t.clientX-sx, dy=t.clientY-sy;
+        // a deliberate horizontal gesture, not a scroll
+        if(Math.abs(dx)<70 || Math.abs(dy)>50 || Math.abs(dx)<Math.abs(dy)*1.5) return;
+        var fwd=(LANG==='ar') ? dx>0 : dx<0;
+        if(fwd){
+          var m=location.hash.match(/^#\/story\/(.+)$/);
+          var nx=m?nextStoryFor(decodeURIComponent(m[1])):null;
+          if(nx) location.hash='#/story/'+encodeURIComponent(nx.slug);
+        }else{
+          history.back();
+        }
+      }, {passive:true});
+    })();
 
     // ── Service worker (offline app shell). v2 shell lands in Phase 6. ──
     if('serviceWorker' in navigator){ window.addEventListener('load', function(){ navigator.serviceWorker.register('/sw.js',{updateViaCache:'none'}).catch(function(){}); }); }
