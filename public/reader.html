@@ -173,6 +173,13 @@
   .ainote{font-size:11.5px;color:var(--muted);margin:14px 0 0;padding-top:10px;border-top:1px dashed var(--line);line-height:1.5}
   .st-body p{margin-bottom:15px;font-size:var(--readsize,18px);line-height:1.64}
   .related{margin-top:28px}
+  .readbar{position:fixed;top:0;left:0;height:3px;width:0;z-index:70;
+    background:linear-gradient(90deg,var(--gold-d),#E9D07A)}
+  html[dir="rtl"] .readbar{left:auto;right:0}
+  .nextup{margin-top:24px}
+  .edprog{color:var(--muted);font-size:12.5px;text-align:center;margin:12px 0 0}
+  .edbar{height:4px;background:var(--line);border-radius:2px;margin:7px auto 0;max-width:220px;overflow:hidden}
+  .edbar i{display:block;height:100%;background:linear-gradient(90deg,var(--gold-d),#E9D07A)}
 
   /* ── Bottom tab bar ── */
   .tabbar{position:fixed;left:0;right:0;bottom:0;z-index:50;display:flex;background:var(--forest);
@@ -246,6 +253,8 @@
 </style>
 </head>
 <body>
+  <!-- Reading progress, shown only while a story is open -->
+  <div class="readbar" id="readbar" hidden></div>
   <!-- First-open welcome: pick your language, each named in its own tongue.
        Shown once, never again (afripulse_welcomed); existing readers who
        already chose a language are never interrupted. -->
@@ -421,7 +430,9 @@
       wk_share:{en:'📸 Share my week',fr:'📸 Partager ma semaine',ar:'📸 شارك أسبوعي',sw:'📸 Shiriki wiki yangu',pt:'📸 Partilhar a minha semana'},
       wk_empty:{en:'Read a few stories and your reading week will appear here.',fr:'Lisez quelques articles et votre semaine de lecture apparaîtra ici.',ar:'اقرأ بعض الأخبار وسيظهر أسبوع قراءتك هنا.',sw:'Soma habari chache na wiki yako ya kusoma itaonekana hapa.',pt:'Leia algumas notícias e a sua semana de leitura aparecerá aqui.'},
       wk_eyebrow:{en:'MY WEEK WITH AFRIPULSE',fr:'MA SEMAINE AVEC AFRIPULSE',ar:'أسبوعي مع أفريبولس',sw:'WIKI YANGU NA AFRIPULSE',pt:'A MINHA SEMANA COM AFRIPULSE'},
-      wk_card_label:{en:'stories read this week',fr:'articles lus cette semaine',ar:'خبرًا مقروءًا هذا الأسبوع',sw:'habari zilizosomwa wiki hii',pt:'notícias lidas esta semana'}
+      wk_card_label:{en:'stories read this week',fr:'articles lus cette semaine',ar:'خبرًا مقروءًا هذا الأسبوع',sw:'habari zilizosomwa wiki hii',pt:'notícias lidas esta semana'},
+      next_up:{en:'Up next',fr:'À lire ensuite',ar:'اقرأ بعد ذلك',sw:'Inayofuata',pt:'A seguir'},
+      edition_prog:{en:'You’ve read %r of %t stories in today’s edition',fr:'Vous avez lu %r des %t articles de l’édition du jour',ar:'قرأت %r من %t خبرًا في إصدار اليوم',sw:'Umesoma habari %r kati ya %t katika toleo la leo',pt:'Leu %r de %t notícias da edição de hoje'}
     };
 
     // ── Vertical + region labels (mirrors the newsroom, all 5 languages) ──
@@ -674,6 +685,11 @@
       var meta=[a.byline?esc(a.byline):'', region?esc(region):'', esc(fmtLong(a.published_at))].filter(Boolean).join(' · ');
       var bodyHtml=(a.body||[]).map(function(p){ return '<p>'+esc(p)+'</p>'; }).join('') || (a.dek?'<p class="muted">'+esc(a.dek)+'</p>':'');
       var rel=relatedFor(base).map(storyCard).join('');
+      // Never a dead end: the next unread story + how far through today's edition.
+      var nx=nextStoryFor(slug), ep=editionProgress();
+      var nxHtml=nx?('<div class="nextup"><div class="h2">'+esc(tr('next_up'))+'</div>'+storyCard(localize(nx))+
+        '<div class="edprog">'+esc(tr('edition_prog',{r:ep.r,t:ep.t}))+
+        '<div class="edbar"><i style="width:'+(ep.t?Math.round(ep.r*100/ep.t):0)+'%"></i></div></div></div>'):'';
       var sv=isSaved(a.slug);
       var qr=quickReadFor(base);
       var qrHtml=qr?('<div class="quickread"><div class="qr-t">'+esc(tr('quick_read'))+'</div><ul>'+
@@ -690,7 +706,8 @@
         (a.dek?'<div class="st-dek">'+esc(a.dek)+'</div>':'')+
         '<div class="st-body">'+bodyHtml+'</div>'+
         noteHtml+
-        (rel?('<div class="related"><div class="h2">'+esc(tr('related'))+'</div>'+rel+'</div>'):'');
+        (rel?('<div class="related"><div class="h2">'+esc(tr('related'))+'</div>'+rel+'</div>'):'')+
+        nxHtml;
       var sb=document.getElementById('save-btn');
       if(sb) sb.addEventListener('click', function(){ var now=toggleSave(a.slug);
         sb.className='save-btn'+(now?' on':''); sb.textContent=now?tr('saved_on'):('☆ '+tr('save')); });
@@ -1098,6 +1115,42 @@
         localStorage.setItem('afripulse_reads', JSON.stringify(arr));
       }catch(e){}
     }
+    // ── The Flow: progress bar + "Up next" so a story is never a dead end ──
+    function paintReadbar(){
+      var bar=document.getElementById('readbar'); if(!bar) return;
+      var sc=document.getElementById('s-story');
+      if(!sc || !sc.classList.contains('on')){ bar.hidden=true; bar.style.width='0'; return; }
+      bar.hidden=false;
+      var h=document.documentElement;
+      var max=h.scrollHeight-window.innerHeight;
+      var p=max>60?Math.min(1,(window.scrollY||h.scrollTop||0)/max):1;
+      bar.style.width=(p*100).toFixed(1)+'%';
+    }
+    function todayReadSet(){
+      var set={};
+      try{
+        var arr=JSON.parse(localStorage.getItem('afripulse_reads')||'[]');
+        var today=dayKey(new Date());
+        arr.forEach(function(r){ if(r.d===today) set[r.s]=1; });
+      }catch(e){}
+      return set;
+    }
+    function nextStoryFor(slug){
+      if(ARTICLES.length<2) return null;
+      var i=0; for(var k=0;k<ARTICLES.length;k++){ if(ARTICLES[k].slug===slug){ i=k; break; } }
+      var read=todayReadSet();
+      // prefer the next story not yet read today, scanning forward and wrapping
+      for(var o=1;o<ARTICLES.length;o++){
+        var c=ARTICLES[(i+o)%ARTICLES.length];
+        if(!read[c.slug]) return c;
+      }
+      return ARTICLES[(i+1)%ARTICLES.length];
+    }
+    function editionProgress(){
+      var read=todayReadSet(), n=0;
+      ARTICLES.forEach(function(a){ if(read[a.slug]) n++; });
+      return { r:n, t:ARTICLES.length };
+    }
     function weekStats(){
       var out={n:0, top:null, regions:0, streak:1};
       try{
@@ -1169,7 +1222,7 @@
       var parts=h.split('/'); var head=parts[0];
       // Stop any spoken briefing when navigating away from Listen.
       if(head!=='listen' && SPEAK.playing) stopSpeak();
-      if(head==='story' && parts[1]){ showScreen('story'); setTab(null); renderStory(decodeURIComponent(parts.slice(1).join('/'))); try{window.scrollTo(0,0);}catch(e){} return; }
+      if(head==='story' && parts[1]){ showScreen('story'); setTab(null); renderStory(decodeURIComponent(parts.slice(1).join('/'))); try{window.scrollTo(0,0);}catch(e){} paintReadbar(); return; }
       var tab=SCREENS.hasOwnProperty(head)?SCREENS[head]:'today';
       showScreen(tab); setTab(tab);
       if(tab==='today') renderToday();
@@ -1178,10 +1231,13 @@
       else if(tab==='me') renderMe();
       else if(tab==='listen') renderListen();
       try{window.scrollTo(0,0);}catch(e){}
+      paintReadbar();
     }
     // Re-render the screen currently shown (used after data or language changes).
     function renderCurrent(){ route(); }
     window.addEventListener('hashchange', route);
+    window.addEventListener('scroll', paintReadbar, {passive:true});
+    window.addEventListener('resize', paintReadbar);
 
     // ── Service worker (offline app shell). v2 shell lands in Phase 6. ──
     if('serviceWorker' in navigator){ window.addEventListener('load', function(){ navigator.serviceWorker.register('/sw.js',{updateViaCache:'none'}).catch(function(){}); }); }
