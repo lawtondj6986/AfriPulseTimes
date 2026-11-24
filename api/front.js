@@ -10,7 +10,7 @@
 // Env: SUPABASE_URL + SUPABASE_ANON_KEY (or the VITE_* pair). Anon key only —
 // RLS exposes published articles and nothing else.
 
-import { escapeHtml, stripWireTag, isJunkSummary } from './story-share.js';
+import { escapeHtml, stripWireTag, isJunkSummary, tidyHeadline, splitByline } from './story-share.js';
 import { guessVertical, isWorldStory } from './pull-wire.js';
 
 const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
@@ -27,7 +27,8 @@ const LABELS = {
 // ── pure helpers (exported for tests) ─────────────────────────
 export function frontItemFromRow(row){
   const p = (row && typeof row.payload === 'object' && row.payload) || {};
-  const headline = row.headline || p.headline || '';
+  const raw = row.headline || p.headline || '';          // classify on the feed's own wording
+  const headline = splitByline(tidyHeadline(raw)).headline;
   let dek = stripWireTag(p.standfirst || p.dek || row.dek || '');
   if (dek && isJunkSummary(dek, headline)) dek = '';
   if (dek.length > 220) dek = dek.slice(0, 220).replace(/\s+\S*$/, '') + '…';
@@ -35,7 +36,7 @@ export function frontItemFromRow(row){
   if (p.source === 'rss'){
     // File wire stories with the current classifier (stored sections may predate it),
     // and keep international-outlet stories with no African connection in World.
-    section = guessVertical(headline, dek);
+    section = guessVertical(raw, dek);
     if (isWorldStory(p.sourceLabel || p.byline, headline + ' · ' + dek, row.region || p.region)) section = 'world';
   }
   if (section === 'voices') section = 'opinions';

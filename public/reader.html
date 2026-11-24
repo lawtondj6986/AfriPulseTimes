@@ -906,12 +906,29 @@
       if(d.length>=180 && /[a-z0-9,]$/i.test(d)) d=d.replace(/\s+\S*$/,'')+'…';
       return { dek:d, body:b };
     }
+    // Headline hygiene (mirrors api/story-share.js): no leading emoji, no doubled
+    // prefix, no shouted labels, no trailing date. Wording is never rewritten.
+    function tidyHeadline(h){
+      var t=String(h==null?'':h).replace(/\s+/g,' ').trim();
+      try{ t=t.replace(/^[\p{Extended_Pictographic}\p{Emoji_Modifier}\p{Regional_Indicator}\u200d\ufe0f\s]+/u,''); }catch(e){}
+      var m=/^([^:]{2,40}):\s+(.+)$/.exec(t);
+      if(m && m[2].toLowerCase().indexOf(m[1].toLowerCase()+' ')===0) t=m[2];
+      t=t.replace(/^(EDITORIAL|OPINION|ANALYSIS|BREAKING|EXCLUSIVE|INTERVIEW|EXPLAINER|FACT CHECK)(\s*:)/,function(x,w,c){ return w.charAt(0)+w.slice(1).toLowerCase()+c; });
+      t=t.replace(/\s[-–—]\s(January|February|March|April|May|June|July|August|September|October|November|December)\s\d{1,2},\s\d{4}$/i,'');
+      return t.trim();
+    }
+    function splitByline(h){
+      var m=/^(.{10,}?),\s*[Bb]y\s+([A-Z][\w'’.-]+(?:\s+[A-Z][\w'’.-]+){0,3})\s*$/.exec(String(h||''));
+      return m?{headline:m[1].trim(),by:m[2]}:{headline:String(h||''),by:''};
+    }
+    // A digest or newsletter rather than one news story: fine in the paper, not on its cover.
+    function isRoundup(h){ return /\b(daily|roundup|round-up|news briefs?|newsletter|briefing|week in review|this week|weekly|digest|live updates?)\b/i.test(String(h||'')); }
     function rowToLite(r){
       var p=(r.payload&&typeof r.payload==='object')?r.payload:{};
       var raw = Array.isArray(p.body)?p.body : (typeof r.body==='string'&&r.body ? r.body.split(/\n{2,}/) : (Array.isArray(r.body)?r.body:[]));
       var a={
         slug:r.slug,
-        headline:p.headline||r.headline||'',
+        headline:tidyHeadline(p.headline||r.headline||''),
         dek:p.standfirst||p.dek||r.dek||'',
         body:raw.map(function(x){return String(x).trim();}).filter(Boolean),
         vertical:p.vertical||r.vertical||'front',
@@ -927,6 +944,9 @@
       var img=String(r.hero_image||(p.media&&p.media.type==='image'&&p.media.src)||'').replace(/&(amp|#0*38|#x0*26);/gi,'&');
       if(!DATASAVER && /^https:\/\//.test(img)){ a.image=img; a.imageCredit=(p.media&&p.media.credit)||p.sourceLabel||''; }
       if(p.source==='rss'){
+        var hb=splitByline(a.headline);
+        if(hb.by){ a.headline=hb.headline; a.byline=hb.by; }
+        a.roundup=isRoundup(a.headline);
         a.via=wireTag(a.dek)||wireTag(a.body[0]);
         if(/^https?:\/\//.test(p.sourceUrl||'')) a.sourceUrl=p.sourceUrl;
         a.sourceLabel=p.sourceLabel||'';
@@ -952,9 +972,9 @@
       return {
         slug:a.slug, vertical:a.vertical, region:a.region, byline:a.byline, tags:a.tags,
         published_at:a.published_at, translations:a.translations, polished:a.polished,
-        via:a.via, sourceUrl:a.sourceUrl, sourceLabel:a.sourceLabel, countries:a.countries, world:a.world,
+        via:a.via, sourceUrl:a.sourceUrl, sourceLabel:a.sourceLabel, countries:a.countries, world:a.world, roundup:a.roundup,
         image:a.image, imageCredit:a.imageCredit,
-        kicker:t.kicker||a.kicker, headline:t.headline||a.headline,
+        kicker:t.kicker||a.kicker, headline:splitByline(tidyHeadline(t.headline||a.headline)).headline,
         dek:lc.dek, body:lc.body
       };
     }
@@ -1168,7 +1188,8 @@
       }
       // The cover: the lead front-page story (else the newest) as a hero.
       var hero=null;
-      for(var hi=0; hi<loc.length; hi++){ if(!loc[hi].world && (loc[hi].vertical||'front')==='front'){ hero=loc[hi]; break; } }
+      for(var hi=0; hi<loc.length; hi++){ if(!loc[hi].world && !loc[hi].roundup && (loc[hi].vertical||'front')==='front'){ hero=loc[hi]; break; } }
+      if(!hero) for(var hk=0; hk<loc.length; hk++){ if(!loc[hk].world && !loc[hk].roundup){ hero=loc[hk]; break; } }
       if(!hero) for(var hj=0; hj<loc.length; hj++){ if(!loc[hj].world){ hero=loc[hj]; break; } }
       if(!hero) hero=loc[0];
       // My Africa: stories from the reader's home region(s), right under the cover.
@@ -1705,7 +1726,7 @@
       if(!ARTICLES.length) return [];
       var cover=null;
       var pool=africaFirst();
-      for(var i=0;i<pool.length;i++){ if(!pool[i].world && (pool[i].vertical||'front')==='front'){ cover=pool[i]; break; } }
+      for(var i=0;i<pool.length;i++){ if(!pool[i].world && !pool[i].roundup && (pool[i].vertical||'front')==='front'){ cover=pool[i]; break; } }
       if(!cover) cover=pool[0];
       var home=getHome(), favs=getFavs(), picked=[cover], seen={}; seen[cover.slug]=1;
       function take(test){ pool.forEach(function(a){ if(picked.length<7 && !seen[a.slug] && test(a)){ seen[a.slug]=1; picked.push(a); } }); }

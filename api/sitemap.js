@@ -8,6 +8,8 @@
 // Env: SUPABASE_URL + SUPABASE_ANON_KEY (or the VITE_* pair). Anon key only —
 // RLS exposes published articles and nothing else.
 
+import { tidyHeadline, splitByline } from './story-share.js';
+
 const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
 const ANON_KEY = process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY;
 const SITE_URL = (process.env.SITE_URL || 'https://afripulsetimes.com').replace(/\/$/, '');
@@ -31,7 +33,7 @@ export function buildSitemap(rows, site, now){
   const urls = (rows || []).filter((r) => r && r.slug).map((r) => {
     const p = (typeof r.payload === 'object' && r.payload) || {};
     const when = isoOrNull(r.published_at);
-    const title = r.headline || p.headline || '';
+    const title = splitByline(tidyHeadline(r.headline || p.headline)).headline;
     const fresh = when && title && (t - new Date(when).getTime()) <= NEWS_WINDOW_MS;
     return '  <url>\n' +
       '    <loc>' + xmlEscape(s + '/s/' + encodeURIComponent(r.slug)) + '</loc>\n' +

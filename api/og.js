@@ -10,6 +10,7 @@
 // RLS exposes published articles and nothing else.
 
 import { ImageResponse } from '@vercel/og';
+import { tidyHeadline, splitByline } from './story-share.js';
 
 const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
 const ANON_KEY = process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY;
@@ -83,7 +84,7 @@ async function fetchArticle(slug){
   if (!row) return null;
   const p = (typeof row.payload === 'object' && row.payload) || {};
   return {
-    headline: row.headline || p.headline || '',
+    headline: splitByline(tidyHeadline(row.headline || p.headline)).headline,
     vertical: row.vertical || p.vertical || 'front',
     published_at: row.published_at || null
   };
