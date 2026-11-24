@@ -40,7 +40,8 @@ export function articleFromRow(row){
     slug: row.slug,
     headline: row.headline || p.headline || 'AfriPulse Times',
     description: stripWireTag(p.standfirst || p.dek || row.dek) || 'Real-time, editor-verified news from all 54 African nations.',
-    image: row.hero_image || p.hero_image || null,
+    // Older rows stored attribute-encoded image URLs ("&amp;"); undo that here.
+    image: String(row.hero_image || p.hero_image || '').replace(/&(amp|#0*38|#x0*26);/gi, '&') || null,
     published_at: row.published_at || p.publishedAt || null,
     body: bodyParagraphs(row, p),
     byline: p.byline || null,

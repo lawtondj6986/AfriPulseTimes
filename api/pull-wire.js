@@ -181,7 +181,12 @@ const IMG_EXT_RE = /\.(jpe?g|png|webp|gif|avif)(\?|#|$)/i;
 // Upgrade http→https so images aren't blocked as mixed content on our https site.
 // If a host doesn't serve https the <img> simply fails and the branded
 // placeholder shows instead — so this is always safe.
-function httpsify(u){ return (typeof u === 'string' ? u : '').trim().replace(/^http:\/\//i, 'https://'); }
+// Image URLs lifted out of feed HTML arrive attribute-encoded ("&amp;"); store the real URL.
+function httpsify(u){
+  return (typeof u === 'string' ? u : '').trim()
+    .replace(/&(amp|#0*38|#x0*26);/gi, '&')
+    .replace(/^http:\/\//i, 'https://');
+}
 function attrUrl(node, keys){
   const n = Array.isArray(node) ? node[0] : node;
   if(!n) return '';
