@@ -626,6 +626,12 @@
       s_data_p:{en:'Your reading history, streak and home region are stored only on this device and are never sent to us.',fr:'Votre historique de lecture, votre série et votre région sont enregistrés uniquement sur cet appareil et ne nous sont jamais envoyés.',ar:'سجل قراءتك وسلسلتك ومنطقتك محفوظة على هذا الجهاز فقط ولا تُرسل إلينا أبدًا.',sw:'Historia yako ya kusoma, mfululizo na eneo lako huhifadhiwa kwenye kifaa hiki pekee na hazitumwi kwetu kamwe.',pt:'O seu histórico de leitura, sequência e região ficam guardados apenas neste dispositivo e nunca nos são enviados.'},
       s_clear_hist:{en:'Clear reading history',fr:'Effacer l’historique de lecture',ar:'مسح سجل القراءة',sw:'Futa historia ya kusoma',pt:'Limpar histórico de leitura'},
       s_cleared:{en:'Reading history cleared ✓',fr:'Historique effacé ✓',ar:'✓ تم مسح السجل',sw:'Historia imefutwa ✓',pt:'Histórico limpo ✓'},
+      s_speed:{en:'Read-aloud speed',fr:'Vitesse de lecture à voix haute',ar:'سرعة القراءة الصوتية',sw:'Kasi ya kusoma kwa sauti',pt:'Velocidade da leitura em voz alta'},
+      sp_slow:{en:'Slower',fr:'Plus lent',ar:'أبطأ',sw:'Polepole',pt:'Mais lenta'},
+      sp_norm:{en:'Normal',fr:'Normale',ar:'عادية',sw:'Kawaida',pt:'Normal'},
+      sp_fast:{en:'Faster',fr:'Plus rapide',ar:'أسرع',sw:'Haraka',pt:'Mais rápida'},
+      s_sections:{en:'My sections',fr:'Mes rubriques',ar:'أقسامي',sw:'Sehemu zangu',pt:'As minhas secções'},
+      sections_hint:{en:'Your favourite sections appear first on Today.',fr:'Vos rubriques préférées apparaissent en premier dans Aujourd’hui.',ar:'تظهر أقسامك المفضلة أولًا في صفحة اليوم.',sw:'Sehemu unazozipenda huonekana kwanza kwenye Leo.',pt:'As suas secções favoritas aparecem primeiro em Hoje.'},
       ed_done:{en:'🏁 Edition complete — you’ve read all %t stories today.',fr:'🏁 Édition terminée — vous avez lu les %t articles du jour.',ar:'🏁 اكتمل الإصدار — قرأت كل أخبار اليوم الـ%t.',sw:'🏁 Toleo limekamilika — umesoma habari zote %t za leo.',pt:'🏁 Edição completa — leu todas as %t notícias de hoje.'},
       stop_read:{en:'■ Stop reading',fr:'■ Arrêter la lecture',ar:'■ إيقاف القراءة',sw:'■ Simamisha kusoma',pt:'■ Parar a leitura'}
     };
@@ -1154,7 +1160,8 @@
           '<button type="button" class="skip" data-skip="1">'+esc(tr('inst_later'))+'</button></div></div>'
         : '';
       var sections='', rendered=[];
-      VERTICAL_KEYS.forEach(function(v){
+      var favs=getFavs();
+      favs.concat(VERTICAL_KEYS.filter(function(v){ return favs.indexOf(v)<0; })).forEach(function(v){
         var items=loc.filter(function(a){ return (a.vertical||'front')===v && a.slug!==hero.slug && !nearSet[a.slug]; });
         if(!items.length) return;
         rendered.push(v);
@@ -1512,6 +1519,12 @@
         h+='<div class="hint">'+esc(tr('wk_empty'))+'</div>';
       }
       h+='</div>';
+      // My sections — favourites lead Today
+      var fv=getFavs();
+      h+='<div class="setrow"><div class="lab">'+esc(tr('s_sections'))+'</div><div class="hint">'+esc(tr('sections_hint'))+'</div>'+
+        '<div class="homechips" id="me-favs" style="margin-top:10px">'+
+        VERTICAL_KEYS.filter(function(v){ return v!=='front'; }).map(function(v){ return '<button type="button" data-v="'+v+'"'+(fv.indexOf(v)>-1?' class="on" aria-pressed="true"':' aria-pressed="false"')+'>'+esc(VL(v))+'</button>'; }).join('')+
+        '</div></div>';
       // My Africa — home region(s)
       var hm=getHome();
       h+='<div class="setrow"><div class="lab">'+esc(tr('s_home'))+'</div><div class="hint">'+esc(tr('home_hint'))+'</div>'+
@@ -1526,6 +1539,10 @@
       // Reading size
       h+='<div class="setrow"><div class="lab">'+esc(tr('s_textsize'))+'</div><div class="seg" id="seg-size">'+
         [['s','sz_s'],['m','sz_m'],['l','sz_l']].map(function(p){ return '<button data-s="'+p[0]+'"'+(p[0]===sz?' class="on"':'')+'>'+esc(tr(p[1]))+'</button>'; }).join('')+'</div></div>';
+      // Read-aloud speed
+      var spd=getSpeed();
+      h+='<div class="setrow"><div class="lab">'+esc(tr('s_speed'))+'</div><div class="seg" id="seg-speed">'+
+        [['s','sp_slow'],['m','sp_norm'],['f','sp_fast']].map(function(p){ return '<button data-sp="'+p[0]+'"'+(p[0]===spd?' class="on"':'')+'>'+esc(tr(p[1]))+'</button>'; }).join('')+'</div></div>';
       // Appearance
       var th=getTheme();
       h+='<div class="setrow"><div class="lab">'+esc(tr('s_theme'))+'</div><div class="seg" id="seg-theme">'+
@@ -1574,6 +1591,20 @@
         renderMe();
         var b=document.getElementById('clear-hist'); if(b){ b.textContent=tr('s_cleared'); b.disabled=true; }
       });
+      var mf=document.getElementById('me-favs');
+      if(mf) mf.addEventListener('click', function(e){
+        var b=e.target.closest('button'); if(!b) return;
+        var v=b.getAttribute('data-v'), cur=getFavs(), i=cur.indexOf(v);
+        if(i>-1) cur.splice(i,1); else cur.push(v);
+        try{ localStorage.setItem('afripulse_favs', JSON.stringify(cur)); }catch(err){}
+        renderMe();
+      });
+      var sg=document.getElementById('seg-speed');
+      if(sg) sg.addEventListener('click', function(e){
+        var b=e.target.closest('button'); if(!b) return;
+        try{ localStorage.setItem('afripulse_speed', b.getAttribute('data-sp')); }catch(err){}
+        renderMe();
+      });
       var mh=document.getElementById('me-home');
       if(mh) mh.addEventListener('click', function(e){
         var b=e.target.closest('button'); if(!b) return;
@@ -1585,6 +1616,16 @@
       if(ws) ws.addEventListener('click', shareWeekCard);
     }
 
+    // Read-aloud speed: slower helps second-language listeners; faster suits commuters.
+    var RATES={s:0.8,m:0.98,f:1.2};
+    function getSpeed(){ try{ var v=localStorage.getItem('afripulse_speed'); if(RATES[v]) return v; }catch(e){} return 'm'; }
+    function speechRate(){ return RATES[getSpeed()]; }
+    // Favourite sections, shown first on Today.
+    function getFavs(){
+      try{ var a=JSON.parse(localStorage.getItem('afripulse_favs')||'[]');
+        if(Array.isArray(a)) return a.filter(function(v){ return VERTICAL_KEYS.indexOf(v)>-1; }); }catch(e){}
+      return [];
+    }
     // ── Read-aloud on the story page (same Web Speech engine as Listen) ──
     var STORY_SPEAK={ slug:null };
     function stopStorySpeak(){
@@ -1609,7 +1650,7 @@
         if(STORY_SPEAK.slug!==a.slug) return;          // stopped or a new story started
         if(i>=parts.length){ stopStorySpeak(); return; }
         var u=new SpeechSynthesisUtterance(String(parts[i]));
-        u.lang=lang; if(v) u.voice=v; u.rate=.98;
+        u.lang=lang; if(v) u.voice=v; u.rate=speechRate();
         u.onend=function(){ go(i+1); };
         try{ window.speechSynthesis.speak(u); }catch(e){}
       }
@@ -1632,7 +1673,7 @@
       var qr=quickReadFor(a);
       var text=a.headline+'. '+(qr?qr.join('. '):(a.dek||''));
       var u=new SpeechSynthesisUtterance(text); u.lang={en:'en-GB',fr:'fr-FR',ar:'ar-EG',sw:'sw-KE',pt:'pt-PT'}[LANG]||'en-GB';
-      var v=pickVoice(); if(v) u.voice=v; u.rate=.98;
+      var v=pickVoice(); if(v) u.voice=v; u.rate=speechRate();
       u.onend=function(){ if(SPEAK.playing && !SPEAK.paused) speakFrom(items,i+1); };
       try{ window.speechSynthesis.speak(u); }catch(e){}
     }

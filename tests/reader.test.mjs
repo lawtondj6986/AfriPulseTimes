@@ -202,3 +202,12 @@ test('reader is wired for cookie-less page-view analytics', () => {
   assert.match(reader, /window\.va\('pageview',\{path:path\}\)/);
   assert.match(reader, /trackView\(h\);/, 'the router must report each view');
 });
+
+// ── the reader must stay light ────────────────────────────────
+test('reader stays within its over-the-wire size budget', async () => {
+  const { brotliCompressSync } = await import('node:zlib');
+  const kb = brotliCompressSync(Buffer.from(reader)).length / 1024;
+  // The reader is the app for low-end phones on metered data. Vercel serves it
+  // Brotli-compressed; 60KB is a deliberate ceiling, not a target.
+  assert.ok(kb < 60, `reader.html is ${kb.toFixed(1)}KB compressed — over the 60KB budget`);
+});
