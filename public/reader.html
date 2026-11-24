@@ -209,6 +209,10 @@
   .newb{display:inline-block;background:linear-gradient(135deg,#E9D07A,var(--gold-d));color:#241c04;
     font-size:10px;font-weight:800;letter-spacing:.08em;padding:2px 6px;border-radius:4px;
     margin-inline-start:8px;vertical-align:1px}
+  .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:84px;z-index:55;appearance:none;border:none;
+    cursor:pointer;background:var(--forest);color:#F3EAD4;font-size:13.5px;font-weight:600;padding:10px 16px;
+    border-radius:999px;box-shadow:0 6px 20px rgba(0,0,0,.28);border:1px solid rgba(201,162,39,.5);white-space:nowrap}
+  .toast[hidden]{display:none}
   .newline{font-size:13.5px;color:var(--gold-d);font-weight:600;margin:0 0 10px}
   .card.read h3,.card.read p{opacity:.6}
   .card .rd{color:var(--muted);font-weight:600}
@@ -353,6 +357,7 @@
     </section>
   </main>
 
+  <button class="toast" id="toast" type="button" hidden></button>
   <nav class="tabbar" id="tabbar" role="navigation">
     <a class="tab" href="#/"       data-tab="today"><span class="ic">📰</span><span data-nav="today">Today</span></a>
     <a class="tab" href="#/pulse"  data-tab="pulse"><span class="ic">🌍</span><span data-nav="pulse">Pulse</span></a>
@@ -475,6 +480,7 @@
       new_badge:{en:'NEW',fr:'NOUVEAU',ar:'جديد',sw:'MPYA',pt:'NOVO'},
       new_since:{en:'✨ %n new since your last visit',fr:'✨ %n nouveautés depuis votre dernière visite',ar:'✨ %n جديد منذ زيارتك الأخيرة',sw:'✨ %n mpya tangu ulipotembelea mara ya mwisho',pt:'✨ %n novidades desde a sua última visita'},
       read_mark:{en:'✓ Read',fr:'✓ Lu',ar:'✓ مقروء',sw:'✓ Imesomwa',pt:'✓ Lida'},
+      just_in:{en:'✨ New stories just in (%n)',fr:'✨ Nouveaux articles à l’instant (%n)',ar:'✨ وصلت أخبار جديدة للتو (%n)',sw:'✨ Habari mpya zimeingia sasa hivi (%n)',pt:'✨ Novas notícias acabadas de chegar (%n)'},
       ed_done:{en:'🏁 Edition complete — you’ve read all %t stories today.',fr:'🏁 Édition terminée — vous avez lu les %t articles du jour.',ar:'🏁 اكتمل الإصدار — قرأت كل أخبار اليوم الـ%t.',sw:'🏁 Toleo limekamilika — umesoma habari zote %t za leo.',pt:'🏁 Edição completa — leu todas as %t notícias de hoje.'},
       stop_read:{en:'■ Stop reading',fr:'■ Arrêter la lecture',ar:'■ إيقاف القراءة',sw:'■ Simamisha kusoma',pt:'■ Parar a leitura'}
     };
@@ -704,7 +710,10 @@
 
     var SYNCING=false;
     // Under data saver, the edition fetch omits the image column entirely.
-    async function fetchEdition(){
+    var LAST_FETCH=0, FRESH={};
+    // quiet=true is a background refresh: it never re-renders (or scroll-jumps)
+    // a story the reader is in the middle of, and announces arrivals in a toast.
+    async function fetchEdition(quiet){
       if(SYNCING) return;
       // Offline: never touch the network — paint from the cached pack instead.
       if(navigator.onLine===false){ FETCHED=true; renderCurrent(); return; }
@@ -718,9 +727,16 @@
         var res=await sb.from('articles').select(cols).eq('status','published').order('published_at',{ascending:false}).limit(40);
         FETCHED=true; SYNCING=false;
         if(res.error){ renderCurrent(); return; }
+        var had={}, hadAny=ARTICLES.length>0;
+        ARTICLES.forEach(function(a){ had[a.slug]=1; });
         ARTICLES=trimPack((res.data||[]).map(rowToLite));   // strip to text-only, cap ~50KB
         savePack(ARTICLES);
-        renderCurrent();
+        LAST_FETCH=Date.now();
+        var arrived=0;
+        if(hadAny) ARTICLES.forEach(function(a){ if(!had[a.slug]){ FRESH[a.slug]=1; arrived++; } });
+        var sc=document.getElementById('s-story');
+        if(!(quiet && sc && sc.classList.contains('on'))) renderCurrent();
+        if(quiet && arrived) showToast(tr('just_in',{n:arrived}));
       }catch(e){ FETCHED=true; SYNCING=false; renderCurrent(); }
     }
 
@@ -756,7 +772,9 @@
       _readAll=set; return set;
     }
     function isNewStory(a){
-      if(!PREV_SEEN || !a.published_at || readAllSet()[a.slug]) return false;
+      if(readAllSet()[a.slug]) return false;
+      if(FRESH[a.slug]) return true;                 // arrived while the app was open
+      if(!PREV_SEEN || !a.published_at) return false;
       var t=new Date(a.published_at).getTime();
       return t>PREV_SEEN;
     }
@@ -832,9 +850,9 @@
       var region=a.region?RL(a.region):'';
       var meta=[a.byline?esc(a.byline):'', region?esc(region):'', esc(fmtLong(a.published_at))].filter(Boolean).join(' · ');
       var bodyHtml=(a.body||[]).map(function(p){ return '<p>'+esc(p)+'</p>'; }).join('') || (a.dek?'<p class="muted">'+esc(a.dek)+'</p>':'');
-      var rel=relatedFor(base).map(storyCard).join('');
       // Never a dead end: the next unread story + how far through today's edition.
       var nx=nextStoryFor(slug), ep=editionProgress();
+      var rel=relatedFor(base).filter(function(r){ return !nx || r.slug!==nx.slug; }).map(storyCard).join('');
       var nxHtml=nx?('<div class="nextup"><div class="h2">'+esc(tr('next_up'))+'</div>'+storyCard(localize(nx))+
         '<div class="edprog'+(ep.t>0&&ep.r>=ep.t?' done':'')+'">'+
         esc(ep.t>0&&ep.r>=ep.t?tr('ed_done',{t:ep.t}):tr('edition_prog',{r:ep.r,t:ep.t}))+
@@ -1426,6 +1444,22 @@
     // Re-render the screen currently shown (used after data or language changes).
     function renderCurrent(){ route(); }
     window.addEventListener('hashchange', route);
+    // ── Live Edition: refresh quietly when the reader returns to the app ──
+    function showToast(text){
+      var el=document.getElementById('toast'); if(!el) return;
+      el.textContent=text; el.hidden=false;
+      clearTimeout(showToast._t);
+      showToast._t=setTimeout(function(){ el.hidden=true; },7000);
+    }
+    var _toast=document.getElementById('toast');
+    if(_toast) _toast.addEventListener('click', function(){
+      _toast.hidden=true;
+      if(location.hash!=='#/') location.hash='#/'; else renderToday();
+      try{ window.scrollTo(0,0); }catch(e){}
+    });
+    document.addEventListener('visibilitychange', function(){
+      if(document.visibilityState==='visible' && LAST_FETCH && Date.now()-LAST_FETCH>5*60000) fetchEdition(true);
+    });
     window.addEventListener('scroll', paintReadbar, {passive:true});
     window.addEventListener('resize', paintReadbar);
     // ── Swipe between stories (story screen only; RTL-aware) ──
