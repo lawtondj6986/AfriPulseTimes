@@ -7,7 +7,8 @@
 //
 //     https://afripulsetimes.com/s/<slug>
 //
-// Crawlers read per-story meta (headline, standfirst, image); humans are
+// Crawlers read per-story meta (headline, standfirst, image), schema.org
+// NewsArticle structured data and the full article text; humans are
 // redirected instantly to the reader at /#/story/<slug>. Wired by the
 // vercel.json rewrite  /s/:slug  →  /api/story-share?slug=:slug.
 //
@@ -34,8 +35,50 @@ export function articleFromRow(row){
     headline: row.headline || p.headline || 'AfriPulse Times',
     description: p.standfirst || p.dek || row.dek || 'Real-time, editor-verified news from all 54 African nations.',
     image: row.hero_image || p.hero_image || null,
-    published_at: row.published_at || p.publishedAt || null
+    published_at: row.published_at || p.publishedAt || null,
+    body: bodyParagraphs(row, p),
+    byline: p.byline || null,
+    section: row.vertical || p.vertical || null,
+    // Wire items keep their attribution wherever the text travels.
+    sourceUrl: (p.source === 'rss' && /^https?:\/\//.test(p.sourceUrl || '')) ? p.sourceUrl : null,
+    sourceLabel: p.source === 'rss' ? (p.sourceLabel || null) : null
   };
+}
+
+function bodyParagraphs(row, p){
+  const raw = Array.isArray(p.body) ? p.body : String(p.body || row.body || '').split(/\n{2,}/);
+  return raw.map((x) => String(x || '').trim()).filter(Boolean).slice(0, 60);
+}
+
+// schema.org NewsArticle — what Google News and other aggregators read.
+export function buildJsonLd(article, site){
+  const s = site || SITE_URL;
+  const url = s + '/s/' + encodeURIComponent(article.slug);
+  const publisher = {
+    '@type': 'NewsMediaOrganization', name: 'AfriPulse Times', url: s + '/',
+    logo: { '@type': 'ImageObject', url: s + '/icons/icon-512.png' }
+  };
+  const ld = {
+    '@context': 'https://schema.org',
+    '@type': 'NewsArticle',
+    mainEntityOfPage: { '@type': 'WebPage', '@id': url },
+    url,
+    headline: String(article.headline).slice(0, 110),
+    description: String(article.description).slice(0, 300),
+    image: [pickImage(article, s)],
+    inLanguage: 'en',
+    isAccessibleForFree: true,
+    publisher,
+    author: article.sourceLabel
+      ? { '@type': 'Organization', name: article.sourceLabel }
+      : (article.byline ? { '@type': 'Person', name: article.byline } : publisher)
+  };
+  if (article.published_at){ ld.datePublished = article.published_at; ld.dateModified = article.published_at; }
+  if (article.section) ld.articleSection = article.section;
+  if (article.sourceUrl) ld.isBasedOn = article.sourceUrl;
+  if (article.body && article.body.length) ld.articleBody = article.body.join('\n\n').slice(0, 20000);
+  // Never let article text close the <script> element.
+  return JSON.stringify(ld).replace(/</g, '\\u003c');
 }
 
 export function pickImage(article, site){
@@ -70,16 +113,27 @@ export function buildShareHtml(article, site){
     '<meta name="twitter:title" content="' + title + '">\n' +
     '<meta name="twitter:description" content="' + desc + '">\n' +
     '<meta name="twitter:image" content="' + image + '">\n' +
+    '<script type="application/ld+json">' + buildJsonLd(article, s) + '</script>\n' +
     '<script>location.replace(' + JSON.stringify(dest) + ');</script>\n' +
     '<meta http-equiv="refresh" content="0; url=' + escapeHtml(dest) + '">\n' +
-    '<style>body{font-family:-apple-system,Segoe UI,Roboto,sans-serif;background:#0E2818;color:#F3EEE2;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;text-align:center;padding:24px}a{color:#C9A227}</style>\n' +
-    '</head>\n<body>\n<p><strong>' + title + '</strong><br>' +
-    '<a href="' + escapeHtml(dest) + '">Read on AfriPulse Times</a></p>\n</body>\n</html>\n';
+    '<style>body{font-family:Georgia,"Times New Roman",serif;background:#F3EEE2;color:#1B1A17;margin:0;padding:24px;line-height:1.6}' +
+    'article{max-width:42rem;margin:0 auto}h1{font-size:28px;line-height:1.2;margin:8px 0 10px}' +
+    '.k{font:700 12px -apple-system,Segoe UI,Roboto,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#9A7B1A}' +
+    '.d{font-size:18px;color:#4a463d}.m{font:13px -apple-system,Segoe UI,Roboto,sans-serif;color:#6b665a}a{color:#9A7B1A}</style>\n' +
+    '</head>\n<body>\n<article>\n<div class="k">AfriPulse Times</div>\n<h1>' + title + '</h1>\n' +
+    '<p class="d">' + desc + '</p>\n' +
+    (article.published_at ? '<p class="m"><time datetime="' + escapeHtml(article.published_at) + '">' +
+      escapeHtml(String(article.published_at).slice(0, 10)) + '</time>' +
+      (article.byline ? ' · ' + escapeHtml(article.byline) : '') + '</p>\n' : '') +
+    (article.body || []).map((para) => '<p>' + escapeHtml(para) + '</p>').join('\n') + '\n' +
+    (article.sourceUrl ? '<p class="m">Source: <a rel="nofollow noopener" href="' + escapeHtml(article.sourceUrl) + '">' +
+      escapeHtml(article.sourceLabel || 'original report') + '</a></p>\n' : '') +
+    '<p><a href="' + escapeHtml(dest) + '">Read on AfriPulse Times</a></p>\n</article>\n</body>\n</html>\n';
 }
 
 // ── I/O ───────────────────────────────────────────────────────
 async function fetchArticle(slug){
-  const cols = 'slug,headline,dek,payload,hero_image,published_at,status';
+  const cols = 'slug,headline,dek,body,vertical,payload,hero_image,published_at,status';
   const url = SUPABASE_URL + '/rest/v1/articles?slug=eq.' + encodeURIComponent(slug) +
     '&status=eq.published&select=' + encodeURIComponent(cols) + '&limit=1';
   const res = await fetch(url, { headers: { apikey: ANON_KEY, Authorization: 'Bearer ' + ANON_KEY } });
