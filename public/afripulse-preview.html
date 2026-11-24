@@ -3182,6 +3182,8 @@ function renderFooter(){
         '<a href="#/newsletter">'+esc(t('daily_briefing'))+'</a>'+
         '<a href="#/advertise">Advertise</a>'+
         '<a href="#/upgrade">Membership</a>'+
+        '<a href="#/about">About</a>'+
+        '<a href="/reader.html">📱 Phone edition</a>'+
       '</div>'+
     '</div>'+
     '<div class="footer-bot">'+
@@ -3631,6 +3633,66 @@ function viewLegal(kind){
       '<div class="updated">'+esc(t('legal_updated'))+' · July 2026</div>'+
       blocks+
       '<div class="legal-note">'+esc(t('legal_note'))+'</div>'+
+    '</div>'+
+    renderFooter();
+}
+
+// ── VIEW: ABOUT / COMPANY ─────────────────────────────────────
+// The company-facing page: mission, how verification works, leadership and
+// governance. English business copy by the same precedent as the media kit
+// (no new t() keys, so localization coverage stays complete).
+function viewAbout(){
+  const officers=[
+    {r:'Chief Executive Officer', n:'Austin Goman', d:'Co-Founder · Attorney. Commercial strategy, partnerships and capital — the outward face of the company to investors, carriers and institutions.'},
+    {r:'Chief Innovation Officer', n:'Daniel Lawton', d:'Co-Founder. Product vision and the innovation pipeline: the phone-first reader, offline editions and the broadcast distribution layer.'},
+    {r:'Chief Technical Officer', n:'Lucasz Marut', d:'Engineering command: platform architecture, infrastructure, security and delivery across web, mobile and messaging.'}
+  ];
+  let offHTML='';
+  officers.forEach(function(o){
+    offHTML+='<div style="background:var(--card,#fff);border:1px solid var(--line,#E4DCCE);border-top:3px solid var(--accent,#C8401A);border-radius:10px;padding:18px 20px">'+
+      '<div style="font-family:monospace;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent,#C8401A)">'+esc(o.r)+'</div>'+
+      '<div style="font-family:\'Fraunces\',Georgia,serif;font-weight:700;font-size:21px;margin:6px 0 4px">'+esc(o.n)+'</div>'+
+      '<div style="font-size:13px;line-height:1.55;color:var(--muted,#7C766B)">'+esc(o.d)+'</div></div>';
+  });
+  return renderHeader(null)+
+    '<a class="art-back" href="#/" style="padding:14px 22px">← '+esc(t('back_to_site'))+'</a>'+
+    '<div class="legal-page">'+
+      '<h1>About AfriPulse Times</h1>'+
+      '<div class="updated">The continent’s voice · 54 nations · 5 languages</div>'+
+
+      '<h2>Our mission</h2>'+
+      '<p>A billion Africans are coming online to a media landscape built for someone else — '+
+      'foreign wires without local voice, national papers that stop at their borders, and social '+
+      'feeds without verification. AfriPulse Times exists to close that gap: <strong>one newsroom '+
+      'for the whole continent</strong>, publishing in English, French, Arabic, Swahili and '+
+      'Portuguese, engineered for the phones Africans actually own — low-end, prepaid and often '+
+      'offline.</p>'+
+
+      '<h2>How we verify the news</h2>'+
+      '<p>Nothing publishes on AfriPulse Times without a human decision. Wire stories flow into our '+
+      'newsroom automatically, but every single one passes through the <strong>Command Center</strong>, '+
+      'where a named editor reviews it before it reaches the front page — and that editor’s '+
+      'name is stamped on the approval, permanently. No anonymous publishing, no algorithmic '+
+      'front page, no exceptions. When we correct a story, we say so.</p>'+
+
+      '<h2>Built for every phone</h2>'+
+      '<p>Our phone edition loads in about 53 kilobytes — roughly one hundredth of a typical '+
+      'news page — installs like an app without an app store, and keeps reading when the signal '+
+      'drops. Approved stories broadcast automatically to WhatsApp, Telegram and SMS, because that '+
+      'is where the continent already reads.</p>'+
+
+      '<h2>Leadership</h2>'+
+      '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;margin:14px 0 8px">'+offHTML+'</div>'+
+
+      '<h2>Governance</h2>'+
+      '<p>AfriPulse Times is overseen by a seven-seat <strong>Board of Trustees</strong> chaired by '+
+      '<strong>Attorney Richard Lawton</strong>, with <strong>Attorney Deborah Mason</strong> and '+
+      '<strong>Attorney Austin Goman</strong> seated — three attorneys from formation. Independent '+
+      'and investor seats complete the board as the company grows.</p>'+
+
+      '<h2>Contact</h2>'+
+      '<p>Partnerships, press and general enquiries: <a href="mailto:hello@afripulsetimes.com">hello@afripulsetimes.com</a> '+
+      '· Advertising: see our <a href="#/advertise">media kit</a>.</p>'+
     '</div>'+
     renderFooter();
 }
@@ -5186,6 +5248,7 @@ function route(){
     else if(parts[0]==='privacy') html=viewLegal('privacy');
     else if(parts[0]==='terms') html=viewLegal('terms');
     else if(parts[0]==='advertise') html=viewAdvertise();
+    else if(parts[0]==='about') html=viewAbout();
     else html=view404();
 
     app.innerHTML=html;
