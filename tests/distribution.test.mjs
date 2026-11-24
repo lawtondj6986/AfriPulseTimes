@@ -302,3 +302,47 @@ test('plain edition files wire stories with the current classifier and keeps wor
   const html = buildFrontHtml([wire('ke', 'Kenya signs accord with Uganda', 'The two governments signed.', 'culture'), wire('es', 'Spain votes in snap election', 'Polls opened.', 'front')], 'https://x.test');
   assert.ok(html.indexOf('<h2>Politics</h2>') < html.indexOf('<h2>World</h2>'), 'World comes last');
 });
+
+// ── headline hygiene ──────────────────────────────────────────
+import { tidyHeadline, splitByline, isRoundup } from '../api/story-share.js';
+import { correctionFor as correctWire } from '../api/pull-wire.js';
+
+test('tidyHeadline cleans feed headlines without rewriting them', () => {
+  assert.equal(tidyHeadline('👨🏿‍🚀TechCabal Daily – Dangote’s encore'), 'TechCabal Daily – Dangote’s encore');
+  assert.equal(tidyHeadline('South Africa: South Africa Links to Global Traffickers Exposed'), 'South Africa Links to Global Traffickers Exposed');
+  assert.equal(tidyHeadline('Nigeria: At least 24 Dead After Boat Capsizes'), 'Nigeria: At least 24 Dead After Boat Capsizes', 'a useful country prefix is kept');
+  assert.equal(tidyHeadline('EDITORIAL: Sustaining the Flamingos’ flourish'), 'Editorial: Sustaining the Flamingos’ flourish');
+  assert.equal(tidyHeadline('COP31: Nigeria absent at closing plenary'), 'COP31: Nigeria absent at closing plenary', 'acronyms are not labels');
+  assert.equal(tidyHeadline('Township Businesses Struggle - South African News Briefs - November 23, 2026'), 'Township Businesses Struggle - South African News Briefs');
+  assert.equal(tidyHeadline('  Two   spaces  here '), 'Two spaces here');
+  assert.equal(tidyHeadline(null), '');
+});
+
+test('splitByline lifts a writer’s name out of the headline', () => {
+  assert.deepEqual(splitByline('Makinde: Bride or side-chick?, By Wole Olaoye'), { headline: 'Makinde: Bride or side-chick?', by: 'Wole Olaoye' });
+  assert.deepEqual(splitByline('Stand by your allies, minister says'), { headline: 'Stand by your allies, minister says', by: '' });
+  const a = articleFromRow({ slug: 'op', headline: 'Makinde: Bride or side-chick?, By Wole Olaoye', payload: { byline: 'Premium Times' } });
+  assert.equal(a.headline, 'Makinde: Bride or side-chick?');
+  assert.equal(a.byline, 'Wole Olaoye');
+  assert.match(buildShareHtml(a, 'https://x.test'), /<h1>Makinde: Bride or side-chick\?<\/h1>/);
+});
+
+test('isRoundup spots digests and newsletters', () => {
+  assert.ok(isRoundup('TechCabal Daily – Dangote’s encore'));
+  assert.ok(isRoundup('South African News Briefs'));
+  assert.ok(isRoundup('NPFL Roundup: Rivers record big wins'));
+  assert.ok(!isRoundup('Nigeria: At least 24 Dead After Boat Capsizes'));
+});
+
+test('public pages and the stored-story correction use the tidy headline', () => {
+  assert.equal(feedItemFromRow({ slug: 's', headline: '👨🏿‍🚀TechCabal Daily – Dangote’s encore' }).title, 'TechCabal Daily – Dangote’s encore');
+  assert.equal(frontItemFromRow({ slug: 's', headline: 'EDITORIAL: Sustaining the Flamingos’ flourish', payload: { source: 'rss', sourceLabel: 'Premium Times' } }).headline, 'Editorial: Sustaining the Flamingos’ flourish');
+  // an opinion column keeps its byline in storage (it is what marks it as opinion) …
+  const col = { headline: 'Makinde: Bride or side-chick?, By Wole Olaoye', vertical: 'opinions', payload: { source: 'rss', vertical: 'opinions', standfirst: 'A bride is a woman on her wedding day.' } };
+  assert.equal(correctWire(col), null);
+  // … while a messy stored headline is tidied, and stays filed where it was
+  const patch = correctWire({ headline: 'South Africa: South Africa Links to Global Sky Traffickers Exposed', vertical: 'front', payload: { source: 'rss', vertical: 'front', headline: 'South Africa: South Africa Links to Global Sky Traffickers Exposed', standfirst: 'Authorities found cocaine at the scene of the crash.' } });
+  assert.equal(patch.headline, 'South Africa Links to Global Sky Traffickers Exposed');
+  assert.equal(patch.payload.headline, patch.headline);
+  assert.equal(patch.vertical, 'front');
+});

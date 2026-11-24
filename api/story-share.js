@@ -43,18 +43,45 @@ export function isJunkSummary(text, headline, paragraph){
 }
 const DEFAULT_DESC = 'Real-time, editor-verified news from all 54 African nations.';
 
+// Light, lossless-in-meaning headline hygiene for feed headlines:
+//   "👨🏿‍🚀TechCabal Daily – …"                 → no leading emoji
+//   "South Africa: South Africa Links to …"   → no doubled prefix
+//   "EDITORIAL: Sustaining …"                 → "Editorial: Sustaining …"
+//   "… News Briefs - November 23, 2026"       → no trailing date
+// Never rewrites the wording of a headline.
+const MONTHS = 'January|February|March|April|May|June|July|August|September|October|November|December';
+export function tidyHeadline(h){
+  let t = String(h == null ? '' : h).replace(/\s+/g, ' ').trim();
+  t = t.replace(/^[\p{Extended_Pictographic}\p{Emoji_Modifier}\p{Regional_Indicator}\u200d\ufe0f\s]+/u, '');
+  const m = /^([^:]{2,40}):\s+(.+)$/.exec(t);
+  if (m && m[2].toLowerCase().startsWith(m[1].toLowerCase() + ' ')) t = m[2];
+  t = t.replace(/^(EDITORIAL|OPINION|ANALYSIS|BREAKING|EXCLUSIVE|INTERVIEW|EXPLAINER|FACT CHECK)(\s*:)/, (x, w, c) => w.charAt(0) + w.slice(1).toLowerCase() + c);
+  t = t.replace(new RegExp('\\s[-–—]\\s(' + MONTHS + ')\\s\\d{1,2},\\s\\d{4}$', 'i'), '');
+  return t.trim();
+}
+// "Makinde: Bride or side-chick?, By Wole Olaoye" → headline + the writer's name.
+export function splitByline(h){
+  const m = /^(.{10,}?),\s*[Bb]y\s+([A-Z][\w'’.-]+(?:\s+[A-Z][\w'’.-]+){0,3})\s*$/.exec(String(h || ''));
+  return m ? { headline: m[1].trim(), by: m[2] } : { headline: String(h || ''), by: '' };
+}
+// A digest or newsletter rather than a single news story.
+export function isRoundup(h){
+  return /\b(daily|roundup|round-up|news briefs?|newsletter|briefing|week in review|this week|weekly|digest|live updates?)\b/i.test(String(h || ''));
+}
+
 // Normalise a DB row to the fields the card needs (typed columns + payload).
 export function articleFromRow(row){
   const p = (row && typeof row.payload === 'object' && row.payload) || {};
+  const hb = splitByline(tidyHeadline(row.headline || p.headline));
   return {
     slug: row.slug,
-    headline: row.headline || p.headline || 'AfriPulse Times',
+    headline: hb.headline || 'AfriPulse Times',
     description: usableSummary(row, p) || DEFAULT_DESC,
     // Older rows stored attribute-encoded image URLs ("&amp;"); undo that here.
     image: String(row.hero_image || p.hero_image || '').replace(/&(amp|#0*38|#x0*26);/gi, '&') || null,
     published_at: row.published_at || p.publishedAt || null,
     body: bodyParagraphs(row, p),
-    byline: p.byline || null,
+    byline: hb.by || p.byline || null,
     section: row.vertical || p.vertical || null,
     // Wire items keep their attribution wherever the text travels.
     sourceUrl: (p.source === 'rss' && /^https?:\/\//.test(p.sourceUrl || '')) ? p.sourceUrl : null,

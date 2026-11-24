@@ -16,6 +16,7 @@
 // function can insert), and optionally CRON_SECRET.
 
 import { createClient } from '@supabase/supabase-js';
+import { tidyHeadline } from './story-share.js';
 import Parser from 'rss-parser';
 
 const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
@@ -328,7 +329,7 @@ export function buildRows(items, src, seen){
   for(const it of (items || [])){
     const link = clean(it.link || it.guid || '');
     if(!link || seen.has(link)) continue;            // dedupe by source URL
-    const title = cleanTitle(it.title, label);       // drop trailing " | Source"
+    const title = tidyHeadline(cleanTitle(it.title, label));   // drop trailing " | Source", emoji, doubled prefix
     if(title.length < 10) continue;
     seen.add(link);
 
@@ -408,7 +409,9 @@ export function correctionFor(row){
   const vert = guessVertical(title, bodyText.slice(0, 600));
   const dek = p.standfirst || row.dek || '';
   const junk = !!dek && isJunkText(dek, title);
-  if (vert === (row.vertical || p.vertical) && !junk) return null;
+  const tidy = tidyHeadline(title);
+  const retitle = !!tidy && tidy.length >= 10 && tidy !== title;
+  if (vert === (row.vertical || p.vertical) && !junk && !retitle) return null;
   const def = VDEF[vert] || VDEF.front, vlabel = VLABEL[vert] || vert;
   const label = p.sourceLabel || p.byline || '';
   const oldLabel = VLABEL[p.vertical] || '';
@@ -419,6 +422,7 @@ export function correctionFor(row){
   });
   const patch = { vertical: vert, payload };
   if (junk) { payload.standfirst = ''; patch.dek = ''; }
+  if (retitle) { payload.headline = tidy; patch.headline = tidy; }
   return patch;
 }
 

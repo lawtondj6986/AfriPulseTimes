@@ -5,6 +5,9 @@ const CSS='/* Scoped resets */.tc-daily-wrapper * { box-sizing: border-box; }';
 function wire(slug,h,v,i,dek,body,label){return {slug,status:'published',published_at:new Date(NOW-i*H).toISOString(),payload:{slug,headline:h,vertical:v,standfirst:dek,body:body||[dek],source:'rss',sourceLabel:label||'Al Jazeera',sourceUrl:'https://wire.example/'+slug}};}
 const ROWS=[
  wire('es','Who is Alberto Feijoo, the conservative seeking to become Spain’s new PM?','front',1,'The former civil servant hopes to lead his party to victory.'),
+ wire('rb','👨🏿‍🚀South Africa: South Africa News Briefs - November 23, 2026','front',1.5,'A digest of the day in South Africa.',null,'AllAfrica'),
+ wire('ed','EDITORIAL: Sustaining the Flamingos’ flourish in Nigeria','opinions',10,'The Under-17 girls are worthy ambassadors.',null,'Premium Times'),
+ wire('op','Makinde of Nigeria: Bride or side-chick?, By Wole Olaoye','opinions',11,'A bride is a woman on her wedding day.',null,'Premium Times'),
  wire('ng','Nigeria: At least 24 dead after boat capsizes','front',2,'The boat carrying mourners overturned in southern Nigeria.'),
  wire('ke','Kenya and DR Congo restore full diplomatic relations','politics',3,'The two presidents signed a joint communiqué in Nairobi.'),
  wire('mx','First images of Mexican cartel boss after arrest','culture',4,'First images of Mexican cartel boss after arrest'),
@@ -51,6 +54,13 @@ async function open(lang){ const ctx=await br.newContext({viewport:{width:390,he
   const q=await pg.evaluate(()=>[...document.querySelectorAll('#listen-body .qrow .qh')].map(e=>e.textContent));
   const firstWorld=q.findIndex(h=>/Spain|Mexican/.test(h)), lastAfrica=Math.max(...q.map((h,i)=>/Spain|Mexican/.test(h)?-1:i));
   t('the briefing reads African stories before world news', q[0].includes('Nigeria') && (firstWorld===-1 || firstWorld>lastAfrica), JSON.stringify(q));
+  await pg.evaluate(()=>{ location.hash='#/'; }); await pg.waitForTimeout(300);
+  const heads=await pg.evaluate(()=>[...document.querySelectorAll('#today-body h2[dir], #today-body h3')].map(h=>h.textContent));
+  t('a digest never takes the cover, even as the newest African front-page item', heads[0].includes('Nigeria: At least 24 dead'), heads[0]);
+  t('headlines are tidied: no emoji, no doubled prefix, no trailing date, no shouting', heads.includes('South Africa News Briefs') && heads.includes('Editorial: Sustaining the Flamingos’ flourish in Nigeria') && !heads.some(h=>/👨|EDITORIAL|November 23, 2026/.test(h)), JSON.stringify(heads));
+  await pg.evaluate(()=>{ location.hash='#/story/op'; }); await pg.waitForTimeout(300);
+  const opH=await pg.locator('.st-h').innerText(), opMeta=await pg.locator('.st-meta').innerText();
+  t('a column’s writer moves from the headline to the byline', opH==='Makinde of Nigeria: Bride or side-chick?' && opMeta.includes('Wole Olaoye'), opH+' | '+opMeta);
   t('no JS errors', errs.length===0, errs[0]||'');
   await ctx.close(); }
 
