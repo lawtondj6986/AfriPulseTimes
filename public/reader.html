@@ -259,6 +259,11 @@
   .morebtn{display:block;width:100%;appearance:none;cursor:pointer;border:1px solid var(--line);background:var(--card);
     color:var(--gold-d);font-size:14.5px;font-weight:700;padding:13px;border-radius:12px;margin:18px 0 6px}
   .morebtn:disabled{opacity:.6}
+  .sharerow{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:22px 0 6px;padding-top:16px;border-top:1px solid var(--line)}
+  .sharerow span{font-size:13.5px;color:var(--muted);margin-inline-end:4px}
+  .sharerow a,.sharerow button{appearance:none;cursor:pointer;border-radius:999px;padding:9px 16px;font-size:14px;font-weight:700;text-decoration:none}
+  .sharerow .wa{background:#128C4A;color:#fff;border:1px solid #128C4A}
+  .sharerow button{background:var(--card);color:var(--gold-d);border:1px solid var(--line)}
   .newline{font-size:13.5px;color:var(--gold-d);font-weight:600;margin:0 0 10px}
   .card.read h3,.card.read p{opacity:.6}
   .card .rd{color:var(--muted);font-weight:600}
@@ -595,6 +600,8 @@
       arch_btn:{en:'Search the archive for “%s”',fr:'Chercher « %s » dans les archives',ar:'ابحث في الأرشيف عن «%s»',sw:'Tafuta “%s” kwenye kumbukumbu',pt:'Pesquisar “%s” no arquivo'},
       arch_h:{en:'From the archive',fr:'Dans les archives',ar:'من الأرشيف',sw:'Kutoka kwenye kumbukumbu',pt:'Do arquivo'},
       arch_none:{en:'Nothing in the archive matches.',fr:'Aucun résultat dans les archives.',ar:'لا نتائج في الأرشيف.',sw:'Hakuna kinacholingana kwenye kumbukumbu.',pt:'Nada no arquivo corresponde.'},
+      share_this:{en:'Share this story',fr:'Partager cet article',ar:'شارك هذا الخبر',sw:'Shiriki habari hii',pt:'Partilhar esta notícia'},
+      copy_link:{en:'Copy link',fr:'Copier le lien',ar:'نسخ الرابط',sw:'Nakili kiungo',pt:'Copiar link'},
       ed_done:{en:'🏁 Edition complete — you’ve read all %t stories today.',fr:'🏁 Édition terminée — vous avez lu les %t articles du jour.',ar:'🏁 اكتمل الإصدار — قرأت كل أخبار اليوم الـ%t.',sw:'🏁 Toleo limekamilika — umesoma habari zote %t za leo.',pt:'🏁 Edição completa — leu todas as %t notícias de hoje.'},
       stop_read:{en:'■ Stop reading',fr:'■ Arrêter la lecture',ar:'■ إيقاف القراءة',sw:'■ Simamisha kusoma',pt:'■ Parar a leitura'}
     };
@@ -1115,7 +1122,14 @@
         '<div class="meta">'+meta+'</div></a>';
     }
     function relatedFor(base){
-      return ARTICLES.filter(function(a){ return a.slug!==base.slug && (a.region===base.region || a.vertical===base.vertical); }).slice(0,3).map(localize);
+      // Same nation counts most, then same region, then same section.
+      var mine=base.countries||[];
+      return ARTICLES.map(function(a,i){
+        if(a.slug===base.slug) return null;
+        var shared=(a.countries||[]).some(function(c){ return mine.indexOf(c)>-1; });
+        var score=(shared?3:0)+((a.region&&a.region===base.region)?1:0)+(a.vertical===base.vertical?1:0);
+        return score?{a:a,s:score,i:i}:null;
+      }).filter(Boolean).sort(function(x,y){ return y.s-x.s || x.i-y.i; }).slice(0,3).map(function(x){ return localize(x.a); });
     }
     // Agent-built key points (generated nightly, stored per language in
     // translations.summaries, verified through the editor gate).
@@ -1248,9 +1262,23 @@
         (a.dek?'<div class="st-dek" dir="auto"'+slang+'>'+esc(a.dek)+'</div>':'')+
         '<div class="st-body"'+slang+'>'+bodyHtml+'</div>'+
         srcHtml+
+        '<div class="sharerow"><span>'+esc(tr('share_this'))+'</span>'+
+          '<a class="wa" id="wa-btn" target="_blank" rel="noopener" href="https://wa.me/?text='+
+            encodeURIComponent(a.headline+'\n'+location.origin+'/s/'+encodeURIComponent(a.slug))+'">WhatsApp</a>'+
+          '<button type="button" id="copy-btn">'+esc(tr('copy_link'))+'</button></div>'+
         noteHtml+
         (rel?('<div class="related"><div class="h2">'+esc(tr('related'))+'</div>'+rel+'</div>'):'')+
         nxHtml;
+      var cb=document.getElementById('copy-btn');
+      if(cb) cb.addEventListener('click', function(){
+        var url=location.origin+'/s/'+encodeURIComponent(a.slug);
+        function ok(){ cb.textContent=tr('copied'); setTimeout(function(){ cb.textContent=tr('copy_link'); },1800); }
+        try{
+          if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(url).then(ok,function(){}); }
+          else{ var ta=document.createElement('textarea'); ta.value=url; document.body.appendChild(ta); ta.select();
+            try{ document.execCommand('copy'); ok(); }catch(e){} document.body.removeChild(ta); }
+        }catch(e){}
+      });
       var sn=document.getElementById('st-nations');
       if(sn) sn.addEventListener('click', function(e){ var b=e.target.closest('button'); if(!b) return;
         PULSE_COUNTRY=b.getAttribute('data-c'); PULSE_REGION=null; location.hash='#/pulse'; });
