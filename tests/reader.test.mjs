@@ -19,9 +19,13 @@ const reader = read('../public/reader.html');
 const LANGS = ['en', 'fr', 'ar', 'sw', 'pt'];
 
 function inlineScript(html) {
-  const re = /<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g;
+  // Executable scripts only — skip data blocks such as application/ld+json.
+  const re = /<script((?:\s[^>]*)?)>([\s\S]*?)<\/script>/g;
   let m, all = '';
-  while ((m = re.exec(html))) all += '\n' + m[1];
+  while ((m = re.exec(html))) {
+    if (/type\s*=\s*["'](?!(?:text\/javascript|module)["'])/i.test(m[1])) continue;
+    all += '\n' + m[2];
+  }
   return all;
 }
 

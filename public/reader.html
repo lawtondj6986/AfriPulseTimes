@@ -6,6 +6,20 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>AfriPulse Times — Phone Edition</title>
 <meta name="description" content="AfriPulse Times — the continent's news, built for any phone. Read offline, in five languages.">
+<link rel="canonical" href="https://afripulsetimes.com/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="AfriPulse Times">
+<meta property="og:title" content="AfriPulse Times — The Continent's Voice">
+<meta property="og:description" content="Real-time, editor-verified news from all 54 African nations — five languages, every phone, online or off.">
+<meta property="og:url" content="https://afripulsetimes.com/">
+<meta property="og:image" content="https://afripulsetimes.com/images/og-card.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="AfriPulse Times — The Continent's Voice">
+<meta name="twitter:description" content="Real-time, editor-verified news from all 54 African nations — five languages, every phone, online or off.">
+<meta name="twitter:image" content="https://afripulsetimes.com/images/og-card.jpg">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"NewsMediaOrganization","name":"AfriPulse Times","alternateName":"AfriPulse","url":"https://afripulsetimes.com","logo":"https://afripulsetimes.com/icons/icon-512.png","slogan":"The Continent's Voice","description":"Real-time, editor-verified news from all 54 African nations in English, French, Arabic, Swahili and Portuguese.","knowsLanguage":["en","fr","ar","sw","pt"],"areaServed":"Africa"}</script>
 <meta name="theme-color" content="#0E2818">
 <!-- PWA install (shares the same manifest + icons as the newsroom) -->
 <link rel="manifest" href="/manifest.webmanifest">
@@ -44,6 +58,8 @@
   .top .nm .p{color:var(--gold-d)}
   .top .date{margin-left:auto;font-size:12px;color:var(--muted);text-align:right;line-height:1.3}
   html[dir="rtl"] .top .date{margin-left:0;margin-right:auto}
+  .greet{font-family:Georgia,serif;font-size:15px;color:var(--forest-2);margin:-4px 0 10px}
+  .greet b{color:var(--gold-d);font-weight:700}
 
   .bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:16px}
   .chip{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;
@@ -110,9 +126,10 @@
   .btn:disabled{opacity:.5}
   .btn.block{display:flex;width:100%}
 
-  /* Save/bookmark control on the story page */
-  .save-btn{margin:2px 0 16px;border:1px solid var(--line);background:var(--card);color:var(--gold-d);
+  /* Save/bookmark + share controls on the story page */
+  .save-btn,.share-btn{margin:2px 8px 16px 0;border:1px solid var(--line);background:var(--card);color:var(--gold-d);
     border-radius:999px;padding:8px 15px;font-size:13.5px;font-weight:700}
+  html[dir="rtl"] .save-btn,html[dir="rtl"] .share-btn{margin:2px 0 16px 8px}
   .save-btn.on{background:var(--gold);color:#231b02;border-color:var(--gold)}
 
   /* Me / settings rows */
@@ -171,6 +188,7 @@
           <div class="nm">Afri<span class="p">Pulse</span></div>
           <div class="date" id="today-date"></div>
         </div>
+        <div class="greet" id="greet" hidden></div>
         <div class="bar">
           <span class="chip" id="conn-chip"><span class="dot"></span><span id="conn-label">…</span></span>
           <span class="toggle"><span id="ds-label">Data saver</span><button id="ds-btn" type="button" aria-pressed="false">Off</button></span>
@@ -277,7 +295,15 @@
       // Pulse (map)
       p_all:{en:'All Africa',fr:'Toute l’Afrique',ar:'كل أفريقيا',sw:'Afrika Nzima',pt:'Toda a África'},
       p_hint:{en:'Tap a region on the map to see its stories.',fr:'Touchez une région sur la carte pour voir ses articles.',ar:'اضغط منطقة على الخريطة لرؤية أخبارها.',sw:'Gusa eneo kwenye ramani kuona habari zake.',pt:'Toque numa região no mapa para ver as suas notícias.'},
-      p_empty:{en:'No stories from this region in today’s edition.',fr:'Aucun article de cette région dans l’édition du jour.',ar:'لا أخبار من هذه المنطقة في إصدار اليوم.',sw:'Hakuna habari kutoka eneo hili katika toleo la leo.',pt:'Sem notícias desta região na edição de hoje.'}
+      p_empty:{en:'No stories from this region in today’s edition.',fr:'Aucun article de cette région dans l’édition du jour.',ar:'لا أخبار من هذه المنطقة في إصدار اليوم.',sw:'Hakuna habari kutoka eneo hili katika toleo la leo.',pt:'Sem notícias desta região na edição de hoje.'},
+      // Personable touches
+      greet_morning:{en:'Good morning — here’s Africa, awake.',fr:'Bonjour — voici l’Afrique, bien réveillée.',ar:'صباح الخير — هذه أفريقيا وقد استيقظت.',sw:'Habari za asubuhi — hii hapa Afrika, imeamka.',pt:'Bom dia — eis a África, bem acordada.'},
+      greet_afternoon:{en:'Good afternoon — the continent is moving.',fr:'Bon après-midi — le continent est en mouvement.',ar:'مساء الخير — القارة تتحرك.',sw:'Habari za mchana — bara linasonga mbele.',pt:'Boa tarde — o continente está em movimento.'},
+      greet_evening:{en:'Good evening — today’s Africa, in your pocket.',fr:'Bonsoir — l’Afrique du jour, dans votre poche.',ar:'مساء الخير — أفريقيا اليوم في جيبك.',sw:'Habari za jioni — Afrika ya leo, mfukoni mwako.',pt:'Boa noite — a África de hoje, no seu bolso.'},
+      share:{en:'Share',fr:'Partager',ar:'مشاركة',sw:'Shiriki',pt:'Partilhar'},
+      copied:{en:'Link copied ✓',fr:'Lien copié ✓',ar:'✓ تم نسخ الرابط',sw:'Kiungo kimenakiliwa ✓',pt:'Link copiado ✓'},
+      about_link:{en:'About AfriPulse Times',fr:'À propos d’AfriPulse Times',ar:'عن AfriPulse Times',sw:'Kuhusu AfriPulse Times',pt:'Sobre o AfriPulse Times'},
+      about_p:{en:'Our mission, editors and standards',fr:'Notre mission, nos éditeurs, nos normes',ar:'مهمتنا ومحررونا ومعاييرنا',sw:'Dhamira yetu, wahariri na viwango',pt:'A nossa missão, editores e normas'}
     };
 
     // ── Vertical + region labels (mirrors the newsroom, all 5 languages) ──
@@ -459,12 +485,25 @@
         '<h1 class="st-h">'+esc(a.headline)+'</h1>'+
         '<div class="st-meta">'+meta+'</div>'+
         '<button class="save-btn'+(sv?' on':'')+'" id="save-btn">'+esc(sv?tr('saved_on'):('☆ '+tr('save')))+'</button>'+
+        '<button class="share-btn" id="share-btn">↗ '+esc(tr('share'))+'</button>'+
         (a.dek?'<div class="st-dek">'+esc(a.dek)+'</div>':'')+
         '<div class="st-body">'+bodyHtml+'</div>'+
         (rel?('<div class="related"><div class="h2">'+esc(tr('related'))+'</div>'+rel+'</div>'):'');
       var sb=document.getElementById('save-btn');
       if(sb) sb.addEventListener('click', function(){ var now=toggleSave(a.slug);
         sb.className='save-btn'+(now?' on':''); sb.textContent=now?tr('saved_on'):('☆ '+tr('save')); });
+      // Share: native sheet where the phone has one, copy-link everywhere else.
+      var shb=document.getElementById('share-btn');
+      if(shb) shb.addEventListener('click', function(){
+        var url=location.origin+'/#/story/'+encodeURIComponent(a.slug);
+        if(navigator.share){ navigator.share({title:a.headline, text:a.headline, url:url}).catch(function(){}); return; }
+        function done(){ shb.textContent=tr('copied'); setTimeout(function(){ shb.textContent='↗ '+tr('share'); },1800); }
+        try{
+          if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(url).then(done,function(){}); }
+          else{ var ta=document.createElement('textarea'); ta.value=url; document.body.appendChild(ta); ta.select();
+            try{ document.execCommand('copy'); done(); }catch(e){} document.body.removeChild(ta); }
+        }catch(e){}
+      });
     }
 
     function paintLabels(){
@@ -473,6 +512,11 @@
     }
     function paintDate(){ var el=document.getElementById('today-date'); if(!el) return;
       try{ el.textContent=new Date().toLocaleDateString(locale(),{weekday:'long',day:'numeric',month:'long'}); }catch(e){ el.textContent=new Date().toDateString(); } }
+    // Time-of-day greeting on Today — a newspaper that says hello.
+    function paintGreet(){ var el=document.getElementById('greet'); if(!el) return;
+      var h=new Date().getHours();
+      var key = h<12 ? 'greet_morning' : h<18 ? 'greet_afternoon' : 'greet_evening';
+      el.textContent=tr(key); el.hidden=false; }
     // ── Connection chip (Network Information API when the phone exposes it) ──
     function detectConn(){
       if(navigator.onLine===false) return {c:'off',label:tr('offline')};
@@ -563,13 +607,15 @@
         '<div style="margin-top:11px"><button class="btn" id="clear-cache">'+esc(tr('s_clear'))+'</button></div></div>';
       // Newsroom desk link
       h+='<a class="linkrow" href="/desk"><div><div class="lab" style="margin:0">'+esc(tr('s_desk'))+'</div><div class="hint">'+esc(tr('s_desk_p'))+'</div></div><span class="arw">›</span></a>';
+      // About the newsroom
+      h+='<a class="linkrow" href="/afripulse-preview.html#/about"><div><div class="lab" style="margin:0">'+esc(tr('about_link'))+'</div><div class="hint">'+esc(tr('about_p'))+'</div></div><span class="arw">›</span></a>';
       // About
       h+='<div class="metaline">'+esc(tr('s_about'))+'<br>afri-pulse-times.vercel.app</div>';
       body.innerHTML=h;
 
       var segL=document.getElementById('seg-lang');
       if(segL) segL.addEventListener('click', function(e){ var b=e.target.closest('button'); if(!b) return; var c=b.getAttribute('data-l');
-        try{ localStorage.setItem('afripulse_lang',c); }catch(err){} applyLang(c); paintLabels(); paintDate(); paintConn(); paintDS(); renderMe(); });
+        try{ localStorage.setItem('afripulse_lang',c); }catch(err){} applyLang(c); paintLabels(); paintDate(); paintConn(); paintDS(); paintGreet(); renderMe(); });
       var segS=document.getElementById('seg-size');
       if(segS) segS.addEventListener('click', function(e){ var b=e.target.closest('button'); if(!b) return; var k=b.getAttribute('data-s');
         try{ localStorage.setItem('afripulse_textsize',k); }catch(err){} applySize(k); renderMe(); });
@@ -701,7 +747,7 @@
     // ── Boot ──
     applyLang(getLang());
     applySize(getSize());
-    paintLabels(); paintDate(); paintConn(); paintDS();
+    paintLabels(); paintDate(); paintConn(); paintDS(); paintGreet();
     var _ds=document.getElementById('ds-btn'); if(_ds) _ds.addEventListener('click', toggleDS);
     if(!location.hash) location.replace('#/');
     route();            // paint from cache instantly (ARTICLES may already be loaded)
