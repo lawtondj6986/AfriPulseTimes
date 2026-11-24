@@ -41,7 +41,8 @@ test('buildShareHtml carries per-story OG meta and the reader redirect', () => {
   assert.match(html, /og:image:width" content="1200"/);
   assert.match(html, /article:published_time" content="2026-11-20T08:00:00Z"/);
   assert.match(html, /location\.replace\("\/#\/story\/kano-floods"\)/);
-  assert.match(html, /http-equiv="refresh" content="0; url=\/#\/story\/kano-floods"/);
+  assert.ok(!/http-equiv="refresh"/.test(html), 'no meta refresh: it would bounce no-JS readers into the app');
+  assert.match(html, /<a href="\/today">More of today’s stories<\/a>/);
 });
 
 test('buildShareHtml escapes hostile article fields (no tag/attr injection)', () => {
@@ -144,7 +145,8 @@ test('news sitemap lists every story and tags only the last 48 hours for Google 
   assert.match(xml, /<loc>https:\/\/x\.test\/s\/old-one<\/loc>/);
   assert.equal((xml.match(/<news:news>/g) || []).length, 1, 'only the fresh story is a news item');
   assert.match(xml, /<news:title>Fresh &amp; new<\/news:title>/);
-  assert.equal((xml.match(/<url>/g) || []).length, 3, 'home + two stories; slugless row dropped');
+  assert.equal((xml.match(/<url>/g) || []).length, 4, 'home + /today + two stories; slugless row dropped');
+  assert.match(xml, /<loc>https:\/\/x\.test\/today<\/loc>/);
   assert.equal(isoOrNull('not a date'), null);
 });
 
@@ -211,4 +213,52 @@ test('feed image URLs are stored and served without HTML entity encoding', () =>
   const html = buildShareHtml(a, 'https://x.test');
   assert.match(html, /og:image" content="https:\/\/i0\.wp\.com\/x\/y\.png\?fit=1&amp;ssl=1"/, 'escaped exactly once in markup');
   assert.equal(articleFromRow({ slug: 's', headline: 'H' }).image, null);
+});
+
+// ── the plain-HTML edition (/today) ───────────────────────────
+import { buildFrontHtml, frontItemFromRow } from '../api/front.js';
+
+test('plain front page: sectioned headlines linking to full-text story pages, no scripts to run', () => {
+  const items = [
+    { slug: 'kano-floods', headline: 'Kano floods <displace> thousands', vertical: 'front', published_at: '2026-11-24T08:00:00Z',
+      payload: { standfirst: '[DW] Rivers burst their banks.' } },
+    { slug: 'lagos-rally', headline: 'Lagos markets rally', vertical: 'markets', published_at: '2026-11-24T07:00:00Z', payload: {} },
+    { slug: 'op-1', headline: 'An opinion', vertical: 'voices', payload: {} },
+    { slug: 'weird', headline: 'Unknown section', vertical: 'astrology', payload: {} },
+    { slug: '', headline: 'no slug' }
+  ].map(frontItemFromRow);
+  const html = buildFrontHtml(items, 'https://x.test', Date.parse('2026-11-24T12:00:00Z'));
+  assert.match(html, /<h2>Front Page<\/h2>/);
+  assert.match(html, /<h2>Business &amp; Markets<\/h2>/);
+  assert.match(html, /<h2>Opinions<\/h2>/, 'legacy "voices" maps to Opinions');
+  assert.match(html, /<a href="\/s\/kano-floods">Kano floods &lt;displace&gt; thousands<\/a>/, 'escaped, linked to the story page');
+  assert.match(html, /<p>Rivers burst their banks\.<\/p>/, 'wire tag stripped');
+  assert.match(html, /Unknown section/, 'an unrecognised section still appears (under Front Page)');
+  assert.ok(!html.includes('no slug'));
+  assert.ok(html.indexOf('Front Page') < html.indexOf('Business &amp; Markets'), 'sections in the paper’s order');
+  assert.match(html, /<link rel="canonical" href="https:\/\/x\.test\/today">/);
+  assert.match(html, /2026-11-24 · plain, fast version/);
+  // the only script element is inert structured data
+  const scripts = html.match(/<script[^>]*>/g) || [];
+  assert.equal(scripts.length, 1);
+  assert.match(scripts[0], /application\/ld\+json/);
+  const ld = JSON.parse(html.slice(html.indexOf('ld+json">') + 9, html.indexOf('</script>')));
+  assert.equal(ld['@type'], 'ItemList');
+  assert.equal(ld.itemListElement[0].url, 'https://x.test/s/kano-floods');
+  assert.ok(!/<img|<link rel="stylesheet"/.test(html), 'no images or external styles');
+});
+
+test('plain front page with no stories still renders a page', () => {
+  const html = buildFrontHtml([], 'https://x.test');
+  assert.match(html, /The newsroom is filing/);
+  assert.match(html, /<a href="\/">Full edition \(app\)<\/a>/);
+});
+
+test('no-JavaScript visitors are routed to the plain edition', async () => {
+  const { readFileSync } = await import('node:fs');
+  const rd = (p) => readFileSync(new URL(p, import.meta.url), 'utf8');
+  const vercel = JSON.parse(rd('../vercel.json'));
+  assert.ok(vercel.rewrites.some((r) => r.source === '/today' && r.destination === '/api/front'));
+  assert.match(rd('../index.html'), /<noscript><meta http-equiv="refresh" content="0; url=\/today"><\/noscript>/);
+  assert.match(rd('../public/reader.html'), /<noscript>[\s\S]*href="\/today"[\s\S]*<\/noscript>/);
 });

@@ -20,13 +20,13 @@
   <meta name="twitter:image" content="https://afripulsetimes.com/images/og-card.jpg">
   <!-- Phones land on the lite reader (public/reader.html). The newsroom desk
        lives at /desk (public/afripulse-preview.html), unchanged. -->
-  <!-- Redirect three ways for maximum reliability across browsers (esp. mobile):
-       1) an immediate JS replace (no history entry), 2) a <meta> refresh
-       fallback for when JS is disabled/blocked, 3) a visible link as last resort.
-       Note: once the service worker is installed it serves the reader shell for /
-       directly, so this redirect only runs on the very first visit. -->
+  <!-- Browsers that run scripts go straight to the reader (an immediate
+       replace, so no history entry). Once the service worker is installed it
+       serves the reader shell for / directly, so this only runs on a first visit. -->
   <script>location.replace('/reader.html' + location.search + location.hash);</script>
-  <meta http-equiv="refresh" content="0; url=/reader.html">
+  <!-- No JavaScript (feature phones, Opera Mini, text browsers): go to the
+       plain-HTML edition instead of an app that cannot start. -->
+  <noscript><meta http-equiv="refresh" content="0; url=/today"></noscript>
   <link rel="canonical" href="/reader.html">
   <style>
     body{font-family:-apple-system,Segoe UI,Roboto,sans-serif;background:#0E2818;color:#F3EEE2;
@@ -36,5 +36,6 @@
 </head>
 <body>
   <p>Loading AfriPulse Times&hellip;<br><a href="/reader.html">Tap here if it doesn't open.</a></p>
+  <noscript><p><a href="/today">Read today’s edition (plain version)</a></p></noscript>
 </body>
 </html>
