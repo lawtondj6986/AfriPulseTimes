@@ -234,6 +234,16 @@
   .nations button.on .b{color:#241c04}
   .nations.st-n{margin:-4px 0 14px}
   .h2.nh{margin-top:8px}
+  .ph{display:block;overflow:hidden;background:var(--line)}
+  .ph img{display:block;width:100%;height:100%;object-fit:cover}
+  .card.has-th{display:grid;grid-template-columns:minmax(0,1fr) 84px;column-gap:14px;align-items:start}
+  .card.has-th > *{grid-column:1}
+  .card.has-th > .th{grid-column:2;grid-row:1 / span 4;width:84px;height:84px;border-radius:10px;margin-top:2px}
+  .hero .hp{margin:-18px -16px 14px;aspect-ratio:16/9}
+  .st-fig{margin:0 0 18px}
+  .st-fig .sp{border-radius:12px;aspect-ratio:16/9}
+  .st-fig:empty{display:none}
+  .st-fig figcaption{font-size:12px;color:var(--muted);margin-top:6px}
   .newline{font-size:13.5px;color:var(--gold-d);font-weight:600;margin:0 0 10px}
   .card.read h3,.card.read p{opacity:.6}
   .card .rd{color:var(--muted);font-weight:600}
@@ -265,6 +275,12 @@
     .tools .searchrow{flex:1;margin:0}
     .tools .fpbtn{width:auto;margin:0;padding-left:22px;padding-right:22px;white-space:nowrap}
     .hero{padding:30px 32px 24px;margin-bottom:22px}
+    .hero:has(.hp){display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);column-gap:32px;align-items:center}
+    .hero:has(.hp) > *{grid-column:2}
+    .hero:has(.hp) > .hp{grid-column:1;grid-row:1 / span 5;margin:-30px 0 -24px -32px;aspect-ratio:auto;height:calc(100% + 54px);min-height:300px}
+    .hero:has(.hp) h2{font-size:34px}
+    .card.has-th{grid-template-columns:minmax(0,1fr) 96px}
+    .card.has-th > .th{width:96px;height:96px}
     .hero h2{font-size:40px;line-height:1.12;max-width:20em}
     .hero p{font-size:17.5px;max-width:42em}
     .cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0 32px}
@@ -546,6 +562,7 @@
       src_label:{en:'Source',fr:'Source',ar:'المصدر',sw:'Chanzo',pt:'Fonte'},
       read_full:{en:'Read the full report',fr:'Lire le reportage complet',ar:'اقرأ التقرير الكامل',sw:'Soma ripoti kamili',pt:'Ler a reportagem completa'},
       p_nations:{en:'Nations in today’s edition',fr:'Nations dans l’édition du jour',ar:'دول في إصدار اليوم',sw:'Mataifa katika toleo la leo',pt:'Nações na edição de hoje'},
+      photo_by:{en:'Photo: %s',fr:'Photo : %s',ar:'الصورة: %s',sw:'Picha: %s',pt:'Foto: %s'},
       ed_done:{en:'🏁 Edition complete — you’ve read all %t stories today.',fr:'🏁 Édition terminée — vous avez lu les %t articles du jour.',ar:'🏁 اكتمل الإصدار — قرأت كل أخبار اليوم الـ%t.',sw:'🏁 Toleo limekamilika — umesoma habari zote %t za leo.',pt:'🏁 Edição completa — leu todas as %t notícias de hoje.'},
       stop_read:{en:'■ Stop reading',fr:'■ Arrêter la lecture',ar:'■ إيقاف القراءة',sw:'■ Simamisha kusoma',pt:'■ Parar a leitura'}
     };
@@ -818,6 +835,9 @@
         translations:r.translations||p.translations||null,
         polished:!!p.polished
       };
+      // Photo: https only, never when the reader has data saver on.
+      var img=String(r.hero_image||(p.media&&p.media.type==='image'&&p.media.src)||'').replace(/&(amp|#0*38|#x0*26);/gi,'&');
+      if(!DATASAVER && /^https:\/\//.test(img)){ a.image=img; a.imageCredit=(p.media&&p.media.credit)||p.sourceLabel||''; }
       if(p.source==='rss'){
         a.via=wireTag(a.dek)||wireTag(a.body[0]);
         if(/^https?:\/\//.test(p.sourceUrl||'')) a.sourceUrl=p.sourceUrl;
@@ -839,6 +859,7 @@
         slug:a.slug, vertical:a.vertical, region:a.region, byline:a.byline, tags:a.tags,
         published_at:a.published_at, translations:a.translations, polished:a.polished,
         via:a.via, sourceUrl:a.sourceUrl, sourceLabel:a.sourceLabel, countries:a.countries,
+        image:a.image, imageCredit:a.imageCredit,
         kicker:t.kicker||a.kicker, headline:t.headline||a.headline,
         dek:lc.dek, body:lc.body
       };
@@ -881,11 +902,18 @@
 
     // ── Rendering ──
     function emptyState(b,p){ return '<div class="empty"><b>'+esc(b)+'</b>'+esc(p)+'</div>'; }
+    // A photo that fails to load (offline, hotlink refused) removes itself.
+    function photo(a, cls){
+      if(DATASAVER || !a.image) return '';
+      return '<span class="ph '+cls+'"><img src="'+esc(a.image)+'" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" '+
+        'onerror="var b=this.parentNode,c=b&&b.parentNode;if(c&&c.tagName===\'FIGURE\'){c.remove();}else if(b){b.remove();if(c&&c.classList)c.classList.remove(\'has-th\');}"></span>';
+    }
     function storyCard(a){
       var region=a.region?RL(a.region):'';
       var meta=(region?('<b>'+esc(region)+'</b> · '):'')+esc(fmtShort(a.published_at));
       var rd=!!readAllSet()[a.slug];
-      return '<a class="card'+(rd?' read':'')+'" href="#/story/'+encodeURIComponent(a.slug)+'">'+
+      var th=photo(a,'th');
+      return '<a class="card'+(rd?' read':'')+(th?' has-th':'')+'" href="#/story/'+encodeURIComponent(a.slug)+'">'+th+
         '<div class="kick">'+esc(VL(a.vertical))+(isNewStory(a)?newBadge():'')+'</div>'+
         '<h3 dir="auto">'+esc(a.headline)+'</h3>'+
         (a.dek?'<p dir="auto">'+esc(a.dek)+'</p>':'')+
@@ -996,7 +1024,7 @@
     function heroCard(a){
       var region=a.region?RL(a.region):'';
       var meta=(region?('<b>'+esc(region)+'</b> · '):'')+esc(fmtShort(a.published_at));
-      return '<a class="hero" href="#/story/'+encodeURIComponent(a.slug)+'">'+
+      return '<a class="hero" href="#/story/'+encodeURIComponent(a.slug)+'">'+photo(a,'hp')+
         '<div class="hk">'+esc(VL(a.vertical||'front'))+(isNewStory(a)?newBadge():'')+'</div>'+
         '<h2 dir="auto">'+esc(a.headline)+'</h2>'+
         (a.dek?'<p dir="auto">'+esc(a.dek)+'</p>':'')+
@@ -1090,6 +1118,8 @@
         '<button class="save-btn'+(sv?' on':'')+'" id="save-btn">'+esc(sv?tr('saved_on'):('☆ '+tr('save')))+'</button>'+
         '<button class="share-btn" id="share-btn">↗ '+esc(tr('share'))+'</button>'+
         (speakSupported()?('<button class="share-btn" id="read-btn">'+esc(tr('read_aloud'))+'</button>'):'')+
+        ((!DATASAVER&&a.image)?('<figure class="st-fig">'+photo(a,'sp')+
+          (a.imageCredit?('<figcaption>'+esc(tr('photo_by',{s:a.imageCredit}))+'</figcaption>'):'')+'</figure>'):'')+
         qrHtml+
         (a.dek?'<div class="st-dek" dir="auto"'+slang+'>'+esc(a.dek)+'</div>':'')+
         '<div class="st-body"'+slang+'>'+bodyHtml+'</div>'+
@@ -1168,7 +1198,7 @@
     // ── Edition pack strip (honest size, download/refresh) ──
     function packBytes(items){ try{ return new Blob([JSON.stringify({items:items})]).size; }catch(e){ return JSON.stringify(items||[]).length; } }
     // Keep the cached JSON light: full body for the newest 15, headline+dek only after.
-    function trimPack(items){ if(packBytes(items)<=50000) return items; return items.map(function(a,i){ return i<15?a:Object.assign({},a,{body:[]}); }); }
+    function trimPack(items){ if(packBytes(items)<=60000) return items; return items.map(function(a,i){ return i<15?a:Object.assign({},a,{body:[]}); }); }
     function renderPackStrip(){
       var el=document.getElementById('packstrip'); if(!el) return;
       if(!ARTICLES.length){ el.hidden=true; return; }
@@ -1187,7 +1217,8 @@
     function writeSaved(list){ try{ localStorage.setItem(SAVE_KEY, JSON.stringify(list)); }catch(e){} }
     function isSaved(slug){ return loadSaved().some(function(s){ return s.slug===slug; }); }
     function snapshot(a){ return {slug:a.slug,headline:a.headline,dek:a.dek,body:a.body,vertical:a.vertical,region:a.region,byline:a.byline,tags:a.tags||[],published_at:a.published_at,translations:a.translations||null,
-      via:a.via||'',sourceUrl:a.sourceUrl||'',sourceLabel:a.sourceLabel||'',countries:a.countries||[],polished:!!a.polished,saved_at:Date.now()}; }
+      via:a.via||'',sourceUrl:a.sourceUrl||'',sourceLabel:a.sourceLabel||'',countries:a.countries||[],polished:!!a.polished,
+      image:a.image||'',imageCredit:a.imageCredit||'',saved_at:Date.now()}; }
     function toggleSave(slug){
       var base=findArticle(slug);
       var list=loadSaved(); var idx=-1; for(var j=0;j<list.length;j++){ if(list[j].slug===slug){ idx=j; break; } }
