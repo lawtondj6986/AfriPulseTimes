@@ -88,6 +88,24 @@
     border-inline-start:3px solid var(--gold-d);border-radius:8px;padding:8px 12px;
     margin:0 0 12px;font-size:13.5px;line-height:1.45;color:var(--ink)}
   .natday div{margin:2px 0}
+  .welcome{position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;
+    background:linear-gradient(160deg,#12351F,#0E2818 55%,#081810);color:#F3EAD4;text-align:center;
+    padding:24px;transition:opacity .45s ease}
+  .welcome.bye{opacity:0;pointer-events:none}
+  .welcome[hidden]{display:none}
+  .w-in{max-width:420px;width:100%}
+  .w-mk{width:86px;height:86px;margin:0 auto 10px;display:block}
+  .w-pulse{stroke-dasharray:220;stroke-dashoffset:220;animation:wdraw 1.4s ease forwards .25s}
+  @keyframes wdraw{to{stroke-dashoffset:0}}
+  .w-nm{font-family:Georgia,serif;font-weight:700;font-size:34px;color:#FBF6E9}
+  .w-nm span{color:#C9A227}
+  .w-tag{font-family:Georgia,serif;font-style:italic;font-size:15px;color:#A6C7AD;margin:4px 0 26px}
+  .w-ask{font-size:12.5px;color:#9FB6A4;line-height:1.8;margin:0 0 14px}
+  .w-btns{display:grid;gap:10px}
+  .w-btns button{appearance:none;border:1px solid rgba(201,162,39,.45);background:rgba(255,255,255,.05);
+    color:#F3EAD4;font-size:17px;font-weight:600;padding:13px;border-radius:12px;cursor:pointer;
+    font-family:inherit;transition:background .15s}
+  .w-btns button:active{background:rgba(201,162,39,.2)}
 
   .bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:16px}
   .chip{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;
@@ -228,6 +246,28 @@
 </style>
 </head>
 <body>
+  <!-- First-open welcome: pick your language, each named in its own tongue.
+       Shown once, never again (afripulse_welcomed); existing readers who
+       already chose a language are never interrupted. -->
+  <div class="welcome" id="welcome" hidden>
+    <div class="w-in">
+      <svg class="w-mk" viewBox="0 0 100 100" aria-hidden="true">
+        <defs><linearGradient id="wg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E9D07A"/><stop offset="1" stop-color="#C9A227"/></linearGradient></defs>
+        <g transform="translate(5.6 -2.9) scale(0.911)"><path d="M16,12 Q24,7 33,9 Q48,9 60,11 L63,13 Q67,22 70,32 Q76,37 83,42 Q74,48 69,51 Q66,60 63,70 Q60,80 55,87 Q50,95 45,97 Q40,94 39,87 Q35,74 34,63 Q33,57 36,54 Q33,52 29,51 Q22,52 17,50 Q9,46 6,36 Q6,30 10,23 Q12,17 16,12 Z" fill="url(#wg)"/></g>
+        <polyline class="w-pulse" points="8,50 35,50 38,42 42,59 46,35 50,50 80,50" fill="none" stroke="rgba(110,231,168,0.9)" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"/>
+      </svg>
+      <div class="w-nm">Afri<span>Pulse</span> Times</div>
+      <div class="w-tag">The Continent’s Voice</div>
+      <div class="w-ask">Choose your language · Choisissez votre langue<br>اختر لغتك · Chagua lugha yako · Escolha o seu idioma</div>
+      <div class="w-btns">
+        <button type="button" data-wlang="en" lang="en">English</button>
+        <button type="button" data-wlang="fr" lang="fr">Français</button>
+        <button type="button" data-wlang="ar" lang="ar" dir="rtl">العربية</button>
+        <button type="button" data-wlang="sw" lang="sw">Kiswahili</button>
+        <button type="button" data-wlang="pt" lang="pt">Português</button>
+      </div>
+    </div>
+  </div>
   <main id="app">
     <section id="s-today" class="screen">
       <div class="wrap">
@@ -1051,6 +1091,23 @@
     if(_q) _q.addEventListener('input', function(){ SEARCHQ=this.value.trim(); renderToday(); });
     var _fp=document.getElementById('fp-btn');
     if(_fp) _fp.addEventListener('click', shareFrontPage);
+    // ── First-open welcome (language choice) ──
+    (function(){
+      var el=document.getElementById('welcome'); if(!el) return;
+      var seen=null, lang=null;
+      try{ seen=localStorage.getItem('afripulse_welcomed'); lang=localStorage.getItem('afripulse_lang'); }catch(e){}
+      if(seen||lang){ try{ localStorage.setItem('afripulse_welcomed','1'); }catch(e){} return; }
+      el.hidden=false;
+      el.addEventListener('click', function(ev){
+        var b=(ev.target&&ev.target.closest)?ev.target.closest('[data-wlang]'):null;
+        if(!b) return;
+        var c=b.getAttribute('data-wlang');
+        try{ localStorage.setItem('afripulse_lang',c); localStorage.setItem('afripulse_welcomed','1'); }catch(e){}
+        applyLang(c); paintLabels(); paintDate(); paintConn(); paintDS(); paintGreet(); renderMe(); renderCurrent();
+        el.classList.add('bye');
+        setTimeout(function(){ el.hidden=true; },500);
+      });
+    })();
     if(!location.hash) location.replace('#/');
     route();            // paint from cache instantly (ARTICLES may already be loaded)
     fetchEdition();     // then refresh from Supabase
