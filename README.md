@@ -89,7 +89,15 @@ preview without the API, use `npm run dev` (Vite, http://localhost:5173).
 
 ```bash
 npm test          # fast, dependency-free unit tests (Node's built-in runner)
+npm run e2e       # drives the reader in headless Chromium (tests/e2e/)
 ```
+
+The end-to-end scripts serve `public/` from a throwaway local server with a
+mocked Supabase client, then click through the reader the way a person would:
+first-open welcome, the cover and sections, reading flow, swipes, read-aloud,
+sharing, photos, the archive, home region, nations, the install prompt and
+more. Run one with `node tests/e2e/flow.mjs`. They need Chromium once:
+`npx playwright-core install chromium` (or set `CHROMIUM_PATH`).
 
 Covers the serverless functions (FX parsing, email notification, newsletter,
 RSS classification) and the SPA (inline JS parses; every translation key exists
