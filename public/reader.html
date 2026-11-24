@@ -213,6 +213,13 @@
     cursor:pointer;background:var(--forest);color:#F3EAD4;font-size:13.5px;font-weight:600;padding:10px 16px;
     border-radius:999px;box-shadow:0 6px 20px rgba(0,0,0,.28);border:1px solid rgba(201,162,39,.5);white-space:nowrap}
   .toast[hidden]{display:none}
+  .homeask{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:13px 14px;margin:0 0 16px}
+  .homeask .hq{font-size:14px;font-weight:600;color:var(--ink);margin-bottom:10px}
+  .homechips{display:flex;flex-wrap:wrap;gap:8px}
+  .homechips button{appearance:none;cursor:pointer;border:1px solid var(--line);background:var(--bg);color:var(--ink);
+    font-size:13px;font-weight:600;padding:7px 13px;border-radius:999px}
+  .homechips button.on{background:linear-gradient(135deg,#E9D07A,var(--gold-d));color:#241c04;border-color:var(--gold-d)}
+  .homechips button.skip{border-color:transparent;background:transparent;color:var(--muted)}
   .newline{font-size:13.5px;color:var(--gold-d);font-weight:600;margin:0 0 10px}
   .card.read h3,.card.read p{opacity:.6}
   .card .rd{color:var(--muted);font-weight:600}
@@ -518,6 +525,10 @@
       new_since:{en:'✨ %n new since your last visit',fr:'✨ %n nouveautés depuis votre dernière visite',ar:'✨ %n جديد منذ زيارتك الأخيرة',sw:'✨ %n mpya tangu ulipotembelea mara ya mwisho',pt:'✨ %n novidades desde a sua última visita'},
       read_mark:{en:'✓ Read',fr:'✓ Lu',ar:'✓ مقروء',sw:'✓ Imesomwa',pt:'✓ Lida'},
       just_in:{en:'✨ New stories just in (%n)',fr:'✨ Nouveaux articles à l’instant (%n)',ar:'✨ وصلت أخبار جديدة للتو (%n)',sw:'✨ Habari mpya zimeingia sasa hivi (%n)',pt:'✨ Novas notícias acabadas de chegar (%n)'},
+      s_home:{en:'My Africa',fr:'Mon Afrique',ar:'أفريقيا الخاصة بي',sw:'Afrika Yangu',pt:'A minha África'},
+      home_hint:{en:'Stories from your home region appear first on Today.',fr:'Les articles de votre région apparaissent en premier dans Aujourd’hui.',ar:'تظهر أخبار منطقتك أولًا في صفحة اليوم.',sw:'Habari za eneo lako huonekana kwanza kwenye Leo.',pt:'As notícias da sua região aparecem primeiro em Hoje.'},
+      home_q:{en:'🌍 Where is home? Pick your region for news near you.',fr:'🌍 D’où êtes-vous ? Choisissez votre région pour l’actualité près de chez vous.',ar:'🌍 أين موطنك؟ اختر منطقتك لأخبار قريبة منك.',sw:'🌍 Nyumbani ni wapi? Chagua eneo lako kupata habari za karibu nawe.',pt:'🌍 Onde é a sua casa? Escolha a sua região para notícias perto de si.'},
+      near_you:{en:'Near you',fr:'Près de chez vous',ar:'بالقرب منك',sw:'Karibu nawe',pt:'Perto de si'},
       ed_done:{en:'🏁 Edition complete — you’ve read all %t stories today.',fr:'🏁 Édition terminée — vous avez lu les %t articles du jour.',ar:'🏁 اكتمل الإصدار — قرأت كل أخبار اليوم الـ%t.',sw:'🏁 Toleo limekamilika — umesoma habari zote %t za leo.',pt:'🏁 Edição completa — leu todas as %t notícias de hoje.'},
       stop_read:{en:'■ Stop reading',fr:'■ Arrêter la lecture',ar:'■ إيقاف القراءة',sw:'■ Simamisha kusoma',pt:'■ Parar a leitura'}
     };
@@ -789,6 +800,18 @@
         (a.dek?'<p>'+esc(a.dek)+'</p>':'')+
         '<div class="meta">'+meta+(rd?(' · <span class="rd">'+esc(tr('read_mark'))+'</span>'):'')+'</div></a>';
     }
+    // ── My Africa: the reader's home region(s), device-local ──
+    function getHome(){
+      try{ var a=JSON.parse(localStorage.getItem('afripulse_home')||'[]');
+        if(Array.isArray(a)) return a.filter(function(k){ return REGION_KEYS.indexOf(k)>-1; }); }catch(e){}
+      return [];
+    }
+    function homeAsked(){ try{ return localStorage.getItem('afripulse_home_asked')==='1'; }catch(e){ return true; } }
+    // Any answer (a region, or "not now") retires the question for good.
+    function setHome(arr){
+      try{ localStorage.setItem('afripulse_home', JSON.stringify(arr));
+           localStorage.setItem('afripulse_home_asked','1'); }catch(e){}
+    }
     // ── Your Edition: what's new since the last visit, what's already read ──
     // A visit is a session; reloads within 30 minutes keep the same baseline.
     var PREV_SEEN=(function(){
@@ -837,9 +860,23 @@
       var hero=null;
       for(var hi=0; hi<loc.length; hi++){ if((loc[hi].vertical||'front')==='front'){ hero=loc[hi]; break; } }
       if(!hero) hero=loc[0];
+      // My Africa: stories from the reader's home region(s), right under the cover.
+      var home=getHome(), near=[], nearSet={};
+      if(home.length){
+        near=loc.filter(function(a){ return a.slug!==hero.slug && home.indexOf(a.region)>-1; }).slice(0,4);
+        near.forEach(function(a){ nearSet[a.slug]=1; });
+      }
+      var nearHtml=near.length
+        ? '<div class="h2" id="sec-near">📍 '+esc(tr('near_you'))+' · '+esc(home.map(RL).join(' · '))+'</div><div class="cards">'+near.map(storyCard).join('')+'</div>'
+        : '';
+      var homeAsk=(!home.length && !homeAsked())
+        ? '<div class="homeask"><div class="hq">'+esc(tr('home_q'))+'</div><div class="homechips">'+
+          REGION_KEYS.map(function(k){ return '<button type="button" data-r="'+k+'">'+esc(RL(k))+'</button>'; }).join('')+
+          '<button type="button" class="skip" data-skip="1">'+esc(tr('inst_later'))+'</button></div></div>'
+        : '';
       var sections='', rendered=[];
       VERTICAL_KEYS.forEach(function(v){
-        var items=loc.filter(function(a){ return (a.vertical||'front')===v && a.slug!==hero.slug; });
+        var items=loc.filter(function(a){ return (a.vertical||'front')===v && a.slug!==hero.slug && !nearSet[a.slug]; });
         if(!items.length) return;
         rendered.push(v);
         sections+='<div class="h2" id="sec-'+v+'">'+esc(VL(v))+'</div><div class="cards">'+
@@ -850,7 +887,13 @@
         : '';
       var nNew=loc.filter(isNewStory).length;
       var newLine=nNew?('<div class="newline">'+esc(tr('new_since',{n:nNew}))+'</div>'):'';
-      body.innerHTML = newLine+chips+heroCard(hero)+sections;
+      body.innerHTML = newLine+chips+heroCard(hero)+homeAsk+nearHtml+sections;
+      var ha=body.querySelector('.homeask');
+      if(ha) ha.addEventListener('click', function(e){
+        var b=e.target.closest('button'); if(!b) return;
+        if(b.getAttribute('data-r')) setHome([b.getAttribute('data-r')]); else setHome([]);
+        renderToday();
+      });
       var sc=body.querySelector('.secchips');
       if(sc) sc.addEventListener('click', function(e){
         var b=e.target.closest('button'); if(!b) return;
@@ -1049,6 +1092,12 @@
         h+='<div class="hint">'+esc(tr('wk_empty'))+'</div>';
       }
       h+='</div>';
+      // My Africa — home region(s)
+      var hm=getHome();
+      h+='<div class="setrow"><div class="lab">'+esc(tr('s_home'))+'</div><div class="hint">'+esc(tr('home_hint'))+'</div>'+
+        '<div class="homechips" id="me-home" style="margin-top:10px">'+
+        REGION_KEYS.map(function(k){ return '<button type="button" data-r="'+k+'"'+(hm.indexOf(k)>-1?' class="on" aria-pressed="true"':' aria-pressed="false"')+'>'+esc(RL(k))+'</button>'; }).join('')+
+        '</div></div>';
       // Language
       h+='<div class="setrow"><div class="lab">'+esc(tr('s_language'))+'</div><div class="seg" id="seg-lang">'+
         LANGS.map(function(c){ return '<button data-l="'+c+'"'+(c===LANG?' class="on"':'')+'>'+esc(langNames[c])+'</button>'; }).join('')+'</div></div>';
@@ -1091,6 +1140,13 @@
         if(want!==DATASAVER){ toggleDS(); } renderMe(); });
       var cc=document.getElementById('clear-cache');
       if(cc) cc.addEventListener('click', function(){ try{ localStorage.removeItem(PACK_KEY); }catch(err){} ARTICLES=[]; FETCHED=false; renderMe(); fetchEdition(); });
+      var mh=document.getElementById('me-home');
+      if(mh) mh.addEventListener('click', function(e){
+        var b=e.target.closest('button'); if(!b) return;
+        var r=b.getAttribute('data-r'), cur=getHome(), i=cur.indexOf(r);
+        if(i>-1) cur.splice(i,1); else cur.push(r);
+        setHome(cur); renderMe();
+      });
       var ws=document.getElementById('wk-share');
       if(ws) ws.addEventListener('click', shareWeekCard);
     }
