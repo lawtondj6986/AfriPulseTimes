@@ -153,3 +153,19 @@ test('news sitemap is wired into vercel.json and robots.txt', async () => {
   assert.ok(vercel.rewrites.some((r) => r.source === '/sitemap-news.xml' && r.destination === '/api/sitemap'));
   assert.match(readFileSync(new URL('../public/robots.txt', import.meta.url), 'utf8'), /sitemap-news\.xml/);
 });
+
+// ── wire hygiene ──────────────────────────────────────────────
+import { stripWireTag } from '../api/story-share.js';
+
+test('wire tags are stripped and the summary is never repeated as the body', () => {
+  assert.equal(stripWireTag('[DW] The boat overturned.'), 'The boat overturned.');
+  assert.equal(stripWireTag('No tag here [really].'), 'No tag here [really].');
+  const a = articleFromRow({ slug: 'w', headline: 'H', payload: {
+    standfirst: '[DW] The boat overturned.', body: ['[DW] The boat overturned.', 'A second, different paragraph.'],
+    source: 'rss', sourceUrl: 'https://wire.example/a', sourceLabel: 'AllAfrica' } });
+  assert.equal(a.description, 'The boat overturned.');
+  assert.equal(JSON.stringify(a.body), JSON.stringify(['A second, different paragraph.']));
+  const html = buildShareHtml(a, 'https://x.test');
+  assert.ok(!html.includes('[DW]'), 'no raw tag anywhere on the page');
+  assert.equal(feedItemFromRow({ slug: 'w', payload: { standfirst: '[RFI] Talks resume.' } }).description, 'Talks resume.');
+});
