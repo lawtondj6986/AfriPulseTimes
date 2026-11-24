@@ -111,3 +111,31 @@ test('newsroom desk is intact (unchanged full SPA)', () => {
   assert.ok(desk.length > 300000, 'newsroom should still be the full SPA');
   assert.match(desk, /#\/admin/, 'newsroom admin route missing');
 });
+
+// ── Heritage Days calendar ────────────────────────────────────
+test('NATDAYS covers all 54 nations exactly once, with valid dates', () => {
+  const start = reader.indexOf('var NATDAYS=[');
+  assert.ok(start > -1, 'NATDAYS table not found');
+  const end = reader.indexOf('];', start);
+  const ctx = {};
+  vm.createContext(ctx);
+  vm.runInContext(reader.slice(start, end + 2) + '\n; this.N = NATDAYS;', ctx);
+  const N = ctx.N;
+  assert.equal(N.length, 54, 'one entry per African nation');
+  const codes = N.map((r) => r[2]);
+  assert.equal(new Set(codes).size, 54, 'no duplicate countries');
+  const daysIn = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+  for (const [m, d, cc, y, t] of N) {
+    assert.ok(m >= 1 && m <= 12 && d >= 1 && d <= daysIn[m - 1], `bad date ${cc}`);
+    assert.match(cc, /^[A-Z]{2}$/, `bad ISO code ${cc}`);
+    assert.ok(y >= 1847 && y <= 2011, `implausible year ${cc}:${y}`);
+    assert.ok(['i', 'n', 'f', 'r'].includes(t), `bad type ${cc}:${t}`);
+  }
+  // spot checks against well-known anniversaries
+  const by = Object.fromEntries(N.map((r) => [r[2], r]));
+  assert.equal(JSON.stringify(by.KE.slice(0, 2)), '[12,12]', 'Kenya — Jamhuri Day');
+  assert.equal(JSON.stringify(by.NG.slice(0, 2)), '[10,1]', 'Nigeria — Oct 1');
+  assert.equal(JSON.stringify(by.GH.slice(0, 2)), '[3,6]', 'Ghana — Mar 6');
+  assert.equal(by.ZA[4], 'f', 'South Africa is Freedom Day');
+  assert.equal(by.LR[3], 1847, 'Liberia 1847');
+});
