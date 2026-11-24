@@ -1,30 +1,42 @@
 # AfriPulse Times
 
-A pan-African news site: a single-page front end backed by Supabase (Postgres +
-Auth), Vercel serverless functions, a cron-driven RSS aggregator, and Buttondown
-for the newsletter. EN / FR / AR, with a Sanity-style admin CMS behind
-magic-link auth.
+**The continent's voice** — a pan-African news platform live at
+[afripulsetimes.com](https://afripulsetimes.com): real-time, editor-verified
+coverage of all 54 African nations in **five languages** (EN / FR / AR / SW / PT),
+engineered for the phones Africans actually own — low-end, prepaid, and often
+offline.
+
+Two static surfaces over one Supabase backend:
+
+- **`/` — the phone-first reader** (`public/reader.html`, ~60 KB): installable
+  offline PWA with the day's edition, a tappable Africa map, a spoken briefing,
+  saved stories, offline search, and light/dark "paper" themes.
+- **`/desk` — the newsroom** (`public/afripulse-preview.html`): the editor
+  Command Center (named-editor verification on every story), the public About
+  page, media kit, and reader accounts.
 
 ## Tech stack
 
 | Layer | Technology |
 |---|---|
-| Front end | Static single-file SPA (`public/afripulse-preview.html`), hash router, no framework |
-| Build / host | Vite + Vercel |
-| Database / Auth | Supabase (Postgres, Row Level Security, magic-link email auth) |
+| Front end | Two static single-file surfaces, hash routers, no framework |
+| Build / host | Vite + Vercel (`afripulsetimes.com`) |
+| Database / Auth | Supabase (Postgres, RLS; **password + magic-link** auth; Resend SMTP) |
 | Serverless API | Vercel functions (`/api/*`, Node) |
-| RSS ingestion | `rss-parser` in `/api/pull-wire`, Vercel Cron every 15 min |
+| RSS ingestion | `rss-parser` in `/api/pull-wire`, Vercel Cron |
+| Distribution | WhatsApp/Telegram/SMS broadcast on approve · per-story share pages (`/s/<slug>`) · RSS out (`/feed.xml`) |
 | Newsletter | Buttondown API (`/api/subscribe`) |
+| Tests | `npm test` — 100+ node:test suites over API helpers, SPA logic, SEO and auth wiring |
 
 ## How it fits together (short version)
 
-- The browser talks to Supabase directly with the **public anon key**; Row Level
+- Browsers talk to Supabase directly with the **public anon key**; Row Level
   Security limits anonymous users to reading *published* articles.
-- The **admin** (`#/admin`) is gated by Supabase magic-link auth; signed-in
-  editors write articles (still through RLS).
-- Two **serverless functions** use the **service-role key** (server-only):
-  `/api/pull-wire` ingests RSS on a cron, `/api/subscribe` records newsletter
-  signups and forwards them to Buttondown.
+- The **admin** (`/desk` → `#/admin`) is gated by Supabase auth (password or
+  magic link); signed-in editors with `profiles.role = editor` write articles.
+- **Serverless functions** with the **service-role key** (server-only) handle
+  ingestion, broadcast, newsletter and SMS; `/s/<slug>` and `/feed.xml` use the
+  anon key only.
 
 See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the full diagram and data
 flows.
