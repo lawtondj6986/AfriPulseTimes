@@ -3659,10 +3659,11 @@ function articleSummary(a){
   return (Array.isArray(arr) && arr.length) ? arr.slice(0,4) : null;
 }
 
-// Social share row for an article. Uses the full hash URL so the link resolves
-// straight to the story. Copy-link is wired in bindView().
+// Social share row for an article. Shares the /s/ page so messaging apps
+// unfurl this story's own OpenGraph card; /s/ then forwards to the story.
+// Copy-link is wired in bindView().
 function shareRow(a){
-  const url = location.origin + location.pathname + '#/article/' + a.slug;
+  const url = location.origin + '/s/' + encodeURIComponent(a.slug);
   const U = encodeURIComponent(url);
   const T = encodeURIComponent(a.headline || 'AfriPulse Times');
   return '<div class="art-share">'+
