@@ -11,7 +11,9 @@
     { "path": "/api/sms-digest", "schedule": "0 7 * * *" }
   ],
   "rewrites": [
-    { "source": "/desk", "destination": "/afripulse-preview.html" }
+    { "source": "/desk", "destination": "/afripulse-preview.html" },
+    { "source": "/s/:slug", "destination": "/api/story-share?slug=:slug" },
+    { "source": "/feed.xml", "destination": "/api/feed" }
   ],
   "headers": [
     {
