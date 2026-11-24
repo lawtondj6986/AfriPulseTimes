@@ -936,9 +936,12 @@
       if(!a.region) a.region=regionSlugFor(a);
       // Headline and summary decide the nations; body text adds too many passing mentions.
       a.countries=countriesIn(a.headline+' · '+a.dek+' · '+(a.tags||[]).join(' ')).slice(0,4);
-      // A wire story that touches no African nation or region is world news:
-      // it belongs in the paper, but not on the cover or in the main sections.
-      a.world=(p.source==='rss' && !a.region && !a.countries.length);
+      // World news is narrow: a story from an international outlet with no African
+      // connection. An African publisher's story is African by default, even when
+      // it never names the country. It belongs in the paper, but not on the cover.
+      a.world=(p.source==='rss' && !a.region && !a.countries.length &&
+        /\b(al ?jazeera|bbc|reuters|associated press|ap news|afp|dw|deutsche welle|france ?24|rfi|the guardian|cnn|voa|voice of america|new york times|bloomberg|sky news|euronews)\b/i.test(p.sourceLabel||p.byline||'') &&
+        !/\b(africa|african|africans|sahel|sahara|saharan|maghreb)\b/i.test(a.headline+' '+a.dek));
       return a;
     }
     // Swap to the current language when a server-generated translation exists.

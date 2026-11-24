@@ -2,7 +2,7 @@ import http from 'node:http'; import fs from 'node:fs'; import path from 'node:p
 import { chromium, ROOT, LAUNCH, shot } from './_env.mjs';
 const NOW=Date.now(),H=3600000;
 const CSS='/* Scoped resets */.tc-daily-wrapper * { box-sizing: border-box; }';
-function wire(slug,h,v,i,dek,body){return {slug,status:'published',published_at:new Date(NOW-i*H).toISOString(),payload:{slug,headline:h,vertical:v,standfirst:dek,body:body||[dek],source:'rss',sourceLabel:'Wire Co',sourceUrl:'https://wire.example/'+slug}};}
+function wire(slug,h,v,i,dek,body,label){return {slug,status:'published',published_at:new Date(NOW-i*H).toISOString(),payload:{slug,headline:h,vertical:v,standfirst:dek,body:body||[dek],source:'rss',sourceLabel:label||'Al Jazeera',sourceUrl:'https://wire.example/'+slug}};}
 const ROWS=[
  wire('es','Who is Alberto Feijoo, the conservative seeking to become Spain’s new PM?','front',1,'The former civil servant hopes to lead his party to victory.'),
  wire('ng','Nigeria: At least 24 dead after boat capsizes','front',2,'The boat carrying mourners overturned in southern Nigeria.'),
@@ -10,6 +10,8 @@ const ROWS=[
  wire('mx','First images of Mexican cartel boss after arrest','culture',4,'First images of Mexican cartel boss after arrest'),
  wire('tc','TechCabal Daily: Lagos fintech roundup','tech',5,'In partnership with',['In partnership with','Lagos fintechs raised new rounds this week.']),
  wire('nw','The Next Wave: Kenya’s instant payment systems','tech',6,CSS,[CSS,'Kenya’s payment rails are maturing.']),
+ wire('by','Bayelsa boat mishap: death toll rises, Tinubu approves N250mn','politics',8,'The president approved funds for the families of victims.',null,'Premium Times'),
+ wire('af','Africa: COP31 cover deal collapses','politics',9,'Talks ended without agreement in Antalya.'),
  {slug:'own',status:'published',published_at:new Date(NOW-7*H).toISOString(),payload:{slug:'own',headline:'Our guide to the festive season',vertical:'culture',standfirst:'An original guide from the newsroom.',body:['Original paragraph.']}}
 ];
 const CFG=`const ROWS=${JSON.stringify(ROWS)};function q(){const p={select(){return p},eq(){return p},order(){return p},limit(){return p},then(r){return r({data:ROWS,error:null})}};return p}const m={from(){return q()}};window.__supabase=m;if(window.__supabaseResolve)window.__supabaseResolve(m);`;
@@ -30,6 +32,8 @@ async function open(lang){ const ctx=await br.newContext({viewport:{width:390,he
   t('the newest story is foreign, yet an African story takes the cover', cover.includes('Nigeria'), cover);
   const world=await pg.evaluate(()=>[...document.querySelectorAll('#sec-world + .cards h3')].map(h=>h.textContent));
   t('world news is gathered in World', world.length===2 && world.some(h=>h.includes('Spain')) && world.some(h=>h.includes('Mexican')), JSON.stringify(world));
+  const allText=await pg.evaluate(()=>[...document.querySelectorAll('#sec-politics + .cards h3')].map(h=>h.textContent).join(' | '));
+  t('an African publisher’s story stays out of World even when it names no country; so does “Africa:”', allText.includes('Bayelsa') && allText.includes('COP31') && !world.some(h=>/Bayelsa|COP31/.test(h)), allText);
   const secs=await pg.evaluate(()=>[...document.querySelectorAll('#today-body .h2[id^="sec-"]')].map(h=>h.id.replace('sec-','')));
   t('World is the last section, after the paper’s own', secs[secs.length-1]==='world' && secs.includes('politics') && secs.includes('tech'), JSON.stringify(secs));
   const culture=await pg.evaluate(()=>[...document.querySelectorAll('#sec-culture + .cards h3')].map(h=>h.textContent));
@@ -46,7 +50,7 @@ async function open(lang){ const ctx=await br.newContext({viewport:{width:390,he
   await pg.evaluate(()=>{ location.hash='#/listen'; }); await pg.waitForTimeout(300);
   const q=await pg.evaluate(()=>[...document.querySelectorAll('#listen-body .qrow .qh')].map(e=>e.textContent));
   const firstWorld=q.findIndex(h=>/Spain|Mexican/.test(h)), lastAfrica=Math.max(...q.map((h,i)=>/Spain|Mexican/.test(h)?-1:i));
-  t('the briefing reads African stories before world news', q[0].includes('Nigeria') && firstWorld>lastAfrica, JSON.stringify(q));
+  t('the briefing reads African stories before world news', q[0].includes('Nigeria') && (firstWorld===-1 || firstWorld>lastAfrica), JSON.stringify(q));
   t('no JS errors', errs.length===0, errs[0]||'');
   await ctx.close(); }
 

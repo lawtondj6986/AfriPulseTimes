@@ -11,7 +11,7 @@
 // RLS exposes published articles and nothing else.
 
 import { escapeHtml, stripWireTag, isJunkSummary } from './story-share.js';
-import { guessVertical, guessGeo } from './pull-wire.js';
+import { guessVertical, isWorldStory } from './pull-wire.js';
 
 const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
 const ANON_KEY = process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY;
@@ -34,9 +34,9 @@ export function frontItemFromRow(row){
   let section = row.vertical || p.vertical || 'front';
   if (p.source === 'rss'){
     // File wire stories with the current classifier (stored sections may predate it),
-    // and keep stories that touch no African nation or region in World.
+    // and keep international-outlet stories with no African connection in World.
     section = guessVertical(headline, dek);
-    if (!row.region && !p.region && !guessGeo(headline + ' · ' + dek)) section = 'world';
+    if (isWorldStory(p.sourceLabel || p.byline, headline + ' · ' + dek, row.region || p.region)) section = 'world';
   }
   if (section === 'voices') section = 'opinions';
   if (!LABELS[section]) section = 'front';

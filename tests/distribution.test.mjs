@@ -280,7 +280,13 @@ test('junk summaries never reach a story page or the plain edition', () => {
 });
 
 test('plain edition files wire stories with the current classifier and keeps world news in World', () => {
-  const wire = (slug, headline, standfirst, vertical) => frontItemFromRow({ slug, headline, vertical, payload: { source: 'rss', standfirst } });
+  const wire = (slug, headline, standfirst, vertical, label) => frontItemFromRow({ slug, headline, vertical, payload: { source: 'rss', standfirst, sourceLabel: label || 'Al Jazeera' } });
+  // An African publisher's story is African even when it never names the country.
+  assert.equal(wire('by', 'Bayelsa Boat Mishap: Death toll rises, Tinubu approves N250mn', 'The president approved funds for families.', 'politics', 'Premium Times').section, 'politics');
+  assert.equal(wire('zb', 'Aradel, Zenith Bank, NASCON top stock pick this week', 'A stock investment guide.', 'markets', 'Premium Times').section, 'markets');
+  // An international outlet's story that says "Africa" or uses a demonym is not world news.
+  assert.notEqual(wire('af', 'Africa: COP31 cover deal collapses', 'Talks ended without agreement.', 'front', 'Al Jazeera').section, 'world');
+  assert.notEqual(wire('nn', 'Aid group deepens support for vulnerable Nigerians', 'Two charities received donations.', 'front', 'Reuters').section, 'world');
   // stored as Markets by the old classifier ("frustrate" contains "rate"); not about Africa
   assert.equal(wire('nz', 'New Zealand’s Mitchell, Phillips frustrate India as first Test ends in draw', 'New Zealand rescued a draw.', 'markets').section, 'world');
   // stored as Culture ("counterpart" contains "art"); African → Politics

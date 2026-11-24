@@ -163,6 +163,18 @@ export function guessGeo(text){
   }
   return null;
 }
+// World news is a narrow category: a story from an international outlet that
+// has no African connection. A story from an African publisher is African by
+// default even when it never names the country (a Nigerian paper writes
+// "Bayelsa" or "Tinubu", not "Nigeria"), so only known global outlets qualify.
+const GLOBAL_OUTLETS = /\b(al ?jazeera|bbc|reuters|associated press|ap news|afp|dw|deutsche welle|france ?24|rfi|the guardian|cnn|voa|voice of america|new york times|bloomberg|sky news|euronews)\b/i;
+const AFRICAN_WORDS = /\b(africa|african|africans|sahel|sahara|saharan|maghreb|nigerian|kenyan|ghanaian|egyptian|ethiopian|ugandan|tanzanian|rwandan|zimbabwean|zambian|senegalese|moroccan|algerian|tunisian|libyan|sudanese|somali|malian|ivorian|cameroonian|angolan|mozambican|namibian|malawian|congolese|liberian|gambian|togolese|beninese|burundian|eritrean|mauritanian|gabonese|chadian|batswana|basotho)s?\b/i;
+export function isWorldStory(label, text, region){
+  if (region) return false;
+  if (!GLOBAL_OUTLETS.test(String(label || ''))) return false;
+  const t = String(text || '');
+  return !AFRICAN_WORDS.test(t) && !guessGeo(t);
+}
 function slugify(s){
   return (s||'').toLowerCase().trim().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,72) || 'story';
 }
