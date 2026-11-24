@@ -88,3 +88,68 @@ test('feed escapes hostile titles so the XML stays well-formed', () => {
 test('xmlEscape covers the five specials', () => {
   assert.equal(xmlEscape(`&<>"'`), '&amp;&lt;&gt;&quot;&#39;');
 });
+
+// ── search-engine readiness: NewsArticle data, full text, news sitemap ──
+import { buildJsonLd } from '../api/story-share.js';
+import { buildSitemap, isoOrNull } from '../api/sitemap.js';
+
+test('story page carries NewsArticle JSON-LD and the full article text', () => {
+  const a = articleFromRow({
+    slug: 'kano-floods', headline: 'Kano floods displace thousands', vertical: 'front',
+    published_at: '2026-11-24T08:00:00Z',
+    payload: { standfirst: 'Rivers burst their banks.', byline: 'Amina Yusuf', body: ['First para.', 'Second para.'] }
+  });
+  const ld = JSON.parse(buildJsonLd(a, 'https://x.test'));
+  assert.equal(ld['@type'], 'NewsArticle');
+  assert.equal(ld.url, 'https://x.test/s/kano-floods');
+  assert.equal(ld.datePublished, '2026-11-24T08:00:00Z');
+  assert.equal(ld.author.name, 'Amina Yusuf');
+  assert.equal(ld.publisher.name, 'AfriPulse Times');
+  assert.equal(ld.articleSection, 'front');
+  assert.match(ld.articleBody, /First para\.\n\nSecond para\./);
+  const html = buildShareHtml(a, 'https://x.test');
+  assert.match(html, /<script type="application\/ld\+json">/);
+  assert.match(html, /<p>First para\.<\/p>\n<p>Second para\.<\/p>/);
+  assert.match(html, /location\.replace\("\/#\/story\/kano-floods"\)/, 'people are still forwarded to the reader');
+});
+
+test('wire stories keep their attribution in markup and structured data', () => {
+  const a = articleFromRow({ slug: 'w1', headline: 'H', payload: {
+    body: ['B'], source: 'rss', sourceUrl: 'https://wire.example/a', sourceLabel: 'Wire Co' } });
+  const ld = JSON.parse(buildJsonLd(a, 'https://x.test'));
+  assert.equal(ld.author.name, 'Wire Co');
+  assert.equal(ld.isBasedOn, 'https://wire.example/a');
+  assert.match(buildShareHtml(a, 'https://x.test'), /Source: <a rel="nofollow noopener" href="https:\/\/wire\.example\/a">Wire Co<\/a>/);
+  // a non-http source URL is never emitted as a link
+  const bad = articleFromRow({ slug: 'w2', headline: 'H', payload: { source: 'rss', sourceUrl: 'javascript:alert(1)' } });
+  assert.equal(bad.sourceUrl, null);
+});
+
+test('article text can never break out of the JSON-LD script element', () => {
+  const a = articleFromRow({ slug: 'x', headline: 'A </script><script>alert(1)</script>', payload: { body: ['</script>'] } });
+  const raw = buildJsonLd(a, 'https://x.test');
+  assert.ok(!raw.includes('<'), 'no raw < inside the JSON-LD payload');
+  assert.equal(JSON.parse(raw).headline, 'A </script><script>alert(1)</script>');
+});
+
+test('news sitemap lists every story and tags only the last 48 hours for Google News', () => {
+  const now = Date.parse('2026-11-24T12:00:00Z');
+  const xml = buildSitemap([
+    { slug: 'fresh-one', headline: 'Fresh & new', published_at: '2026-11-24T06:00:00Z' },
+    { slug: 'old-one', headline: 'Old', published_at: '2026-11-10T06:00:00Z' },
+    { slug: '', headline: 'no slug' }
+  ], 'https://x.test/', now);
+  assert.match(xml, /<loc>https:\/\/x\.test\/s\/fresh-one<\/loc>/);
+  assert.match(xml, /<loc>https:\/\/x\.test\/s\/old-one<\/loc>/);
+  assert.equal((xml.match(/<news:news>/g) || []).length, 1, 'only the fresh story is a news item');
+  assert.match(xml, /<news:title>Fresh &amp; new<\/news:title>/);
+  assert.equal((xml.match(/<url>/g) || []).length, 3, 'home + two stories; slugless row dropped');
+  assert.equal(isoOrNull('not a date'), null);
+});
+
+test('news sitemap is wired into vercel.json and robots.txt', async () => {
+  const { readFileSync } = await import('node:fs');
+  const vercel = JSON.parse(readFileSync(new URL('../vercel.json', import.meta.url), 'utf8'));
+  assert.ok(vercel.rewrites.some((r) => r.source === '/sitemap-news.xml' && r.destination === '/api/sitemap'));
+  assert.match(readFileSync(new URL('../public/robots.txt', import.meta.url), 'utf8'), /sitemap-news\.xml/);
+});

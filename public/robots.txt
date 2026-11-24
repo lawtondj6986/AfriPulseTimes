@@ -3,3 +3,4 @@ Allow: /
 Disallow: /api/
 
 Sitemap: https://afripulsetimes.com/sitemap.xml
+Sitemap: https://afripulsetimes.com/sitemap-news.xml
