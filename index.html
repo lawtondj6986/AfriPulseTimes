@@ -4,13 +4,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AfriPulse Times</title>
-  <!-- The app lives in afripulse-preview.html (kept unchanged). Send / there. -->
+  <!-- Phones land on the lite reader (public/reader.html). The newsroom desk
+       lives at /desk (public/afripulse-preview.html), unchanged. -->
   <!-- Redirect three ways for maximum reliability across browsers (esp. mobile):
        1) an immediate JS replace (no history entry), 2) a <meta> refresh
-       fallback for when JS is disabled/blocked, 3) a visible link as last resort. -->
-  <script>location.replace('/afripulse-preview.html' + location.search + location.hash);</script>
-  <meta http-equiv="refresh" content="0; url=/afripulse-preview.html">
-  <link rel="canonical" href="/afripulse-preview.html">
+       fallback for when JS is disabled/blocked, 3) a visible link as last resort.
+       Note: once the service worker is installed it serves the reader shell for /
+       directly, so this redirect only runs on the very first visit. -->
+  <script>location.replace('/reader.html' + location.search + location.hash);</script>
+  <meta http-equiv="refresh" content="0; url=/reader.html">
+  <link rel="canonical" href="/reader.html">
   <style>
     body{font-family:-apple-system,Segoe UI,Roboto,sans-serif;background:#0E2818;color:#F3EEE2;
       display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;text-align:center}
@@ -18,6 +21,6 @@
   </style>
 </head>
 <body>
-  <p>Loading AfriPulse Times&hellip;<br><a href="/afripulse-preview.html">Tap here if it doesn't open.</a></p>
+  <p>Loading AfriPulse Times&hellip;<br><a href="/reader.html">Tap here if it doesn't open.</a></p>
 </body>
 </html>
