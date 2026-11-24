@@ -271,6 +271,8 @@
   .fx .fxi b{font-weight:700;color:var(--muted);font-size:11.5px;margin-inline-end:3px}
   .fx .fxi i{font-style:normal;color:var(--muted);font-size:11.5px}
   .fx .fxd{color:var(--muted);font-size:11.5px}
+  .top .date .upd{display:block;font-size:11px;color:var(--muted);opacity:.85}
+  .trnote{font-size:12.5px;color:var(--muted);font-style:italic;margin:-6px 0 14px}
   .newline{font-size:13.5px;color:var(--gold-d);font-weight:600;margin:0 0 10px}
   .card.read h3,.card.read p{opacity:.6}
   .card .rd{color:var(--muted);font-weight:600}
@@ -611,6 +613,8 @@
       copy_link:{en:'Copy link',fr:'Copier le lien',ar:'نسخ الرابط',sw:'Nakili kiungo',pt:'Copiar link'},
       fx_label:{en:'Exchange rates',fr:'Taux de change',ar:'أسعار الصرف',sw:'Viwango vya ubadilishaji',pt:'Taxas de câmbio'},
       fx_asof:{en:'as of %s',fr:'au %s',ar:'حتى %s',sw:'kufikia %s',pt:'em %s'},
+      upd:{en:'Updated %s',fr:'Mis à jour %s',ar:'آخر تحديث %s',sw:'Imesasishwa %s',pt:'Atualizado %s'},
+      not_tr:{en:'Shown in its original English.',fr:'Pas encore traduit en français — affiché en anglais.',ar:'لم يُترجم إلى العربية بعد — يُعرض بالإنجليزية.',sw:'Bado haijatafsiriwa kwa Kiswahili — inaonyeshwa kwa Kiingereza.',pt:'Ainda não traduzido para português — apresentado em inglês.'},
       ed_done:{en:'🏁 Edition complete — you’ve read all %t stories today.',fr:'🏁 Édition terminée — vous avez lu les %t articles du jour.',ar:'🏁 اكتمل الإصدار — قرأت كل أخبار اليوم الـ%t.',sw:'🏁 Toleo limekamilika — umesoma habari zote %t za leo.',pt:'🏁 Edição completa — leu todas as %t notícias de hoje.'},
       stop_read:{en:'■ Stop reading',fr:'■ Arrêter la lecture',ar:'■ إيقاف القراءة',sw:'■ Simamisha kusoma',pt:'■ Parar a leitura'}
     };
@@ -939,6 +943,8 @@
         ARTICLES.forEach(function(a){ had[a.slug]=1; });
         ARTICLES=trimPack((res.data||[]).map(rowToLite));   // strip to text-only, cap ~50KB
         savePack(ARTICLES);
+        try{ localStorage.setItem('afripulse_synced', String(Date.now())); }catch(e){}
+        paintDate();
         LAST_FETCH=Date.now();
         var arrived=0;
         if(hadAny) ARTICLES.forEach(function(a){ if(!had[a.slug]){ FRESH[a.slug]=1; arrived++; } });
@@ -1301,6 +1307,7 @@
         '<div class="st-kick">'+esc(VL(a.vertical))+'</div>'+
         '<h1 class="st-h" dir="auto"'+slang+'>'+esc(a.headline)+'</h1>'+
         '<div class="st-meta">'+meta+'</div>'+
+        (untranslated?('<p class="trnote">'+esc(tr('not_tr'))+'</p>'):'')+
         ((a.countries&&a.countries.length)?('<div class="nations st-n" id="st-nations">'+a.countries.map(function(c){
           return '<button type="button" data-c="'+c+'">'+flagEmoji(c)+' '+esc(countryName(c))+'</button>'; }).join('')+'</div>'):'')+
         '<button class="save-btn'+(sv?' on':'')+'" id="save-btn">'+esc(sv?tr('saved_on'):('☆ '+tr('save')))+'</button>'+
@@ -1362,8 +1369,22 @@
       var q=document.getElementById('q'); if(q){ q.placeholder=tr('search_ph'); q.setAttribute('aria-label', tr('search_ph')); }
       var fp=document.getElementById('fp-btn'); if(fp) fp.textContent=tr('fp_btn');
     }
+    // "5 minutes ago", localized by the browser itself.
+    function agoText(ts){
+      var s=Math.max(0,Math.round((Date.now()-ts)/1000)), n, unit;
+      if(s<60){ n=0; unit='second'; }
+      else if(s<3600){ n=Math.round(s/60); unit='minute'; }
+      else if(s<86400){ n=Math.round(s/3600); unit='hour'; }
+      else { n=Math.round(s/86400); unit='day'; }
+      try{ return new Intl.RelativeTimeFormat(locale(),{numeric:'auto'}).format(n?-n:0,unit); }catch(e){ return n?(n+' '+unit+(n===1?'':'s')+' ago'):'now'; }
+    }
+    function lastSynced(){ try{ return +localStorage.getItem('afripulse_synced')||0; }catch(e){ return 0; } }
     function paintDate(){ var el=document.getElementById('today-date'); if(!el) return;
-      try{ el.textContent=new Date().toLocaleDateString(locale(),{weekday:'long',day:'numeric',month:'long'}); }catch(e){ el.textContent=new Date().toDateString(); } }
+      var d; try{ d=new Date().toLocaleDateString(locale(),{weekday:'long',day:'numeric',month:'long'}); }catch(e){ d=new Date().toDateString(); }
+      // How fresh is what you're reading? Said plainly, and honestly when offline.
+      var ts=lastSynced(), fresh='';
+      if(ts && ARTICLES.length) fresh=(navigator.onLine===false?(tr('offline')+' · '):'')+tr('upd',{s:agoText(ts)});
+      el.innerHTML=esc(d)+(fresh?('<span class="upd" id="upd">'+esc(fresh)+'</span>'):''); }
     // Time-of-day greeting on Today — a newspaper that says hello.
     function paintGreet(){ var el=document.getElementById('greet'); if(!el) return;
       var h=new Date().getHours();
@@ -1388,7 +1409,8 @@
     function paintConn(){ var chip=document.getElementById('conn-chip'), label=document.getElementById('conn-label'); if(!chip) return;
       var d=detectConn(); chip.className='chip '+d.c; label.textContent=d.label; }
     window.addEventListener('online', function(){ paintConn(); fetchEdition(); });   // auto-sync when back online
-    window.addEventListener('offline', function(){ paintConn(); renderPackStrip(); });
+    window.addEventListener('offline', function(){ paintConn(); renderPackStrip(); paintDate(); });
+    setInterval(function(){ if(document.visibilityState!=='hidden') paintDate(); }, 60000);
     try{ if(navigator.connection && navigator.connection.addEventListener) navigator.connection.addEventListener('change', paintConn); }catch(e){}
 
     // ── Data saver (persisted; when on, edition fetch omits the image column) ──

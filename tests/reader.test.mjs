@@ -81,7 +81,7 @@ test('every tr() key the reader uses exists in T', () => {
 
 test('service worker ships the v2 reader shell and knows the desk', () => {
   const sw = read('../public/sw.js');
-  assert.match(sw, /VERSION\s*=\s*'ap-v7'/, 'SW VERSION should be ap-v7');
+  assert.match(sw, /VERSION\s*=\s*'ap-v8'/, 'SW VERSION should be ap-v8');
   assert.match(sw, /READER_SHELL\s*=\s*'\/reader\.html'/, 'reader shell missing');
   assert.match(sw, /DESK_SHELL\s*=\s*'\/afripulse-preview\.html'/, 'desk shell missing');
   // The reader shell is precached; the heavy newsroom is NOT in the precache list.
