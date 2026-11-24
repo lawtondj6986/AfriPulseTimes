@@ -133,6 +133,18 @@
   .st-h{font-family:Georgia,serif;font-size:27px;line-height:1.22;font-weight:700;margin:6px 0 10px}
   .st-meta{font-size:13px;color:var(--muted);margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--line)}
   .st-dek{font-size:18px;color:var(--ink);font-weight:500;margin-bottom:18px;line-height:1.5}
+  /* The Quick Read — agent-built key points, editor-verified */
+  .quickread{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--gold);
+    border-radius:10px;padding:14px 18px;margin:0 0 20px}
+  html[dir="rtl"] .quickread{border-left:1px solid var(--line);border-right:4px solid var(--gold)}
+  .quickread .qr-t{font-family:Georgia,serif;font-size:13px;font-weight:700;text-transform:uppercase;
+    letter-spacing:.06em;color:var(--gold-d);margin-bottom:8px}
+  .quickread ul{list-style:none;margin:0;padding:0}
+  .quickread li{position:relative;padding:4px 0 4px 20px;font-size:15px;line-height:1.5}
+  html[dir="rtl"] .quickread li{padding:4px 20px 4px 0}
+  .quickread li::before{content:'◆';position:absolute;left:2px;top:5px;font-size:9px;color:var(--gold)}
+  html[dir="rtl"] .quickread li::before{left:auto;right:2px}
+  .ainote{font-size:11.5px;color:var(--muted);margin:14px 0 0;padding-top:10px;border-top:1px dashed var(--line);line-height:1.5}
   .st-body p{margin-bottom:15px;font-size:var(--readsize,18px);line-height:1.64}
   .related{margin-top:28px}
 
@@ -340,7 +352,9 @@
       th_dark:{en:'Dark',fr:'Sombre',ar:'داكن',sw:'Giza',pt:'Escuro'},
       search_ph:{en:'Search today’s stories…',fr:'Rechercher dans les articles du jour…',ar:'ابحث في أخبار اليوم…',sw:'Tafuta habari za leo…',pt:'Pesquisar nas notícias de hoje…'},
       search_n:{en:'%n stories match',fr:'%n articles correspondent',ar:'%n خبر مطابق',sw:'habari %n zinalingana',pt:'%n notícias correspondem'},
-      search_none:{en:'Nothing matches that search in today’s edition.',fr:'Aucun résultat pour cette recherche dans l’édition du jour.',ar:'لا نتائج لهذا البحث في إصدار اليوم.',sw:'Hakuna kinacholingana na utafutaji huo katika toleo la leo.',pt:'Nada corresponde a essa pesquisa na edição de hoje.'}
+      search_none:{en:'Nothing matches that search in today’s edition.',fr:'Aucun résultat pour cette recherche dans l’édition du jour.',ar:'لا نتائج لهذا البحث في إصدار اليوم.',sw:'Hakuna kinacholingana na utafutaji huo katika toleo la leo.',pt:'Nada corresponde a essa pesquisa na edição de hoje.'},
+      quick_read:{en:'The quick read',fr:'L’essentiel',ar:'الخلاصة السريعة',sw:'Muhtasari wa haraka',pt:'O essencial'},
+      ai_note:{en:'Brief prepared with AI assistance from the original wire report · verified by an AfriPulse editor',fr:'Résumé préparé avec l’aide de l’IA à partir de la dépêche originale · vérifié par un éditeur AfriPulse',ar:'أُعدّ الموجز بمساعدة الذكاء الاصطناعي من البرقية الأصلية · تحقق منه محرر AfriPulse',sw:'Muhtasari umeandaliwa kwa msaada wa AI kutoka taarifa asilia · umethibitishwa na mhariri wa AfriPulse',pt:'Resumo preparado com apoio de IA a partir do despacho original · verificado por um editor AfriPulse'}
     };
 
     // ── Vertical + region labels (mirrors the newsroom, all 5 languages) ──
@@ -434,7 +448,8 @@
         tags:Array.isArray(p.tags)?p.tags.slice(0,8):[],
         region:r.region||null,
         published_at:r.published_at||p.publishedAt||null,
-        translations:r.translations||p.translations||null
+        translations:r.translations||p.translations||null,
+        polished:!!p.polished
       };
       if(a.vertical==='voices') a.vertical='opinions';
       if(!a.region) a.region=regionSlugFor(a);
@@ -446,7 +461,7 @@
       var t=a.translations[LANG]; if(!t) return a;
       return {
         slug:a.slug, vertical:a.vertical, region:a.region, byline:a.byline, tags:a.tags,
-        published_at:a.published_at, translations:a.translations,
+        published_at:a.published_at, translations:a.translations, polished:a.polished,
         kicker:t.kicker||a.kicker, headline:t.headline||a.headline,
         dek:t.standfirst||t.dek||a.dek,
         body:(Array.isArray(t.body)&&t.body.length)?t.body:a.body
@@ -517,6 +532,14 @@
     function relatedFor(base){
       return ARTICLES.filter(function(a){ return a.slug!==base.slug && (a.region===base.region || a.vertical===base.vertical); }).slice(0,3).map(localize);
     }
+    // Agent-built key points (generated nightly, stored per language in
+    // translations.summaries, verified through the editor gate).
+    function quickReadFor(base){
+      var s=base && base.translations && base.translations.summaries;
+      if(!s) return null;
+      var arr=s[LANG]||s.en;
+      return (Array.isArray(arr)&&arr.length)?arr.slice(0,5):null;
+    }
     function renderStory(slug){
       var body=document.getElementById('story-body'); if(!body) return;
       var base=null; for(var i=0;i<ARTICLES.length;i++){ if(ARTICLES[i].slug===slug){ base=ARTICLES[i]; break; } }
@@ -527,6 +550,10 @@
       var bodyHtml=(a.body||[]).map(function(p){ return '<p>'+esc(p)+'</p>'; }).join('') || (a.dek?'<p class="muted">'+esc(a.dek)+'</p>':'');
       var rel=relatedFor(base).map(storyCard).join('');
       var sv=isSaved(a.slug);
+      var qr=quickReadFor(base);
+      var qrHtml=qr?('<div class="quickread"><div class="qr-t">'+esc(tr('quick_read'))+'</div><ul>'+
+        qr.map(function(pt){ return '<li>'+esc(pt)+'</li>'; }).join('')+'</ul></div>'):'';
+      var noteHtml=a.polished?('<p class="ainote">✦ '+esc(tr('ai_note'))+'</p>'):'';
       body.innerHTML=
         '<a class="backlink" href="#/">‹ '+esc(tr('back'))+'</a>'+
         '<div class="st-kick">'+esc(VL(a.vertical))+'</div>'+
@@ -534,8 +561,10 @@
         '<div class="st-meta">'+meta+'</div>'+
         '<button class="save-btn'+(sv?' on':'')+'" id="save-btn">'+esc(sv?tr('saved_on'):('☆ '+tr('save')))+'</button>'+
         '<button class="share-btn" id="share-btn">↗ '+esc(tr('share'))+'</button>'+
+        qrHtml+
         (a.dek?'<div class="st-dek">'+esc(a.dek)+'</div>':'')+
         '<div class="st-body">'+bodyHtml+'</div>'+
+        noteHtml+
         (rel?('<div class="related"><div class="h2">'+esc(tr('related'))+'</div>'+rel+'</div>'):'');
       var sb=document.getElementById('save-btn');
       if(sb) sb.addEventListener('click', function(){ var now=toggleSave(a.slug);
@@ -702,7 +731,10 @@
     function speakFrom(items,i){
       if(i>=items.length){ SPEAK.playing=false; SPEAK.paused=false; SPEAK.idx=-1; renderListen(); return; }
       SPEAK.idx=i; renderListen();
-      var a=items[i]; var text=a.headline+'. '+(a.dek||'');
+      var a=items[i];
+      // Prefer the agents' key points: a tighter, more informative listen.
+      var qr=quickReadFor(a);
+      var text=a.headline+'. '+(qr?qr.join('. '):(a.dek||''));
       var u=new SpeechSynthesisUtterance(text); u.lang={en:'en-GB',fr:'fr-FR',ar:'ar-EG',sw:'sw-KE',pt:'pt-PT'}[LANG]||'en-GB';
       var v=pickVoice(); if(v) u.voice=v; u.rate=.98;
       u.onend=function(){ if(SPEAK.playing && !SPEAK.paused) speakFrom(items,i+1); };

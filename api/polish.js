@@ -41,9 +41,11 @@ Strict rules:
 - FACTS ONLY. Use only information present in the source text. Do NOT invent or infer names, quotes, figures, dates, locations, causes, or context that is not explicitly there.
 - Preserve every proper noun, place name, organisation, and number exactly as given.
 - Neutral, factual, third-person journalistic tone. No opinion, no first person, no direct address, no calls to action.
+- EASY TO READ. Many AfriPulse readers use English as a second or third language, often on small screens. Write short sentences (aim under ~20 words). Prefer plain, common words over formal ones. One idea per sentence. Expand an acronym the first time it appears IF its meaning is given or unmistakable in the source; otherwise keep it exactly as written.
+- Lead with what happened and why it matters to readers; details follow.
 - Remove feed boilerplate ("Read more", "Continue reading", "The post … appeared first on …", share prompts, cookie/subscribe notices).
 - 1 to 4 short paragraphs. If the source is very thin (e.g. little more than a headline), write a single concise, factual sentence — do NOT pad it out with filler.
-- "standfirst" is a single summarising sentence, at most ~200 characters.
+- "standfirst" is a single summarising sentence, at most ~200 characters, in the same plain style.
 - Do NOT include the headline in the body.
 
 Headline (for context only, do not repeat): ${article.headline || ''}
