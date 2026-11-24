@@ -106,6 +106,10 @@
   .searchrow input{width:100%;border:1px solid var(--line);background:var(--card);color:var(--ink);
     border-radius:10px;padding:10px 14px;font-size:15px;font-family:inherit}
   .searchrow input::placeholder{color:var(--muted)}
+  .fpbtn{display:none;width:100%;margin:0 0 16px;border:1.5px solid var(--gold);background:transparent;
+    color:var(--gold-d);border-radius:10px;padding:11px 14px;font-size:14px;font-weight:700}
+  .fpbtn.show{display:block}
+  .fpbtn:active{opacity:.6}
   :focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 
   .muted{color:var(--muted)}
@@ -236,6 +240,7 @@
         </div>
         <div class="packstrip" id="packstrip" hidden></div>
         <div class="searchrow"><input id="q" type="search" autocomplete="off" placeholder="Search…" aria-label="Search today's stories"></div>
+        <button class="fpbtn" id="fp-btn" type="button">📸</button>
         <div id="today-body"><div class="placeholder">…</div></div>
       </div>
     </section>
@@ -354,7 +359,10 @@
       search_n:{en:'%n stories match',fr:'%n articles correspondent',ar:'%n خبر مطابق',sw:'habari %n zinalingana',pt:'%n notícias correspondem'},
       search_none:{en:'Nothing matches that search in today’s edition.',fr:'Aucun résultat pour cette recherche dans l’édition du jour.',ar:'لا نتائج لهذا البحث في إصدار اليوم.',sw:'Hakuna kinacholingana na utafutaji huo katika toleo la leo.',pt:'Nada corresponde a essa pesquisa na edição de hoje.'},
       quick_read:{en:'The quick read',fr:'L’essentiel',ar:'الخلاصة السريعة',sw:'Muhtasari wa haraka',pt:'O essencial'},
-      ai_note:{en:'Brief prepared with AI assistance from the original wire report · verified by an AfriPulse editor',fr:'Résumé préparé avec l’aide de l’IA à partir de la dépêche originale · vérifié par un éditeur AfriPulse',ar:'أُعدّ الموجز بمساعدة الذكاء الاصطناعي من البرقية الأصلية · تحقق منه محرر AfriPulse',sw:'Muhtasari umeandaliwa kwa msaada wa AI kutoka taarifa asilia · umethibitishwa na mhariri wa AfriPulse',pt:'Resumo preparado com apoio de IA a partir do despacho original · verificado por um editor AfriPulse'}
+      ai_note:{en:'Brief prepared with AI assistance from the original wire report · verified by an AfriPulse editor',fr:'Résumé préparé avec l’aide de l’IA à partir de la dépêche originale · vérifié par un éditeur AfriPulse',ar:'أُعدّ الموجز بمساعدة الذكاء الاصطناعي من البرقية الأصلية · تحقق منه محرر AfriPulse',sw:'Muhtasari umeandaliwa kwa msaada wa AI kutoka taarifa asilia · umethibitishwa na mhariri wa AfriPulse',pt:'Resumo preparado com apoio de IA a partir do despacho original · verificado por um editor AfriPulse'},
+      fp_btn:{en:'📸 Share today’s front page',fr:'📸 Partager la une du jour',ar:'📸 شارك صفحة اليوم الأولى',sw:'📸 Shiriki ukurasa wa mbele wa leo',pt:'📸 Partilhar a capa de hoje'},
+      fp_eyebrow:{en:'TODAY’S FRONT PAGE',fr:'LA UNE DU JOUR',ar:'الصفحة الأولى اليوم',sw:'UKURASA WA MBELE WA LEO',pt:'A CAPA DE HOJE'},
+      fp_tag:{en:'Real-time · 54 nations · reads offline',fr:'En temps réel · 54 nations · lisible hors ligne',ar:'لحظة بلحظة · 54 دولة · يُقرأ دون اتصال',sw:'Wakati halisi · mataifa 54 · husomeka nje ya mtandao',pt:'Em tempo real · 54 nações · lê offline'}
     };
 
     // ── Vertical + region labels (mirrors the newsroom, all 5 languages) ──
@@ -507,6 +515,7 @@
     function renderToday(){
       var body=document.getElementById('today-body'); if(!body) return;
       renderPackStrip();
+      var fpb=document.getElementById('fp-btn'); if(fpb) fpb.classList.toggle('show', ARTICLES.length>0);
       if(!ARTICLES.length){ body.innerHTML = FETCHED ? emptyState(tr('empty_b'),tr('empty_p')) : '<div class="placeholder">…</div>'; return; }
       var loc=ARTICLES.map(localize);
       // Search: filter the cached pack client-side — works fully offline.
@@ -589,6 +598,7 @@
       document.querySelectorAll('[data-nav]').forEach(function(el){ el.textContent=tr(el.getAttribute('data-nav')); });
       ['pulse','listen','saved','me'].forEach(function(k){ var el=document.getElementById('t-'+k); if(el) el.textContent=tr(k); });
       var q=document.getElementById('q'); if(q) q.placeholder=tr('search_ph');
+      var fp=document.getElementById('fp-btn'); if(fp) fp.textContent=tr('fp_btn');
     }
     function paintDate(){ var el=document.getElementById('today-date'); if(!el) return;
       try{ el.textContent=new Date().toLocaleDateString(locale(),{weekday:'long',day:'numeric',month:'long'}); }catch(e){ el.textContent=new Date().toDateString(); } }
@@ -817,6 +827,124 @@
       if(bar) bar.addEventListener('click', function(e){ var b=e.target.closest('button'); if(!b) return; var r=b.getAttribute('data-r'); PULSE_REGION=(r==='all')?null:r; renderPulse(); });
     }
 
+    // ── Front-page card: today's top headlines as a shareable image. ──
+    // Drawn on-device with canvas (offline, no backend, no cost) and handed to
+    // the phone's share sheet — built for WhatsApp Status, where images travel
+    // further than links.
+    function fpWrap(ctx, text, maxWidth, maxLines){
+      var words=String(text||'').split(/\s+/), lines=[], line='';
+      for(var i=0;i<words.length;i++){
+        var tryLine=line?line+' '+words[i]:words[i];
+        if(ctx.measureText(tryLine).width<=maxWidth || !line){ line=tryLine; }
+        else{
+          lines.push(line); line=words[i];
+          if(lines.length===maxLines-1){
+            while(ctx.measureText(line+'…').width>maxWidth && line.length>3) line=line.slice(0,-1);
+            var rest=words.slice(i+1).length;
+            if(rest>0 || ctx.measureText(line).width>maxWidth) line+='…';
+            lines.push(line); return lines;
+          }
+        }
+      }
+      if(line) lines.push(line);
+      return lines;
+    }
+    function buildFrontPageCard(){
+      var W=1080,H=1350,M=78;
+      var rtl=(LANG==='ar');
+      var c=document.createElement('canvas'); c.width=W; c.height=H;
+      var x=c.getContext('2d');
+      // ground
+      var g=x.createLinearGradient(0,0,W*0.4,H);
+      g.addColorStop(0,'#12351F'); g.addColorStop(0.55,'#0E2818'); g.addColorStop(1,'#081810');
+      x.fillStyle=g; x.fillRect(0,0,W,H);
+      var glow=x.createRadialGradient(W-120,80,0,W-120,80,460);
+      glow.addColorStop(0,'rgba(201,162,39,0.20)'); glow.addColorStop(1,'rgba(201,162,39,0)');
+      x.fillStyle=glow; x.fillRect(0,0,W,H);
+      x.fillStyle='#C9A227'; x.fillRect(0,0,W,16); x.fillRect(0,H-16,W,16);
+      // Africa mark (same path as the masthead)
+      x.save(); x.translate(M,54); x.scale(1.05,1.05); x.translate(5.6,-2.9); x.scale(0.911,0.911);
+      var africa=new Path2D('M16,12 Q24,7 33,9 Q48,9 60,11 L63,13 Q67,22 70,32 Q76,37 83,42 Q74,48 69,51 Q66,60 63,70 Q60,80 55,87 Q50,95 45,97 Q40,94 39,87 Q35,74 34,63 Q33,57 36,54 Q33,52 29,51 Q22,52 17,50 Q9,46 6,36 Q6,30 10,23 Q12,17 16,12 Z');
+      var mg=x.createLinearGradient(0,0,0,100); mg.addColorStop(0,'#E9D07A'); mg.addColorStop(1,'#C9A227');
+      x.fillStyle=mg; x.fill(africa); x.restore();
+      x.save(); x.translate(M,54); x.strokeStyle='rgba(110,231,168,0.8)'; x.lineWidth=2.6;
+      x.lineJoin='round'; x.lineCap='round'; x.beginPath();
+      [[8,50],[35,50],[38,42],[42,59],[46,35],[50,50],[80,50]].forEach(function(p,i){ i?x.lineTo(p[0],p[1]):x.moveTo(p[0],p[1]); });
+      x.stroke(); x.restore();
+      // masthead — the Latin wordmark is always left-anchored LTR
+      x.textBaseline='alphabetic';
+      x.direction='ltr'; x.textAlign='left';
+      x.font='700 62px Georgia, "Times New Roman", serif';
+      var mx=M+128, my=124;
+      x.fillStyle='#FBF6E9'; x.fillText('Afri',mx,my);
+      var w1=x.measureText('Afri').width;
+      x.fillStyle='#C9A227'; x.fillText('Pulse',mx+w1,my);
+      var w2=x.measureText('Pulse').width;
+      x.fillStyle='#FBF6E9'; x.fillText(' Times',mx+w1+w2,my);
+      // localized content below the masthead mirrors for RTL
+      if(rtl){ x.direction='rtl'; x.textAlign='right'; }
+      // eyebrow plate
+      var ey=tr('fp_eyebrow');
+      x.font='700 27px -apple-system, "Segoe UI", Roboto, sans-serif';
+      try{ x.letterSpacing='6px'; }catch(e){}
+      var ew=x.measureText(ey).width+56;
+      var ex=rtl?(W-M-ew):M, eyY=196;
+      x.strokeStyle='#C9A227'; x.lineWidth=2; x.strokeRect(ex,eyY,ew,58);
+      x.fillStyle='#E9D07A'; x.fillText(ey, rtl?(ex+ew-28):(ex+28), eyY+40);
+      try{ x.letterSpacing='0px'; }catch(e){}
+      // date — on the eyebrow row, opposite the plate
+      x.font='400 30px -apple-system, "Segoe UI", Roboto, sans-serif';
+      x.fillStyle='#AFC0A8';
+      var dateStr=''; try{ dateStr=new Date().toLocaleDateString(locale(),{weekday:'long',day:'numeric',month:'long',year:'numeric'}); }catch(e){ dateStr=new Date().toDateString(); }
+      x.textAlign=rtl?'left':'right'; x.fillText(dateStr, rtl?M:W-M, eyY+40);
+      x.textAlign=rtl?'right':'left';
+      // headlines
+      var items=ARTICLES.slice(0,5).map(localize);
+      var y=330, tx=rtl?(W-M):M, maxW=W-2*M-56;
+      items.forEach(function(a){
+        x.fillStyle='#C9A227'; x.font='400 26px -apple-system, sans-serif';
+        x.fillText('◆', rtl?(W-M-10):M, y+6);
+        x.fillStyle='#D9C98F'; x.font='700 23px -apple-system, "Segoe UI", Roboto, sans-serif';
+        x.fillText(VL(a.vertical).toUpperCase(), rtl?(W-M-56):M+56, y-32+32);
+        x.fillStyle='#F3EAD4'; x.font='700 42px Georgia, "Times New Roman", serif';
+        var lines=fpWrap(x, a.headline, maxW, 2);
+        lines.forEach(function(ln,li){ x.fillText(ln, rtl?(W-M-56):M+56, y+44+li*52); });
+        y+=44+lines.length*52+40;
+      });
+      // footer
+      var fy=H-150;
+      x.strokeStyle='rgba(201,162,39,0.5)'; x.lineWidth=1.5;
+      x.beginPath(); x.moveTo(M,fy); x.lineTo(W-M,fy); x.stroke();
+      x.fillStyle='#E9D07A'; x.font='700 34px -apple-system, "Segoe UI", Roboto, sans-serif';
+      x.fillText('afripulsetimes.com', rtl?(W-M):M, fy+52);
+      x.fillStyle='#AFC0A8'; x.font='400 26px -apple-system, "Segoe UI", Roboto, sans-serif';
+      x.fillText(tr('fp_tag'), rtl?(W-M):M, fy+94);
+      return c;
+    }
+    function shareFrontPage(){
+      if(!ARTICLES.length) return;
+      var c;
+      try{ c=buildFrontPageCard(); }catch(e){ try{ console.error('front-page card failed:', e); }catch(_){} return; }
+      c.toBlob(function(blob){
+        if(!blob) return;
+        var fname='afripulse-front-page.png';
+        try{
+          var file=new File([blob], fname, {type:'image/png'});
+          if(navigator.canShare && navigator.canShare({files:[file]})){
+            navigator.share({files:[file], title:'AfriPulse Times', text:tr('fp_eyebrow')+' · afripulsetimes.com'}).catch(function(){});
+            return;
+          }
+        }catch(e){}
+        // No share sheet (desktop): download the card instead.
+        try{
+          var a=document.createElement('a');
+          a.href=URL.createObjectURL(blob); a.download=fname;
+          document.body.appendChild(a); a.click();
+          setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); },2000);
+        }catch(e){}
+      },'image/png');
+    }
+
     // ── Router ──
     var SCREENS={'':'today','pulse':'pulse','listen':'listen','saved':'saved','me':'me'};
     function showScreen(name){ document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('on'); }); var s=document.getElementById('s-'+name); if(s) s.classList.add('on'); }
@@ -851,6 +979,8 @@
     var SEARCHQ='';
     var _q=document.getElementById('q');
     if(_q) _q.addEventListener('input', function(){ SEARCHQ=this.value.trim(); renderToday(); });
+    var _fp=document.getElementById('fp-btn');
+    if(_fp) _fp.addEventListener('click', shareFrontPage);
     if(!location.hash) location.replace('#/');
     route();            // paint from cache instantly (ARTICLES may already be loaded)
     fetchEdition();     // then refresh from Supabase
