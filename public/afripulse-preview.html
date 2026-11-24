@@ -3701,17 +3701,20 @@ function viewLegal(kind){
   }else{
     title = t('legal_privacy');
     blocks =
-      '<h2>Overview</h2><p>AfriPulse Times respects your privacy. This page explains what we collect and why.</p>'+
-      '<h2>What we collect</h2><p><strong>Newsletter &amp; enquiries:</strong> if you subscribe or contact us, we store the email address and details you provide, to send the newsletter or respond to you. <strong>Nothing else is required to read the site.</strong></p>'+
-      '<h2>How we use it</h2><p>Only to deliver the newsletter, answer investor/partner enquiries, and operate the service. We do not sell your personal data.</p>'+
-      '<h2>Storage</h2><p>Data is stored securely with our infrastructure providers (Supabase) and, for the newsletter, our email provider. You can ask us to delete your data at any time.</p>'+
-      '<h2>Your choices</h2><p>Unsubscribe from any newsletter email, or email <a href="mailto:'+contact+'">'+contact+'</a> to access or delete your data.</p>';
+      '<h2>Overview</h2><p>AfriPulse Times is built so that you can read the news without giving us anything. This page says plainly what is stored, where, and why.</p>'+
+      '<h2>Stored only on your device</h2><p>The reader keeps your settings and reading history in your own browser so the app can work offline and feel personal: your language, text size, appearance and data-saver choices; your home region; the stories you have opened, your reading streak and the time of your last visit; and the stories you save. <strong>None of this is sent to us.</strong> You can erase your reading history at any time under <em>Me &rarr; Your data</em>, or by clearing your browser\'s site data.</p>'+
+      '<h2>What reaches us</h2><p><strong>Newsletter:</strong> if you subscribe, we store your email address and chosen language to send you the morning brief. <strong>Enquiries:</strong> if you contact us, we store the details you provide so we can reply. <strong>Accounts:</strong> staff and registered readers sign in with an email address. Nothing else is required to read the site.</p>'+
+      '<h2>Audience measurement</h2><p>We count page views in aggregate to understand which stories are read, using Vercel Web Analytics. It sets no cookies, does not follow you across other sites, and does not build a profile of you.</p>'+
+      '<h2>Content loaded from others</h2><p>Photographs are loaded directly from the original publisher\'s servers, which therefore receive a request from your device as any website would; we do not pass them the address of the page you are reading. With data saver on, no photographs are requested at all. Read-aloud uses the speech voices built into your device; some devices generate speech through their maker\'s online service.</p>'+
+      '<h2>How we use what reaches us</h2><p>Only to deliver the newsletter, answer enquiries, and operate the service. We do not sell personal data.</p>'+
+      '<h2>Storage</h2><p>Data that reaches us is held with our infrastructure providers (Supabase for the database, Buttondown for newsletter delivery, Vercel for hosting).</p>'+
+      '<h2>Your choices</h2><p>Unsubscribe from any newsletter email, or write to <a href="mailto:'+contact+'">'+contact+'</a> to see or delete the data we hold about you.</p>';
   }
   return renderHeader(null)+
     '<a class="art-back" href="#/" style="padding:14px 22px">← '+esc(t('back_to_site'))+'</a>'+
     '<div class="legal-page">'+
       '<h1>'+esc(title)+'</h1>'+
-      '<div class="updated">'+esc(t('legal_updated'))+' · July 2026</div>'+
+      '<div class="updated">'+esc(t('legal_updated'))+' · '+(kind==='terms'?'July':'November')+' 2026</div>'+
       blocks+
       '<div class="legal-note">'+esc(t('legal_note'))+'</div>'+
     '</div>'+
