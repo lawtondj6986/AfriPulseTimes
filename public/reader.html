@@ -206,6 +206,12 @@
   .edbar{height:4px;background:var(--line);border-radius:2px;margin:7px auto 0;max-width:220px;overflow:hidden}
   .edbar i{display:block;height:100%;background:linear-gradient(90deg,var(--gold-d),#E9D07A)}
   .edprog.done{color:var(--gold-d);font-weight:600}
+  .newb{display:inline-block;background:linear-gradient(135deg,#E9D07A,var(--gold-d));color:#241c04;
+    font-size:10px;font-weight:800;letter-spacing:.08em;padding:2px 6px;border-radius:4px;
+    margin-inline-start:8px;vertical-align:1px}
+  .newline{font-size:13.5px;color:var(--gold-d);font-weight:600;margin:0 0 10px}
+  .card.read h3,.card.read p{opacity:.6}
+  .card .rd{color:var(--muted);font-weight:600}
 
   /* ── Bottom tab bar ── */
   .tabbar{position:fixed;left:0;right:0;bottom:0;z-index:50;display:flex;background:var(--forest);
@@ -466,6 +472,9 @@
       inst_ios:{en:'Tap Share, then “Add to Home Screen”.',fr:'Touchez Partager, puis « Sur l’écran d’accueil ».',ar:'اضغط «مشاركة» ثم «إضافة إلى الشاشة الرئيسية».',sw:'Gusa Shiriki, kisha “Ongeza kwenye Skrini ya Mwanzo”.',pt:'Toque em Partilhar e depois em “Adicionar ao ecrã principal”.'},
       inst_later:{en:'Not now',fr:'Plus tard',ar:'لاحقًا',sw:'Baadaye',pt:'Agora não'},
       read_aloud:{en:'🔊 Read this to me',fr:'🔊 Lire à voix haute',ar:'🔊 اقرأ لي هذا',sw:'🔊 Nisomee hii',pt:'🔊 Ler em voz alta'},
+      new_badge:{en:'NEW',fr:'NOUVEAU',ar:'جديد',sw:'MPYA',pt:'NOVO'},
+      new_since:{en:'✨ %n new since your last visit',fr:'✨ %n nouveautés depuis votre dernière visite',ar:'✨ %n جديد منذ زيارتك الأخيرة',sw:'✨ %n mpya tangu ulipotembelea mara ya mwisho',pt:'✨ %n novidades desde a sua última visita'},
+      read_mark:{en:'✓ Read',fr:'✓ Lu',ar:'✓ مقروء',sw:'✓ Imesomwa',pt:'✓ Lida'},
       ed_done:{en:'🏁 Edition complete — you’ve read all %t stories today.',fr:'🏁 Édition terminée — vous avez lu les %t articles du jour.',ar:'🏁 اكتمل الإصدار — قرأت كل أخبار اليوم الـ%t.',sw:'🏁 Toleo limekamilika — umesoma habari zote %t za leo.',pt:'🏁 Edição completa — leu todas as %t notícias de hoje.'},
       stop_read:{en:'■ Stop reading',fr:'■ Arrêter la lecture',ar:'■ إيقاف القراءة',sw:'■ Simamisha kusoma',pt:'■ Parar a leitura'}
     };
@@ -720,12 +729,38 @@
     function storyCard(a){
       var region=a.region?RL(a.region):'';
       var meta=(region?('<b>'+esc(region)+'</b> · '):'')+esc(fmtShort(a.published_at));
-      return '<a class="card" href="#/story/'+encodeURIComponent(a.slug)+'">'+
-        '<div class="kick">'+esc(VL(a.vertical))+'</div>'+
+      var rd=!!readAllSet()[a.slug];
+      return '<a class="card'+(rd?' read':'')+'" href="#/story/'+encodeURIComponent(a.slug)+'">'+
+        '<div class="kick">'+esc(VL(a.vertical))+(isNewStory(a)?newBadge():'')+'</div>'+
         '<h3>'+esc(a.headline)+'</h3>'+
         (a.dek?'<p>'+esc(a.dek)+'</p>':'')+
-        '<div class="meta">'+meta+'</div></a>';
+        '<div class="meta">'+meta+(rd?(' · <span class="rd">'+esc(tr('read_mark'))+'</span>'):'')+'</div></a>';
     }
+    // ── Your Edition: what's new since the last visit, what's already read ──
+    // A visit is a session; reloads within 30 minutes keep the same baseline.
+    var PREV_SEEN=(function(){
+      try{
+        var now=Date.now(), o=JSON.parse(localStorage.getItem('afripulse_seen')||'null');
+        if(!o) o={p:0,c:now};
+        else if(now-o.c>30*60000) o={p:o.c,c:now};
+        else o.c=now;
+        localStorage.setItem('afripulse_seen', JSON.stringify(o));
+        return o.p||0;
+      }catch(e){ return 0; }
+    })();
+    var _readAll=null;
+    function readAllSet(){
+      if(_readAll) return _readAll;
+      var set={};
+      try{ JSON.parse(localStorage.getItem('afripulse_reads')||'[]').forEach(function(r){ set[r.s]=1; }); }catch(e){}
+      _readAll=set; return set;
+    }
+    function isNewStory(a){
+      if(!PREV_SEEN || !a.published_at || readAllSet()[a.slug]) return false;
+      var t=new Date(a.published_at).getTime();
+      return t>PREV_SEEN;
+    }
+    function newBadge(){ return '<span class="newb">'+esc(tr('new_badge'))+'</span>'; }
     function renderToday(){
       var body=document.getElementById('today-body'); if(!body) return;
       renderPackStrip();
@@ -758,7 +793,9 @@
       var chips=rendered.length>1
         ? '<div class="secchips">'+rendered.map(function(v){ return '<button type="button" data-v="'+v+'">'+esc(VL(v))+'</button>'; }).join('')+'</div>'
         : '';
-      body.innerHTML = chips+heroCard(hero)+sections;
+      var nNew=loc.filter(isNewStory).length;
+      var newLine=nNew?('<div class="newline">'+esc(tr('new_since',{n:nNew}))+'</div>'):'';
+      body.innerHTML = newLine+chips+heroCard(hero)+sections;
       var sc=body.querySelector('.secchips');
       if(sc) sc.addEventListener('click', function(e){
         var b=e.target.closest('button'); if(!b) return;
@@ -770,7 +807,7 @@
       var region=a.region?RL(a.region):'';
       var meta=(region?('<b>'+esc(region)+'</b> · '):'')+esc(fmtShort(a.published_at));
       return '<a class="hero" href="#/story/'+encodeURIComponent(a.slug)+'">'+
-        '<div class="hk">'+esc(VL(a.vertical||'front'))+'</div>'+
+        '<div class="hk">'+esc(VL(a.vertical||'front'))+(isNewStory(a)?newBadge():'')+'</div>'+
         '<h2>'+esc(a.headline)+'</h2>'+
         (a.dek?'<p>'+esc(a.dek)+'</p>':'')+
         '<div class="meta">'+meta+'</div></a>';
@@ -1263,6 +1300,7 @@
         arr.push({s:a.slug, v:a.vertical||'front', g:a.region||regionSlugFor(a)||'', d:day, t:now.getTime()});
         if(arr.length>300) arr=arr.slice(arr.length-300);
         localStorage.setItem('afripulse_reads', JSON.stringify(arr));
+        _readAll=null;
       }catch(e){}
     }
     // ── The Flow: progress bar + "Up next" so a story is never a dead end ──
