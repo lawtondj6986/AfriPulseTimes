@@ -98,8 +98,11 @@ export function pickImage(article, site){
   return (site || SITE_URL) + '/images/og-card.jpg';
 }
 
-// The share page itself: OG/Twitter meta for crawlers, instant redirect for
-// people, and a readable fallback for no-JS browsers.
+// The share page itself: OG/Twitter meta for crawlers, an instant script
+// redirect into the reader for browsers that run scripts, and — for those that
+// do not (feature phones, Opera Mini, text browsers) — a complete readable
+// article. There is deliberately no <meta refresh>: it would bounce exactly
+// those readers into an app they cannot run.
 export function buildShareHtml(article, site){
   const s = site || SITE_URL;
   const url = s + '/s/' + encodeURIComponent(article.slug);
@@ -126,7 +129,6 @@ export function buildShareHtml(article, site){
     '<meta name="twitter:image" content="' + image + '">\n' +
     '<script type="application/ld+json">' + buildJsonLd(article, s) + '</script>\n' +
     '<script>location.replace(' + JSON.stringify(dest) + ');</script>\n' +
-    '<meta http-equiv="refresh" content="0; url=' + escapeHtml(dest) + '">\n' +
     '<style>body{font-family:Georgia,"Times New Roman",serif;background:#F3EEE2;color:#1B1A17;margin:0;padding:24px;line-height:1.6}' +
     'article{max-width:42rem;margin:0 auto}h1{font-size:28px;line-height:1.2;margin:8px 0 10px}' +
     '.k{font:700 12px -apple-system,Segoe UI,Roboto,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#9A7B1A}' +
@@ -139,7 +141,7 @@ export function buildShareHtml(article, site){
     (article.body || []).map((para) => '<p>' + escapeHtml(para) + '</p>').join('\n') + '\n' +
     (article.sourceUrl ? '<p class="m">Source: <a rel="nofollow noopener" href="' + escapeHtml(article.sourceUrl) + '">' +
       escapeHtml(article.sourceLabel || 'original report') + '</a></p>\n' : '') +
-    '<p><a href="' + escapeHtml(dest) + '">Read on AfriPulse Times</a></p>\n</article>\n</body>\n</html>\n';
+    '<p><a href="' + escapeHtml(dest) + '">Open in the AfriPulse Times app</a> · <a href="/today">More of today’s stories</a></p>\n</article>\n</body>\n</html>\n';
 }
 
 // ── I/O ───────────────────────────────────────────────────────

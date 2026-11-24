@@ -47,6 +47,7 @@ export function buildSitemap(rows, site, now){
     '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" ' +
     'xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">\n' +
     '  <url>\n    <loc>' + xmlEscape(s) + '/</loc>\n    <changefreq>hourly</changefreq>\n  </url>\n' +
+    '  <url>\n    <loc>' + xmlEscape(s) + '/today</loc>\n    <changefreq>hourly</changefreq>\n  </url>\n' +
     (urls ? urls + '\n' : '') + '</urlset>\n';
 }
 
