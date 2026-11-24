@@ -264,6 +264,13 @@
   .sharerow a,.sharerow button{appearance:none;cursor:pointer;border-radius:999px;padding:9px 16px;font-size:14px;font-weight:700;text-decoration:none}
   .sharerow .wa{background:#128C4A;color:#fff;border:1px solid #128C4A}
   .sharerow button{background:var(--card);color:var(--gold-d);border:1px solid var(--line)}
+  .fx{display:flex;align-items:baseline;gap:16px;overflow-x:auto;white-space:nowrap;scrollbar-width:none;
+    border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:10px 0;margin:0 0 16px;font-size:13px;color:var(--ink)}
+  .fx::-webkit-scrollbar{display:none}
+  .fx .fxl{font-weight:700;text-transform:uppercase;letter-spacing:.06em;font-size:11px;color:var(--gold-d)}
+  .fx .fxi b{font-weight:700;color:var(--muted);font-size:11.5px;margin-inline-end:3px}
+  .fx .fxi i{font-style:normal;color:var(--muted);font-size:11.5px}
+  .fx .fxd{color:var(--muted);font-size:11.5px}
   .newline{font-size:13.5px;color:var(--gold-d);font-weight:600;margin:0 0 10px}
   .card.read h3,.card.read p{opacity:.6}
   .card .rd{color:var(--muted);font-weight:600}
@@ -602,6 +609,8 @@
       arch_none:{en:'Nothing in the archive matches.',fr:'Aucun résultat dans les archives.',ar:'لا نتائج في الأرشيف.',sw:'Hakuna kinacholingana kwenye kumbukumbu.',pt:'Nada no arquivo corresponde.'},
       share_this:{en:'Share this story',fr:'Partager cet article',ar:'شارك هذا الخبر',sw:'Shiriki habari hii',pt:'Partilhar esta notícia'},
       copy_link:{en:'Copy link',fr:'Copier le lien',ar:'نسخ الرابط',sw:'Nakili kiungo',pt:'Copiar link'},
+      fx_label:{en:'Exchange rates',fr:'Taux de change',ar:'أسعار الصرف',sw:'Viwango vya ubadilishaji',pt:'Taxas de câmbio'},
+      fx_asof:{en:'as of %s',fr:'au %s',ar:'حتى %s',sw:'kufikia %s',pt:'em %s'},
       ed_done:{en:'🏁 Edition complete — you’ve read all %t stories today.',fr:'🏁 Édition terminée — vous avez lu les %t articles du jour.',ar:'🏁 اكتمل الإصدار — قرأت كل أخبار اليوم الـ%t.',sw:'🏁 Toleo limekamilika — umesoma habari zote %t za leo.',pt:'🏁 Edição completa — leu todas as %t notícias de hoje.'},
       stop_read:{en:'■ Stop reading',fr:'■ Arrêter la lecture',ar:'■ إيقاف القراءة',sw:'■ Simamisha kusoma',pt:'■ Parar a leitura'}
     };
@@ -990,6 +999,47 @@
           });
       });
     }
+    // ── Exchange rates: eight African currencies against the dollar (/api/market-data) ──
+    // Half a kilobyte, cached on the device for three hours and shown offline.
+    var FX=null, FX_BUSY=false;
+    var FX_HOME={'west-africa':['NGN','GHS','XOF'],'east-africa':['KES','ETB'],'southern-africa':['ZAR'],'north-africa':['EGP','MAD'],'central-africa':['XOF']};
+    function fxValid(d){
+      return d && Array.isArray(d.fx) && d.fx.length>0 && d.fx.length<=16 &&
+        d.fx.every(function(x){ return x && typeof x.n==='string' && typeof x.v==='string' && x.n.length<=12 && x.v.length<=16; });
+    }
+    function loadFx(){
+      try{ var c=JSON.parse(localStorage.getItem('afripulse_fx')||'null'); if(c && fxValid(c.d)){ FX=c.d; return c.t||0; } }catch(e){}
+      return 0;
+    }
+    function fetchFx(){
+      var age=Date.now()-loadFx();
+      if(FX_BUSY || navigator.onLine===false || (FX && age<3*3600000)) return;
+      FX_BUSY=true;
+      fetch('/api/market-data',{headers:{'Accept':'application/json'}})
+        .then(function(r){ return r.ok?r.json():null; })
+        .then(function(d){
+          if(d && d.ok!==false && fxValid(d)){
+            FX={fx:d.fx,updated:typeof d.updated==='string'?d.updated:''};
+            try{ localStorage.setItem('afripulse_fx', JSON.stringify({t:Date.now(),d:FX})); }catch(e){}
+            var sc=document.getElementById('s-today');
+            if(sc && sc.classList.contains('on') && !SEARCHQ) renderToday();
+          }
+        }).catch(function(){}).then(function(){ FX_BUSY=false; });
+    }
+    function fxStrip(){
+      if(!FX) return '';
+      var first=[]; getHome().forEach(function(r){ (FX_HOME[r]||[]).forEach(function(c){ if(first.indexOf(c)<0) first.push(c); }); });
+      var items=FX.fx.slice().sort(function(a,b){
+        var ia=first.indexOf(a.n.slice(-3)), ib=first.indexOf(b.n.slice(-3));
+        return (ia<0?99:ia)-(ib<0?99:ib);
+      });
+      var when=''; try{ if(FX.updated) when=new Date(FX.updated+'T12:00:00').toLocaleDateString(locale(),{day:'numeric',month:'short'}); }catch(e){}
+      return '<div class="fx" role="group" aria-label="'+esc(tr('fx_label'))+'"><span class="fxl">'+esc(tr('fx_label'))+'</span>'+
+        items.map(function(x){
+          var d=(x.d==='up'||x.d==='down')?x.d:'flat';
+          return '<span class="fxi"><b>'+esc(x.n)+'</b> '+esc(x.v)+(x.c?(' <i class="'+d+'">'+esc(x.c)+'</i>'):'')+'</span>';
+        }).join('')+(when?('<span class="fxd">'+esc(tr('fx_asof',{s:when}))+'</span>'):'')+'</div>';
+    }
     // ── My Africa: the reader's home region(s), device-local ──
     function getHome(){
       try{ var a=JSON.parse(localStorage.getItem('afripulse_home')||'[]');
@@ -1094,7 +1144,7 @@
       var olderHtml=OLDER.length?('<div class="h2" id="sec-earlier">'+esc(tr('earlier'))+'</div><div class="cards">'+OLDER.map(localize).map(storyCard).join('')+'</div>'):'';
       var moreBtn=(!OLDER_DONE && navigator.onLine!==false)
         ? '<button type="button" class="morebtn" id="more-btn"'+(OLDER_BUSY?' disabled':'')+'>'+esc(OLDER_BUSY?'…':tr('load_more'))+'</button>' : '';
-      body.innerHTML = newLine+chips+heroCard(hero)+homeAsk+nearHtml+sections+olderHtml+moreBtn+(nlDone()?'':nlCard());
+      body.innerHTML = newLine+chips+heroCard(hero)+fxStrip()+homeAsk+nearHtml+sections+olderHtml+moreBtn+(nlDone()?'':nlCard());
       bindNl(body);
       var mb=document.getElementById('more-btn');
       if(mb) mb.addEventListener('click', loadOlder);
@@ -1970,8 +2020,10 @@
       });
     })();
     if(!location.hash) location.replace('#/');
+    loadFx();           // cached exchange rates are part of the instant, offline-capable first paint
     route();            // paint from cache instantly (ARTICLES may already be loaded)
     fetchEdition();     // then refresh from Supabase
+    fetchFx();          // exchange rates: cached copy first, refreshed every few hours
   })();
   </script>
 </body>
