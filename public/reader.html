@@ -7,6 +7,7 @@
 <title>AfriPulse Times — Phone Edition</title>
 <meta name="description" content="AfriPulse Times — the continent's news, built for any phone. Read offline, in five languages.">
 <link rel="canonical" href="https://afripulsetimes.com/">
+<link rel="alternate" type="application/rss+xml" title="AfriPulse Times" href="https://afripulsetimes.com/feed.xml">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="AfriPulse Times">
 <meta property="og:title" content="AfriPulse Times — The Continent's Voice">
@@ -541,7 +542,9 @@
       // Share: native sheet where the phone has one, copy-link everywhere else.
       var shb=document.getElementById('share-btn');
       if(shb) shb.addEventListener('click', function(){
-        var url=location.origin+'/#/story/'+encodeURIComponent(a.slug);
+        // Share the /s/ page: it unfurls this story's own headline + preview
+        // card in WhatsApp/Telegram, then forwards the reader here.
+        var url=location.origin+'/s/'+encodeURIComponent(a.slug);
         if(navigator.share){ navigator.share({title:a.headline, text:a.headline, url:url}).catch(function(){}); return; }
         function done(){ shb.textContent=tr('copied'); setTimeout(function(){ shb.textContent='↗ '+tr('share'); },1800); }
         try{

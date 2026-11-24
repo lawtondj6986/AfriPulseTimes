@@ -8,10 +8,10 @@ import {
 } from '../api/sms-digest.js';
 
 // ── broadcast: message composition ────────────────────────────
-test('storyUrl builds a hash-routed, encoded article link', () => {
+test('storyUrl builds the per-story share link, encoded', () => {
   assert.equal(storyUrl('kano-floods', 'https://afri.example/'),
-    'https://afri.example/afripulse-preview.html#/article/kano-floods');
-  assert.ok(storyUrl('a b', 'https://x').endsWith('/article/a%20b'));
+    'https://afri.example/s/kano-floods');
+  assert.ok(storyUrl('a b', 'https://x').endsWith('/s/a%20b'));
 });
 
 test('composeMessage carries brand, vertical, dateline, dek and link', () => {
@@ -19,8 +19,8 @@ test('composeMessage carries brand, vertical, dateline, dek and link', () => {
   assert.match(m.text, /🌍 AfriPulse Times · Business/);
   assert.match(m.text, /LAGOS · Lagos markets rally/);
   assert.match(m.text, /Equities climb on a new pact\./);
-  assert.match(m.text, /Read: https:\/\/x\/afripulse-preview\.html#\/article\/lagos-rally/);
-  assert.equal(m.url, 'https://x/afripulse-preview.html#/article/lagos-rally');
+  assert.match(m.text, /Read: https:\/\/x\/s\/lagos-rally/);
+  assert.equal(m.url, 'https://x/s/lagos-rally');
 });
 
 test('composeMessage clips an overlong standfirst', () => {
