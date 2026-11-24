@@ -88,6 +88,21 @@
     border-inline-start:3px solid var(--gold-d);border-radius:8px;padding:8px 12px;
     margin:0 0 12px;font-size:13.5px;line-height:1.45;color:var(--ink)}
   .natday div{margin:2px 0}
+  .hero{display:block;background:var(--card);border:1px solid var(--line);border-radius:14px;
+    padding:18px 16px 14px;margin:2px 0 16px;position:relative;overflow:hidden;text-decoration:none}
+  .hero::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;
+    background:linear-gradient(90deg,var(--gold-d),#E9D07A)}
+  .hero .hk{color:var(--gold-d);font-weight:700;font-size:12px;letter-spacing:.14em;
+    text-transform:uppercase;margin-bottom:8px}
+  .hero h2{font-family:Georgia,"Times New Roman",serif;font-size:25px;line-height:1.16;
+    margin:0 0 9px;color:var(--ink);font-weight:700}
+  .hero p{color:var(--muted);font-size:14.5px;line-height:1.55;margin:0 0 10px}
+  .hero .meta{color:var(--muted);font-size:12px}
+  .hero .meta b{color:var(--gold-d);font-weight:600}
+  .secchips{display:flex;gap:8px;overflow-x:auto;padding:2px 0 12px;scrollbar-width:none}
+  .secchips::-webkit-scrollbar{display:none}
+  .secchips button{flex:0 0 auto;appearance:none;cursor:pointer;border:1px solid var(--line);
+    background:var(--card);color:var(--ink);font-size:12.5px;font-weight:600;padding:7px 13px;border-radius:999px}
   .instbar[hidden]{display:none}
   .instbar{background:var(--card);border:1px solid var(--line);border-radius:12px;
     padding:11px 13px;margin:0 0 12px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
@@ -726,14 +741,37 @@
           : emptyState(tr('empty_b'),tr('search_none'));
         return;
       }
-      var html='';
+      // The cover: the lead front-page story (else the newest) as a hero.
+      var hero=null;
+      for(var hi=0; hi<loc.length; hi++){ if((loc[hi].vertical||'front')==='front'){ hero=loc[hi]; break; } }
+      if(!hero) hero=loc[0];
+      var sections='', rendered=[];
       VERTICAL_KEYS.forEach(function(v){
-        var items=loc.filter(function(a){ return (a.vertical||'front')===v; });
+        var items=loc.filter(function(a){ return (a.vertical||'front')===v && a.slug!==hero.slug; });
         if(!items.length) return;
-        html+='<div class="h2">'+esc(VL(v))+'</div>';
-        items.forEach(function(a){ html+=storyCard(a); });
+        rendered.push(v);
+        sections+='<div class="h2" id="sec-'+v+'">'+esc(VL(v))+'</div>';
+        items.forEach(function(a){ sections+=storyCard(a); });
       });
-      body.innerHTML = html || emptyState(tr('empty_b'),tr('empty_p'));
+      var chips=rendered.length>1
+        ? '<div class="secchips">'+rendered.map(function(v){ return '<button type="button" data-v="'+v+'">'+esc(VL(v))+'</button>'; }).join('')+'</div>'
+        : '';
+      body.innerHTML = chips+heroCard(hero)+sections;
+      var sc=body.querySelector('.secchips');
+      if(sc) sc.addEventListener('click', function(e){
+        var b=e.target.closest('button'); if(!b) return;
+        var el=document.getElementById('sec-'+b.getAttribute('data-v'));
+        if(el) el.scrollIntoView({behavior:'smooth',block:'start'});
+      });
+    }
+    function heroCard(a){
+      var region=a.region?RL(a.region):'';
+      var meta=(region?('<b>'+esc(region)+'</b> · '):'')+esc(fmtShort(a.published_at));
+      return '<a class="hero" href="#/story/'+encodeURIComponent(a.slug)+'">'+
+        '<div class="hk">'+esc(VL(a.vertical||'front'))+'</div>'+
+        '<h2>'+esc(a.headline)+'</h2>'+
+        (a.dek?'<p>'+esc(a.dek)+'</p>':'')+
+        '<div class="meta">'+meta+'</div></a>';
     }
     function relatedFor(base){
       return ARTICLES.filter(function(a){ return a.slug!==base.slug && (a.region===base.region || a.vertical===base.vertical); }).slice(0,3).map(localize);
