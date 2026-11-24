@@ -244,6 +244,18 @@
   .st-fig .sp{border-radius:12px;aspect-ratio:16/9}
   .st-fig:empty{display:none}
   .st-fig figcaption{font-size:12px;color:var(--muted);margin-top:6px}
+  .nl{display:block;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin:22px 0 8px}
+  .setrow .nl{border:0;padding:0;margin:0;background:transparent}
+  .nl b{display:block;font-family:Georgia,serif;font-size:17px;color:var(--ink)}
+  .nl > span{display:block;font-size:13px;color:var(--muted);margin-top:3px}
+  .nl .nlr{display:flex;gap:8px;margin-top:12px}
+  .nl input{flex:1;min-width:0;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:10px;padding:10px 12px;font-size:15px}
+  .nl button{appearance:none;border:0;cursor:pointer;border-radius:10px;padding:10px 16px;font-size:14px;font-weight:700;
+    background:linear-gradient(135deg,#E9D07A,var(--gold-d));color:#241c04;white-space:nowrap}
+  .nl button:disabled{opacity:.6}
+  .nl .nlm{min-height:18px;margin-top:8px}
+  .nl .nlm.bad{color:#B4442C}
+  .nl .nlm.ok{color:var(--forest-2);font-weight:600}
   .newline{font-size:13.5px;color:var(--gold-d);font-weight:600;margin:0 0 10px}
   .card.read h3,.card.read p{opacity:.6}
   .card .rd{color:var(--muted);font-weight:600}
@@ -563,6 +575,13 @@
       read_full:{en:'Read the full report',fr:'Lire le reportage complet',ar:'اقرأ التقرير الكامل',sw:'Soma ripoti kamili',pt:'Ler a reportagem completa'},
       p_nations:{en:'Nations in today’s edition',fr:'Nations dans l’édition du jour',ar:'دول في إصدار اليوم',sw:'Mataifa katika toleo la leo',pt:'Nações na edição de hoje'},
       photo_by:{en:'Photo: %s',fr:'Photo : %s',ar:'الصورة: %s',sw:'Picha: %s',pt:'Foto: %s'},
+      nl_t:{en:'📬 The morning brief, in your inbox',fr:'📬 Le brief du matin, dans votre boîte mail',ar:'📬 موجز الصباح في بريدك',sw:'📬 Muhtasari wa asubuhi, kwenye barua pepe yako',pt:'📬 O resumo da manhã, no seu email'},
+      nl_p:{en:'Africa’s top stories each morning. No spam; unsubscribe anytime.',fr:'L’essentiel de l’Afrique chaque matin. Pas de spam ; désabonnement à tout moment.',ar:'أهم أخبار أفريقيا كل صباح. بلا رسائل مزعجة؛ ألغِ الاشتراك متى شئت.',sw:'Habari kuu za Afrika kila asubuhi. Hakuna barua taka; jiondoe wakati wowote.',pt:'As principais notícias de África todas as manhãs. Sem spam; cancele quando quiser.'},
+      nl_ph:{en:'Email address',fr:'Adresse e-mail',ar:'البريد الإلكتروني',sw:'Barua pepe',pt:'Endereço de email'},
+      nl_btn:{en:'Subscribe',fr:'S’abonner',ar:'اشترك',sw:'Jisajili',pt:'Subscrever'},
+      nl_ok:{en:'You’re subscribed — see you in the morning. ✓',fr:'Vous êtes abonné — à demain matin. ✓',ar:'تم اشتراكك — نراك في الصباح. ✓',sw:'Umejisajili — tuonane asubuhi. ✓',pt:'Subscrição feita — até amanhã de manhã. ✓'},
+      nl_bad:{en:'Please enter a valid email address.',fr:'Veuillez saisir une adresse e-mail valide.',ar:'يرجى إدخال بريد إلكتروني صحيح.',sw:'Tafadhali weka barua pepe sahihi.',pt:'Introduza um endereço de email válido.'},
+      nl_err:{en:'Could not subscribe just now. Please try again.',fr:'Abonnement impossible pour l’instant. Veuillez réessayer.',ar:'تعذّر الاشتراك الآن. حاول مرة أخرى.',sw:'Imeshindikana kujisajili sasa. Tafadhali jaribu tena.',pt:'Não foi possível subscrever agora. Tente novamente.'},
       ed_done:{en:'🏁 Edition complete — you’ve read all %t stories today.',fr:'🏁 Édition terminée — vous avez lu les %t articles du jour.',ar:'🏁 اكتمل الإصدار — قرأت كل أخبار اليوم الـ%t.',sw:'🏁 Toleo limekamilika — umesoma habari zote %t za leo.',pt:'🏁 Edição completa — leu todas as %t notícias de hoje.'},
       stop_read:{en:'■ Stop reading',fr:'■ Arrêter la lecture',ar:'■ إيقاف القراءة',sw:'■ Simamisha kusoma',pt:'■ Parar a leitura'}
     };
@@ -919,6 +938,38 @@
         (a.dek?'<p dir="auto">'+esc(a.dek)+'</p>':'')+
         '<div class="meta">'+meta+(rd?(' · <span class="rd">'+esc(tr('read_mark'))+'</span>'):'')+'</div></a>';
     }
+    // ── Morning brief by email (POST /api/subscribe → Supabase + Buttondown) ──
+    var NL_DRAFT='', NL_BUSY=false;
+    function nlDone(){ try{ return localStorage.getItem('afripulse_subscribed')==='1'; }catch(e){ return false; } }
+    function nlCard(){
+      if(nlDone()) return '<div class="nl done"><b>'+esc(tr('nl_t'))+'</b><span class="nlm ok">'+esc(tr('nl_ok'))+'</span></div>';
+      return '<form class="nl" novalidate><b>'+esc(tr('nl_t'))+'</b><span>'+esc(tr('nl_p'))+'</span>'+
+        '<div class="nlr"><input type="email" name="email" autocomplete="email" inputmode="email" dir="ltr" '+
+        'placeholder="'+esc(tr('nl_ph'))+'" aria-label="'+esc(tr('nl_ph'))+'" value="'+esc(NL_DRAFT)+'">'+
+        '<button type="submit">'+esc(tr('nl_btn'))+'</button></div><span class="nlm" role="status" aria-live="polite"></span></form>';
+    }
+    function bindNl(root){
+      var f=root&&root.querySelector('form.nl'); if(!f) return;
+      var input=f.querySelector('input'), msg=f.querySelector('.nlm'), btn=f.querySelector('button');
+      input.addEventListener('input', function(){ NL_DRAFT=input.value; });
+      f.addEventListener('submit', function(e){
+        e.preventDefault();
+        if(NL_BUSY) return;
+        var email=String(input.value||'').trim().toLowerCase();
+        if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ msg.className='nlm bad'; msg.textContent=tr('nl_bad'); return; }
+        NL_BUSY=true; btn.disabled=true; msg.className='nlm'; msg.textContent='…';
+        fetch('/api/subscribe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email,language:LANG})})
+          .then(function(r){ return r.json().catch(function(){ return {}; }).then(function(j){ return r.ok && j && j.ok!==false; }); })
+          .catch(function(){ return false; })
+          .then(function(ok){
+            NL_BUSY=false;
+            if(ok){
+              NL_DRAFT=''; try{ localStorage.setItem('afripulse_subscribed','1'); }catch(e){}
+              f.outerHTML=nlCard();
+            }else{ btn.disabled=false; msg.className='nlm bad'; msg.textContent=tr('nl_err'); }
+          });
+      });
+    }
     // ── My Africa: the reader's home region(s), device-local ──
     function getHome(){
       try{ var a=JSON.parse(localStorage.getItem('afripulse_home')||'[]');
@@ -1006,7 +1057,8 @@
         : '';
       var nNew=loc.filter(isNewStory).length;
       var newLine=nNew?('<div class="newline">'+esc(tr('new_since',{n:nNew}))+'</div>'):'';
-      body.innerHTML = newLine+chips+heroCard(hero)+homeAsk+nearHtml+sections;
+      body.innerHTML = newLine+chips+heroCard(hero)+homeAsk+nearHtml+sections+(nlDone()?'':nlCard());
+      bindNl(body);
       var ha=body.querySelector('.homeask');
       if(ha) ha.addEventListener('click', function(e){
         var b=e.target.closest('button'); if(!b) return;
@@ -1274,6 +1326,8 @@
         '<div class="homechips" id="me-home" style="margin-top:10px">'+
         REGION_KEYS.map(function(k){ return '<button type="button" data-r="'+k+'"'+(hm.indexOf(k)>-1?' class="on" aria-pressed="true"':' aria-pressed="false"')+'>'+esc(RL(k))+'</button>'; }).join('')+
         '</div></div>';
+      // Morning brief by email
+      h+='<div class="setrow">'+nlCard()+'</div>';
       // Language
       h+='<div class="setrow"><div class="lab">'+esc(tr('s_language'))+'</div><div class="seg" id="seg-lang">'+
         LANGS.map(function(c){ return '<button data-l="'+c+'"'+(c===LANG?' class="on"':'')+'>'+esc(langNames[c])+'</button>'; }).join('')+'</div></div>';
@@ -1316,6 +1370,7 @@
         if(want!==DATASAVER){ toggleDS(); } renderMe(); });
       var cc=document.getElementById('clear-cache');
       if(cc) cc.addEventListener('click', function(){ try{ localStorage.removeItem(PACK_KEY); }catch(err){} ARTICLES=[]; FETCHED=false; renderMe(); fetchEdition(); });
+      bindNl(body);
       var mh=document.getElementById('me-home');
       if(mh) mh.addEventListener('click', function(e){
         var b=e.target.closest('button'); if(!b) return;
