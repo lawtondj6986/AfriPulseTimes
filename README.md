@@ -15,6 +15,22 @@ Two static surfaces over one Supabase backend:
   Command Center (named-editor verification on every story), the public About
   page, media kit, and reader accounts.
 
+## What the reader does
+
+Everything below runs in `public/reader.html`, in all five languages, with no
+backend beyond the published-articles query. Personal data (reading diary,
+streak, home region, last visit) stays in the browser's `localStorage`.
+
+| Area | Feature |
+|---|---|
+| First open | Welcome screen with language choice, each language in its own name |
+| Today | Cover story, section chips, "Near you" for the reader's home region, NEW badges since the last visit, read ticks, search |
+| Reading | Progress bar, "Up next", edition meter and finish line, swipe between stories, read-aloud, wire source credit with a link to the original |
+| Habit | Daily reading streak, national-day banners for all 54 nations, quiet refresh when the reader returns |
+| Sharing | Per-story links with previews, a shareable front-page image, a "Your week" stats card |
+| Device | Installable PWA with a polite install prompt, offline edition pack, data saver, dark mode, text size |
+| Screens | Phone layout by default; broadsheet layout with top navigation from 960px |
+
 ## Tech stack
 
 | Layer | Technology |
@@ -24,7 +40,7 @@ Two static surfaces over one Supabase backend:
 | Database / Auth | Supabase (Postgres, RLS; **password + magic-link** auth; Resend SMTP) |
 | Serverless API | Vercel functions (`/api/*`, Node) |
 | RSS ingestion | `rss-parser` in `/api/pull-wire`, Vercel Cron |
-| Distribution | WhatsApp/Telegram/SMS broadcast on approve · per-story share pages (`/s/<slug>`) · RSS out (`/feed.xml`) |
+| Distribution | WhatsApp/Telegram/SMS broadcast on approve · per-story pages with full text and NewsArticle data (`/s/<slug>`) · RSS out (`/feed.xml`) · live news sitemap (`/sitemap-news.xml`) |
 | Newsletter | Buttondown API (`/api/subscribe`) |
 | Tests | `npm test` — 100+ node:test suites over API helpers, SPA logic, SEO and auth wiring |
 
