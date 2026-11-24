@@ -27,7 +27,7 @@ await pg.goto(`http://127.0.0.1:${srv.address().port}/reader.html`,{waitUntil:'n
 await pg.waitForTimeout(700);
 const R=[];
 R.push(['front-page button visible with stories', (await pg.locator('#fp-btn').getAttribute('class')).includes('show')]);
-R.push(['button localized', (await pg.locator('#fp-btn').innerText()).includes('front page')]);
+R.push(['button localized (icon on phones, full label for assistive tech)', (await pg.locator('#fp-btn').getAttribute('aria-label')).includes('front page')]);
 await pg.click('#fp-btn');
 await pg.waitForFunction(()=>!!window.__shared,null,{timeout:6000}).catch(()=>{});
 const shared=await pg.evaluate(()=>window.__shared);
