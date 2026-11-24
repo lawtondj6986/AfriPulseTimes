@@ -139,3 +139,50 @@ test('NATDAYS covers all 54 nations exactly once, with valid dates', () => {
   assert.equal(by.ZA[4], 'f', 'South Africa is Freedom Day');
   assert.equal(by.LR[3], 1847, 'Liberia 1847');
 });
+
+// ── 54 Nations: country detection ─────────────────────────────
+function countryCtx() {
+  const start = reader.indexOf('var COUNTRY_TERMS={');
+  const end = reader.indexOf('function flagEmoji(', start);
+  assert.ok(start > -1 && end > start, 'country matcher not found');
+  const ctx = {};
+  vm.createContext(ctx);
+  vm.runInContext(reader.slice(start, end) + '\n; this.countriesIn = countriesIn; this.TERMS = COUNTRY_TERMS;', ctx);
+  return ctx;
+}
+const cc = (ctx, s) => JSON.stringify(ctx.countriesIn(s).slice().sort());
+
+test('country table covers all 54 nations', () => {
+  const ctx = countryCtx();
+  assert.equal(Object.keys(ctx.TERMS).length, 54);
+});
+
+test('country detection: lookalike names never cross-match', () => {
+  const ctx = countryCtx();
+  assert.equal(cc(ctx, 'Nigeria expands rail network'), '["NG"]');
+  assert.equal(cc(ctx, 'Niger junta meets ECOWAS envoys'), '["NE"]');
+  assert.equal(cc(ctx, 'Oil spill in the Niger Delta'), '["NG"]', 'Niger Delta is Nigeria');
+  assert.equal(cc(ctx, 'Flooding along the Niger River'), '[]', 'the river is no single country');
+  assert.equal(cc(ctx, 'Guinea holds referendum'), '["GN"]');
+  assert.equal(cc(ctx, 'Equatorial Guinea signs gas deal'), '["GQ"]');
+  assert.equal(cc(ctx, 'Guinea-Bissau votes'), '["GW"]');
+  assert.equal(cc(ctx, 'Piracy in the Gulf of Guinea'), '[]');
+  assert.equal(cc(ctx, 'Papua New Guinea quake'), '[]');
+  assert.equal(cc(ctx, 'South Sudan peace talks resume'), '["SS"]');
+  assert.equal(cc(ctx, 'Sudan ceasefire holds in Khartoum'), '["SD"]');
+  assert.equal(cc(ctx, 'DR Congo and Rwanda sign accord'), '["CD","RW"]');
+  assert.equal(cc(ctx, 'Republic of Congo opens Brazzaville port'), '["CG"]');
+  assert.equal(cc(ctx, 'Benin City traders protest'), '["NG"]', 'Benin City is in Nigeria');
+  assert.equal(cc(ctx, 'Benin parliament passes budget'), '["BJ"]');
+});
+
+test('country detection: cities, aliases, accents, apostrophes and word boundaries', () => {
+  const ctx = countryCtx();
+  assert.equal(cc(ctx, 'Lagos markets rally'), '["NG"]');
+  assert.equal(cc(ctx, 'Ivory Coast cocoa harvest'), '["CI"]');
+  assert.equal(cc(ctx, 'Côte d’Ivoire cocoa harvest'), '["CI"]', 'curly apostrophe + accent');
+  assert.equal(cc(ctx, 'Talks in Yaoundé continue'), '["CM"]');
+  assert.equal(cc(ctx, 'Air route normalisation announced'), '[]', 'no Mali inside normalisation');
+  assert.equal(cc(ctx, 'Somalia and Kenya, Ghana, Egypt meet'), '["EG","GH","KE","SO"]');
+  assert.equal(cc(ctx, 'Global markets steady'), '[]');
+});
