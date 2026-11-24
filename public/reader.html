@@ -276,6 +276,8 @@
   .foot{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 18px;margin:26px 0 10px;padding-top:16px;border-top:1px solid var(--line)}
   .foot a{font-size:12.5px;color:var(--muted);font-weight:600;text-decoration:none}
   .foot a:hover{color:var(--gold-d)}
+  .fixline{font-size:13px;color:var(--muted);margin:10px 0 0}
+  .fixline a{color:var(--gold-d);font-weight:600}
   .newline{font-size:13.5px;color:var(--gold-d);font-weight:600;margin:0 0 10px}
   .card.read h3,.card.read p{opacity:.6}
   .card .rd{color:var(--muted);font-weight:600}
@@ -634,6 +636,9 @@
       sp_fast:{en:'Faster',fr:'Plus rapide',ar:'أسرع',sw:'Haraka',pt:'Mais rápida'},
       s_sections:{en:'My sections',fr:'Mes rubriques',ar:'أقسامي',sw:'Sehemu zangu',pt:'As minhas secções'},
       sections_hint:{en:'Your favourite sections appear first on Today.',fr:'Vos rubriques préférées apparaissent en premier dans Aujourd’hui.',ar:'تظهر أقسامك المفضلة أولًا في صفحة اليوم.',sw:'Sehemu unazozipenda huonekana kwanza kwenye Leo.',pt:'As suas secções favoritas aparecem primeiro em Hoje.'},
+      l_next:{en:'Next',fr:'Suivant',ar:'التالي',sw:'Inayofuata',pt:'Seguinte'},
+      fix_q:{en:'Spotted an error?',fr:'Vous avez repéré une erreur ?',ar:'هل لاحظت خطأ؟',sw:'Umeona kosa?',pt:'Encontrou um erro?'},
+      fix_a:{en:'Tell the editors',fr:'Prévenez la rédaction',ar:'أخبر المحررين',sw:'Waambie wahariri',pt:'Avise a redação'},
       ed_done:{en:'🏁 Edition complete — you’ve read all %t stories today.',fr:'🏁 Édition terminée — vous avez lu les %t articles du jour.',ar:'🏁 اكتمل الإصدار — قرأت كل أخبار اليوم الـ%t.',sw:'🏁 Toleo limekamilika — umesoma habari zote %t za leo.',pt:'🏁 Edição completa — leu todas as %t notícias de hoje.'},
       stop_read:{en:'■ Stop reading',fr:'■ Arrêter la lecture',ar:'■ إيقاف القراءة',sw:'■ Simamisha kusoma',pt:'■ Parar a leitura'}
     };
@@ -1352,6 +1357,9 @@
           '<a class="wa" id="wa-btn" target="_blank" rel="noopener" href="https://wa.me/?text='+
             encodeURIComponent(a.headline+'\n'+location.origin+'/s/'+encodeURIComponent(a.slug))+'">WhatsApp</a>'+
           '<button type="button" id="copy-btn">'+esc(tr('copy_link'))+'</button></div>'+
+        '<p class="fixline">'+esc(tr('fix_q'))+' <a href="mailto:hello@afripulsetimes.com?subject='+
+          encodeURIComponent('Correction: '+a.headline)+'&amp;body='+encodeURIComponent(location.origin+'/s/'+encodeURIComponent(a.slug)+'\n\n')+'">'+
+          esc(tr('fix_a'))+'</a></p>'+
         noteHtml+
         (rel?('<div class="related"><div class="h2">'+esc(tr('related'))+'</div>'+rel+'</div>'):'')+
         nxHtml;
@@ -1662,10 +1670,28 @@
     }
 
     // ── Listen / Morning Pulse (Web Speech; no network, no cost) ──
-    var SPEAK={ playing:false, paused:false, idx:-1 };
+    var SPEAK={ playing:false, paused:false, idx:-1, tok:0, items:null };
     function speakSupported(){ return typeof window.speechSynthesis!=='undefined' && typeof window.SpeechSynthesisUtterance!=='undefined'; }
     function pickVoice(l){ l=l||LANG; try{ var vs=window.speechSynthesis.getVoices()||[]; for(var i=0;i<vs.length;i++){ if(vs[i].lang && vs[i].lang.toLowerCase().indexOf(l)===0) return vs[i]; } }catch(e){} return null; }
-    function briefItems(){ return ARTICLES.slice(0,5).map(localize); }
+    // The briefing leads with the cover, then the reader's home region and
+    // favourite sections, then the rest of the edition: seven stories at most.
+    function briefItems(){
+      if(!ARTICLES.length) return [];
+      var cover=null;
+      for(var i=0;i<ARTICLES.length;i++){ if((ARTICLES[i].vertical||'front')==='front'){ cover=ARTICLES[i]; break; } }
+      if(!cover) cover=ARTICLES[0];
+      var home=getHome(), favs=getFavs(), picked=[cover], seen={}; seen[cover.slug]=1;
+      function take(test){ ARTICLES.forEach(function(a){ if(picked.length<7 && !seen[a.slug] && test(a)){ seen[a.slug]=1; picked.push(a); } }); }
+      if(home.length) take(function(a){ return home.indexOf(a.region)>-1; });
+      if(favs.length) take(function(a){ return favs.indexOf(a.vertical)>-1; });
+      take(function(){ return true; });
+      return picked.map(function(b){
+        var a=Object.assign({}, localize(b));
+        // English text is read by an English voice, whatever the interface language.
+        a.textLang=(LANG!=='en' && !(b.translations && b.translations[LANG]))?'en':LANG;
+        return a;
+      });
+    }
     function stopSpeak(){ try{ window.speechSynthesis.cancel(); }catch(e){} SPEAK.playing=false; SPEAK.paused=false; SPEAK.idx=-1; renderListen(); }
     function speakFrom(items,i){
       if(i>=items.length){ SPEAK.playing=false; SPEAK.paused=false; SPEAK.idx=-1; renderListen(); return; }
@@ -1674,9 +1700,13 @@
       // Prefer the agents' key points: a tighter, more informative listen.
       var qr=quickReadFor(a);
       var text=a.headline+'. '+(qr?qr.join('. '):(a.dek||''));
-      var u=new SpeechSynthesisUtterance(text); u.lang={en:'en-GB',fr:'fr-FR',ar:'ar-EG',sw:'sw-KE',pt:'pt-PT'}[LANG]||'en-GB';
-      var v=pickVoice(); if(v) u.voice=v; u.rate=speechRate();
-      u.onend=function(){ if(SPEAK.playing && !SPEAK.paused) speakFrom(items,i+1); };
+      var tl=a.textLang||LANG;
+      var u=new SpeechSynthesisUtterance(text); u.lang={en:'en-GB',fr:'fr-FR',ar:'ar-EG',sw:'sw-KE',pt:'pt-PT'}[tl]||'en-GB';
+      var v=pickVoice(tl); if(v) u.voice=v; u.rate=speechRate();
+      // Each utterance carries a ticket: skipping cancels the current one, and
+      // some browsers then fire its "end" event, which must not advance twice.
+      var tok=++SPEAK.tok; SPEAK.items=items;
+      u.onend=function(){ if(tok===SPEAK.tok && SPEAK.playing && !SPEAK.paused) speakFrom(items,i+1); };
       try{ window.speechSynthesis.speak(u); }catch(e){}
     }
     function playBrief(){ var items=briefItems(); if(!items.length) return; SPEAK.playing=true; SPEAK.paused=false;
@@ -1685,6 +1715,12 @@
       var intro=new SpeechSynthesisUtterance(tr('listen_lede')); intro.lang={en:'en-GB',fr:'fr-FR',ar:'ar-EG',sw:'sw-KE',pt:'pt-PT'}[LANG]||'en-GB';
       var v=pickVoice(); if(v) intro.voice=v; intro.onend=function(){ if(SPEAK.playing) speakFrom(items,0); };
       try{ window.speechSynthesis.speak(intro); }catch(e){} renderListen();
+    }
+    function nextSpeak(){
+      if(!SPEAK.playing || !SPEAK.items) return;
+      var n=SPEAK.idx+1; SPEAK.tok++; SPEAK.paused=false;
+      try{ window.speechSynthesis.cancel(); }catch(e){}
+      speakFrom(SPEAK.items, n);
     }
     function pauseSpeak(){ try{ window.speechSynthesis.pause(); }catch(e){} SPEAK.paused=true; renderListen(); }
     function resumeSpeak(){ try{ window.speechSynthesis.resume(); }catch(e){} SPEAK.paused=false; renderListen(); }
@@ -1696,7 +1732,9 @@
       var ctrls;
       if(!SPEAK.playing){ ctrls='<button class="btn gold" id="l-play">▶ '+esc(tr('l_play'))+'</button>'; }
       else if(SPEAK.paused){ ctrls='<button class="btn gold" id="l-resume">▶ '+esc(tr('l_resume'))+'</button><button class="btn" id="l-stop">■ '+esc(tr('l_stop'))+'</button>'; }
-      else { ctrls='<button class="btn" id="l-pause">‖ '+esc(tr('l_pause'))+'</button><button class="btn" id="l-stop">■ '+esc(tr('l_stop'))+'</button>'; }
+      else { ctrls='<button class="btn" id="l-pause">‖ '+esc(tr('l_pause'))+'</button>'+
+        (SPEAK.idx>-1?('<button class="btn" id="l-next">⏭ '+esc(tr('l_next'))+'</button>'):'')+
+        '<button class="btn" id="l-stop">■ '+esc(tr('l_stop'))+'</button>'; }
       var q=items.map(function(a,i){ return '<div class="qrow'+(i===SPEAK.idx?' on':'')+'"><span class="n">'+(i+1)+'</span><span class="qh">'+esc(a.headline)+'</span></div>'; }).join('');
       body.innerHTML='<div class="player"><div class="lede">'+esc(tr('listen_lede'))+'</div><div class="ctrls">'+ctrls+'</div></div>'+q;
       var e;
@@ -1704,6 +1742,7 @@
       if((e=document.getElementById('l-pause'))) e.addEventListener('click', pauseSpeak);
       if((e=document.getElementById('l-resume'))) e.addEventListener('click', resumeSpeak);
       if((e=document.getElementById('l-stop'))) e.addEventListener('click', stopSpeak);
+      if((e=document.getElementById('l-next'))) e.addEventListener('click', nextSpeak);
     }
 
     // ── Pulse — tappable Africa map (same silhouette as the newsroom) ──
