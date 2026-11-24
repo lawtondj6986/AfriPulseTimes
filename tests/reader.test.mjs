@@ -81,7 +81,7 @@ test('every tr() key the reader uses exists in T', () => {
 
 test('service worker ships the v2 reader shell and knows the desk', () => {
   const sw = read('../public/sw.js');
-  assert.match(sw, /VERSION\s*=\s*'ap-v6'/, 'SW VERSION should be ap-v6');
+  assert.match(sw, /VERSION\s*=\s*'ap-v7'/, 'SW VERSION should be ap-v7');
   assert.match(sw, /READER_SHELL\s*=\s*'\/reader\.html'/, 'reader shell missing');
   assert.match(sw, /DESK_SHELL\s*=\s*'\/afripulse-preview\.html'/, 'desk shell missing');
   // The reader shell is precached; the heavy newsroom is NOT in the precache list.
@@ -185,4 +185,20 @@ test('country detection: cities, aliases, accents, apostrophes and word boundari
   assert.equal(cc(ctx, 'Air route normalisation announced'), '[]', 'no Mali inside normalisation');
   assert.equal(cc(ctx, 'Somalia and Kenya, Ghana, Egypt meet'), '["EG","GH","KE","SO"]');
   assert.equal(cc(ctx, 'Global markets steady'), '[]');
+});
+
+// ── offline cache hygiene + measurement ───────────────────────
+test('service worker never stores cross-origin photos or analytics', () => {
+  const sw = read('../public/sw.js');
+  assert.match(sw, /url\.origin !== self\.location\.origin && url\.hostname !== 'esm\.sh'\) return;/,
+    'cross-origin assets must bypass Cache Storage (opaque responses cost megabytes of quota each)');
+  assert.match(sw, /url\.pathname\.indexOf\('\/_vercel\/'\) === 0\) return;/);
+  // the guard must sit before the cache-first step
+  assert.ok(sw.indexOf("url.hostname !== 'esm.sh'") < sw.indexOf('cache-first, then network'));
+});
+
+test('reader is wired for cookie-less page-view analytics', () => {
+  assert.match(reader, /<script defer src="\/_vercel\/insights\/script\.js" data-disable-auto-track="1"><\/script>/);
+  assert.match(reader, /window\.va\('pageview',\{path:path\}\)/);
+  assert.match(reader, /trackView\(h\);/, 'the router must report each view');
 });

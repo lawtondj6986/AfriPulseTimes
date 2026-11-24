@@ -371,6 +371,11 @@
   .pulsebar button.on{background:var(--forest);color:#F3EAD4;border-color:var(--forest)}
   .pulsebar button.on .b{color:#E9D07A}
 </style>
+  <!-- Visitor analytics (Vercel Web Analytics: no cookies, no personal data).
+       Page views are sent by the router below, one per screen or story, because
+       this is a hash-routed app. Does nothing until enabled for the project. -->
+  <script>window.va=window.va||function(){(window.vaq=window.vaq||[]).push(arguments);};</script>
+  <script defer src="/_vercel/insights/script.js" data-disable-auto-track="1"></script>
 </head>
 <body>
   <!-- Reading progress, shown only while a story is open -->
@@ -1765,8 +1770,17 @@
     var SCREENS={'':'today','pulse':'pulse','listen':'listen','saved':'saved','me':'me'};
     function showScreen(name){ document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('on'); }); var s=document.getElementById('s-'+name); if(s) s.classList.add('on'); }
     function setTab(name){ document.querySelectorAll('.tab').forEach(function(t){ var on=t.getAttribute('data-tab')===name; t.classList.toggle('on', on); if(on) t.setAttribute('aria-current','page'); else t.removeAttribute('aria-current'); }); }
+    // One page view per screen or story; re-renders of the same place don't count twice.
+    var _lastView=null;
+    function trackView(h){
+      var path='/'+String(h||'').replace(/\/+$/,'');
+      if(path===_lastView) return;
+      _lastView=path;
+      try{ window.va('pageview',{path:path}); }catch(e){}
+    }
     function route(){
       var h=(location.hash||'#/').replace(/^#\/?/,'');
+      trackView(h);
       var parts=h.split('/'); var head=parts[0];
       // Stop any spoken briefing when navigating away from Listen.
       if(head!=='listen' && SPEAK.playing) stopSpeak();

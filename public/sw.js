@@ -8,7 +8,7 @@
  *
  * Bump VERSION to ship a new shell (old caches are purged on activate).
  */
-const VERSION = 'ap-v6';
+const VERSION = 'ap-v7';
 const SHELL   = VERSION + '-shell';
 const RUNTIME = VERSION + '-runtime';
 // The public app shell is now the LITE reader (tiny, data-light). The newsroom
@@ -98,8 +98,17 @@ self.addEventListener('fetch', function (e) {
     return;
   }
 
-  // 3) Everything else (app html, config, icons, images, fonts, the Supabase
-  //    ESM bundle) → cache-first, then network. Pays for each asset once.
+  // Cross-origin assets (story photos, mostly) are left to the browser's own
+  // HTTP cache. An opaque response stored in Cache Storage is charged at several
+  // megabytes against the origin's quota — forty photos a day would exhaust a
+  // low-end phone. The one exception is the Supabase client bundle, which the
+  // shell needs in order to start offline.
+  if (url.origin !== self.location.origin && url.hostname !== 'esm.sh') return;
+  // Analytics must always be live and is never worth caching.
+  if (url.pathname.indexOf('/_vercel/') === 0) return;
+
+  // 3) Everything else same-origin (app html, config, icons, images) and the
+  //    Supabase ESM bundle → cache-first, then network. Pays for each asset once.
   e.respondWith(
     caches.match(req).then(function (cached) {
       if (cached) return cached;
