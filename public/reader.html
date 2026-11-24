@@ -412,7 +412,16 @@
       nat_day:{en:'Today is %c’s National Day.',fr:'Aujourd’hui, c’est la fête nationale : %c.',ar:'اليوم هو العيد الوطني: %c.',sw:'Leo ni Siku ya Taifa: %c.',pt:'Hoje é o Dia Nacional: %c.'},
       nat_free:{en:'%c marks Freedom Day today.',fr:'%c célèbre aujourd’hui le Jour de la Liberté.',ar:'تحتفل %c اليوم بيوم الحرية.',sw:'%c inaadhimisha leo Siku ya Uhuru wa Raia.',pt:'%c assinala hoje o Dia da Liberdade.'},
       nat_rev:{en:'%c marks Revolution Day today.',fr:'%c célèbre aujourd’hui la fête de la Révolution.',ar:'تحتفل %c اليوم بذكرى الثورة.',sw:'%c inaadhimisha leo Siku ya Mapinduzi.',pt:'%c assinala hoje o Dia da Revolução.'},
-      streak:{en:'🔥 %n-day reading streak — welcome back.',fr:'🔥 %n jours de lecture d’affilée — ravis de vous revoir.',ar:'🔥 %n أيام قراءة متتالية — أهلًا بعودتك.',sw:'🔥 Mfululizo wa siku %n za kusoma — karibu tena.',pt:'🔥 %n dias seguidos de leitura — bem-vindo de volta.'}
+      streak:{en:'🔥 %n-day reading streak — welcome back.',fr:'🔥 %n jours de lecture d’affilée — ravis de vous revoir.',ar:'🔥 %n أيام قراءة متتالية — أهلًا بعودتك.',sw:'🔥 Mfululizo wa siku %n za kusoma — karibu tena.',pt:'🔥 %n dias seguidos de leitura — bem-vindo de volta.'},
+      me_week:{en:'Your week',fr:'Votre semaine',ar:'أسبوعك',sw:'Wiki yako',pt:'A sua semana'},
+      wk_stories:{en:'%n stories read',fr:'%n articles lus',ar:'قرأت %n خبرًا',sw:'habari %n zimesomwa',pt:'%n notícias lidas'},
+      wk_top:{en:'Favourite section: %s',fr:'Rubrique préférée : %s',ar:'القسم المفضل: %s',sw:'Sehemu pendwa: %s',pt:'Secção favorita: %s'},
+      wk_regions:{en:'%n of 5 regions explored',fr:'%n régions sur 5 explorées',ar:'استكشفت %n من 5 مناطق',sw:'maeneo %n kati ya 5 yametembelewa',pt:'%n de 5 regiões exploradas'},
+      wk_streak:{en:'🔥 %n-day streak',fr:'🔥 série de %n jours',ar:'🔥 سلسلة من %n أيام',sw:'🔥 mfululizo wa siku %n',pt:'🔥 sequência de %n dias'},
+      wk_share:{en:'📸 Share my week',fr:'📸 Partager ma semaine',ar:'📸 شارك أسبوعي',sw:'📸 Shiriki wiki yangu',pt:'📸 Partilhar a minha semana'},
+      wk_empty:{en:'Read a few stories and your reading week will appear here.',fr:'Lisez quelques articles et votre semaine de lecture apparaîtra ici.',ar:'اقرأ بعض الأخبار وسيظهر أسبوع قراءتك هنا.',sw:'Soma habari chache na wiki yako ya kusoma itaonekana hapa.',pt:'Leia algumas notícias e a sua semana de leitura aparecerá aqui.'},
+      wk_eyebrow:{en:'MY WEEK WITH AFRIPULSE',fr:'MA SEMAINE AVEC AFRIPULSE',ar:'أسبوعي مع أفريبولس',sw:'WIKI YANGU NA AFRIPULSE',pt:'A MINHA SEMANA COM AFRIPULSE'},
+      wk_card_label:{en:'stories read this week',fr:'articles lus cette semaine',ar:'خبرًا مقروءًا هذا الأسبوع',sw:'habari zilizosomwa wiki hii',pt:'notícias lidas esta semana'}
     };
 
     // ── Vertical + region labels (mirrors the newsroom, all 5 languages) ──
@@ -660,6 +669,7 @@
       var base=null; for(var i=0;i<ARTICLES.length;i++){ if(ARTICLES[i].slug===slug){ base=ARTICLES[i]; break; } }
       if(!base){ body.innerHTML='<a class="backlink" href="#/">‹ '+esc(tr('back'))+'</a>'+emptyState(tr('missing_b'),tr('missing_p')); return; }
       var a=localize(base);
+      logRead(base);
       var region=a.region?RL(a.region):'';
       var meta=[a.byline?esc(a.byline):'', region?esc(region):'', esc(fmtLong(a.published_at))].filter(Boolean).join(' · ');
       var bodyHtml=(a.body||[]).map(function(p){ return '<p>'+esc(p)+'</p>'; }).join('') || (a.dek?'<p class="muted">'+esc(a.dek)+'</p>':'');
@@ -798,6 +808,20 @@
       var langNames={en:'English',fr:'Français',ar:'العربية',sw:'Kiswahili',pt:'Português'};
       var kb=Math.max(1,Math.round(packBytes(ARTICLES)/1024)), sz=getSize();
       var h='';
+      // Your week — the device-local reading diary
+      var wk=weekStats();
+      h+='<div class="setrow"><div class="lab">'+esc(tr('me_week'))+'</div>';
+      if(wk.n>0){
+        var wl=[tr('wk_stories',{n:wk.n})];
+        if(wk.top) wl.push(tr('wk_top',{s:VL(wk.top)}));
+        if(wk.regions) wl.push(tr('wk_regions',{n:wk.regions}));
+        if(wk.streak>=2) wl.push(tr('wk_streak',{n:wk.streak}));
+        h+='<div class="hint">'+wl.map(esc).join('<br>')+'</div>'+
+           '<div style="margin-top:11px"><button class="btn" id="wk-share">'+esc(tr('wk_share'))+'</button></div>';
+      }else{
+        h+='<div class="hint">'+esc(tr('wk_empty'))+'</div>';
+      }
+      h+='</div>';
       // Language
       h+='<div class="setrow"><div class="lab">'+esc(tr('s_language'))+'</div><div class="seg" id="seg-lang">'+
         LANGS.map(function(c){ return '<button data-l="'+c+'"'+(c===LANG?' class="on"':'')+'>'+esc(langNames[c])+'</button>'; }).join('')+'</div></div>';
@@ -840,6 +864,8 @@
         if(want!==DATASAVER){ toggleDS(); } renderMe(); });
       var cc=document.getElementById('clear-cache');
       if(cc) cc.addEventListener('click', function(){ try{ localStorage.removeItem(PACK_KEY); }catch(err){} ARTICLES=[]; FETCHED=false; renderMe(); fetchEdition(); });
+      var ws=document.getElementById('wk-share');
+      if(ws) ws.addEventListener('click', shareWeekCard);
     }
 
     // ── Listen / Morning Pulse (Web Speech; no network, no cost) ──
@@ -959,11 +985,8 @@
       if(line) lines.push(line);
       return lines;
     }
-    function buildFrontPageCard(){
-      var W=1080,H=1350,M=78;
-      var rtl=(LANG==='ar');
-      var c=document.createElement('canvas'); c.width=W; c.height=H;
-      var x=c.getContext('2d');
+    // Shared chrome for every shareable card: ground, rails, mark, masthead.
+    function drawCardChrome(x,W,H,M){
       // ground
       var g=x.createLinearGradient(0,0,W*0.4,H);
       g.addColorStop(0,'#12351F'); g.addColorStop(0.55,'#0E2818'); g.addColorStop(1,'#081810');
@@ -991,6 +1014,13 @@
       x.fillStyle='#C9A227'; x.fillText('Pulse',mx+w1,my);
       var w2=x.measureText('Pulse').width;
       x.fillStyle='#FBF6E9'; x.fillText(' Times',mx+w1+w2,my);
+    }
+    function buildFrontPageCard(){
+      var W=1080,H=1350,M=78;
+      var rtl=(LANG==='ar');
+      var c=document.createElement('canvas'); c.width=W; c.height=H;
+      var x=c.getContext('2d');
+      drawCardChrome(x,W,H,M);
       // localized content below the masthead mirrors for RTL
       if(rtl){ x.direction='rtl'; x.textAlign='right'; }
       // eyebrow plate
@@ -1031,21 +1061,17 @@
       x.fillText(tr('fp_tag'), rtl?(W-M):M, fy+94);
       return c;
     }
-    function shareFrontPage(){
-      if(!ARTICLES.length) return;
-      var c;
-      try{ c=buildFrontPageCard(); }catch(e){ try{ console.error('front-page card failed:', e); }catch(_){} return; }
+    // Hand a finished card to the share sheet, or download it on desktop.
+    function shareCanvas(c, fname, text){
       c.toBlob(function(blob){
         if(!blob) return;
-        var fname='afripulse-front-page.png';
         try{
           var file=new File([blob], fname, {type:'image/png'});
           if(navigator.canShare && navigator.canShare({files:[file]})){
-            navigator.share({files:[file], title:'AfriPulse Times', text:tr('fp_eyebrow')+' · afripulsetimes.com'}).catch(function(){});
+            navigator.share({files:[file], title:'AfriPulse Times', text:text}).catch(function(){});
             return;
           }
         }catch(e){}
-        // No share sheet (desktop): download the card instead.
         try{
           var a=document.createElement('a');
           a.href=URL.createObjectURL(blob); a.download=fname;
@@ -1053,6 +1079,85 @@
           setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); },2000);
         }catch(e){}
       },'image/png');
+    }
+    function shareFrontPage(){
+      if(!ARTICLES.length) return;
+      var c;
+      try{ c=buildFrontPageCard(); }catch(e){ try{ console.error('front-page card failed:', e); }catch(_){} return; }
+      shareCanvas(c, 'afripulse-front-page.png', tr('fp_eyebrow')+' · afripulsetimes.com');
+    }
+
+    // ── "Your week": a device-local reading diary, never sent anywhere. ──
+    function logRead(a){
+      try{
+        var now=new Date(), day=dayKey(now);
+        var arr=JSON.parse(localStorage.getItem('afripulse_reads')||'[]');
+        for(var i=0;i<arr.length;i++){ if(arr[i].s===a.slug && arr[i].d===day) return; }
+        arr.push({s:a.slug, v:a.vertical||'front', g:a.region||regionSlugFor(a)||'', d:day, t:now.getTime()});
+        if(arr.length>300) arr=arr.slice(arr.length-300);
+        localStorage.setItem('afripulse_reads', JSON.stringify(arr));
+      }catch(e){}
+    }
+    function weekStats(){
+      var out={n:0, top:null, regions:0, streak:1};
+      try{
+        var arr=JSON.parse(localStorage.getItem('afripulse_reads')||'[]');
+        var cut=Date.now()-7*86400000;
+        var wk=arr.filter(function(r){ return (r.t||0)>=cut; });
+        out.n=wk.length;
+        var vc={}, rg={};
+        wk.forEach(function(r){ vc[r.v]=(vc[r.v]||0)+1; if(r.g) rg[r.g]=1; });
+        var top=null; for(var k in vc){ if(!top||vc[k]>vc[top]) top=k; }
+        out.top=top; out.regions=Object.keys(rg).length;
+        var st=JSON.parse(localStorage.getItem('afripulse_streak')||'null');
+        if(st&&st.n) out.streak=st.n;
+      }catch(e){}
+      return out;
+    }
+    function buildWeekCard(s){
+      var W=1080,H=1350,M=78;
+      var c=document.createElement('canvas'); c.width=W; c.height=H;
+      var x=c.getContext('2d');
+      drawCardChrome(x,W,H,M);
+      if(LANG==='ar') x.direction='rtl';
+      x.textAlign='center';
+      var cx=W/2;
+      // eyebrow plate, centered
+      var ey=tr('wk_eyebrow');
+      x.font='700 27px -apple-system, "Segoe UI", Roboto, sans-serif';
+      try{ x.letterSpacing='6px'; }catch(e){}
+      var ew=x.measureText(ey).width+56;
+      x.strokeStyle='#C9A227'; x.lineWidth=2; x.strokeRect(cx-ew/2,196,ew,58);
+      x.fillStyle='#E9D07A'; x.fillText(ey,cx,236);
+      try{ x.letterSpacing='0px'; }catch(e){}
+      // the big number
+      var grad=x.createLinearGradient(0,340,0,660); grad.addColorStop(0,'#E9D07A'); grad.addColorStop(1,'#C9A227');
+      x.fillStyle=grad; x.font='700 290px Georgia, "Times New Roman", serif';
+      x.fillText(String(s.n), cx, 620);
+      x.fillStyle='#D9C98F'; x.font='700 40px Georgia, "Times New Roman", serif';
+      x.fillText(tr('wk_card_label'), cx, 692);
+      // stat rows
+      var rows=[];
+      if(s.top) rows.push('◆ '+tr('wk_top',{s:VL(s.top)}));
+      if(s.regions) rows.push('◆ '+tr('wk_regions',{n:s.regions}));
+      if(s.streak>=2) rows.push('◆ '+tr('wk_streak',{n:s.streak}));
+      x.fillStyle='#F3EAD4'; x.font='400 34px -apple-system, "Segoe UI", Roboto, sans-serif';
+      var y=800; rows.forEach(function(r){ x.fillText(r,cx,y); y+=60; });
+      // footer, centered
+      var fy=H-150;
+      x.strokeStyle='rgba(201,162,39,0.5)'; x.lineWidth=1.5;
+      x.beginPath(); x.moveTo(M,fy); x.lineTo(W-M,fy); x.stroke();
+      x.fillStyle='#E9D07A'; x.font='700 34px -apple-system, "Segoe UI", Roboto, sans-serif';
+      x.fillText('afripulsetimes.com',cx,fy+52);
+      x.fillStyle='#AFC0A8'; x.font='400 26px -apple-system, "Segoe UI", Roboto, sans-serif';
+      x.fillText(tr('fp_tag'),cx,fy+94);
+      return c;
+    }
+    function shareWeekCard(){
+      var s=weekStats(); if(!s.n) return;
+      var c;
+      try{ c=buildWeekCard(s); }catch(e){ try{ console.error('week card failed:', e); }catch(_){} return; }
+      shareCanvas(c, 'afripulse-my-week.png', tr('me_week')+' · afripulsetimes.com');
     }
 
     // ── Router ──
