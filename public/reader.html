@@ -29,6 +29,8 @@
 <meta name="apple-mobile-web-app-title" content="AfriPulse">
 <meta name="mobile-web-app-capable" content="yes">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%230E2818'/%3E%3Ctext x='32' y='46' font-family='Georgia,serif' font-size='42' font-weight='bold' fill='%23C9A227' text-anchor='middle'%3EA%3C/text%3E%3C/svg%3E">
+<!-- Apply the saved theme before first paint — no flash of the wrong mode. -->
+<script>(function(){try{var t=localStorage.getItem('afripulse_theme');if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
 <style>
   /* ── Paper-news palette. System fonts only — no web fonts, no network on first paint. ── */
   :root{
@@ -36,6 +38,26 @@
     --gold:#C9A227; --gold-d:#9A7B1A; --forest:#0E2818; --forest-2:#12351F;
     --sysfont:-apple-system,"Segoe UI",Roboto,"Noto Sans",sans-serif;
     --navh:58px; --readsize:18px;
+    --ok-t:#2f6b45; --ok-b:#bcd9c6; --mid-b:#e6d3a0;
+    --cell-t:#a85f1f; --cell-b:#e6c9a8; --off-t:#9a2f2f; --off-b:#e6bcbc;
+  }
+  /* Midnight paper — the same newspaper, read by lamplight. Auto with the
+     phone, or forced from Me. Tokens only; components never hardcode theme. */
+  html[data-theme="dark"]{
+    --bg:#15130E; --card:#1E1A13; --ink:#EBE5D5; --muted:#9C9484; --line:#312C22;
+    --gold:#D3B04C; --gold-d:#C9A227; --forest:#0A1F12; --forest-2:#A6C7AD;
+    --ok-t:#8FD3A8; --ok-b:#2E5C41; --mid-b:#55491F;
+    --cell-t:#E3A763; --cell-b:#5C4526; --off-t:#E58C8C; --off-b:#5C2E2E;
+    color-scheme:dark;
+  }
+  @media (prefers-color-scheme:dark){
+    html:not([data-theme="light"]){
+      --bg:#15130E; --card:#1E1A13; --ink:#EBE5D5; --muted:#9C9484; --line:#312C22;
+      --gold:#D3B04C; --gold-d:#C9A227; --forest:#0A1F12; --forest-2:#A6C7AD;
+      --ok-t:#8FD3A8; --ok-b:#2E5C41; --mid-b:#55491F;
+      --cell-t:#E3A763; --cell-b:#5C4526; --off-t:#E58C8C; --off-b:#5C2E2E;
+      color-scheme:dark;
+    }
   }
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
   html{-webkit-text-size-adjust:100%}
@@ -65,10 +87,10 @@
   .chip{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;
     padding:5px 11px;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--muted)}
   .chip .dot{width:8px;height:8px;border-radius:50%;background:var(--muted)}
-  .chip.good .dot{background:#2f8f57}.chip.good{color:#2f6b45;border-color:#bcd9c6}
-  .chip.mid .dot{background:var(--gold)}.chip.mid{color:var(--gold-d);border-color:#e6d3a0}
-  .chip.cell .dot{background:#c9772a}.chip.cell{color:#a85f1f;border-color:#e6c9a8}
-  .chip.off .dot{background:#b23b3b}.chip.off{color:#9a2f2f;border-color:#e6bcbc}
+  .chip.good .dot{background:#2f8f57}.chip.good{color:var(--ok-t);border-color:var(--ok-b)}
+  .chip.mid .dot{background:var(--gold)}.chip.mid{color:var(--gold-d);border-color:var(--mid-b)}
+  .chip.cell .dot{background:#c9772a}.chip.cell{color:var(--cell-t);border-color:var(--cell-b)}
+  .chip.off .dot{background:#b23b3b}.chip.off{color:var(--off-t);border-color:var(--off-b)}
   .toggle{margin-left:auto;display:inline-flex;align-items:center;gap:7px;font-size:12.5px;color:var(--muted)}
   html[dir="rtl"] .toggle{margin-left:0;margin-right:auto}
   .toggle button{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:5px 12px;font-size:12.5px;color:var(--ink);font-weight:600}
@@ -78,6 +100,11 @@
   .packstrip .dl{margin-left:auto;background:var(--forest);color:#F3EAD4;border:0;border-radius:8px;padding:7px 13px;font-weight:600;font-size:12.5px}
   .packstrip .dl:disabled{opacity:.55}
   html[dir="rtl"] .packstrip .dl{margin-left:0;margin-right:auto}
+  .searchrow{margin:0 0 14px}
+  .searchrow input{width:100%;border:1px solid var(--line);background:var(--card);color:var(--ink);
+    border-radius:10px;padding:10px 14px;font-size:15px;font-family:inherit}
+  .searchrow input::placeholder{color:var(--muted)}
+  :focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 
   .muted{color:var(--muted)}
   .empty{padding:44px 8px;text-align:center;color:var(--muted);line-height:1.7}
@@ -164,8 +191,8 @@
   .map .land{fill:url(#pulseFill);stroke:#9A7B1A;stroke-width:.5;stroke-opacity:.5}
   .map .hot{cursor:pointer}
   .map .hot .hit{fill:transparent}
-  .map .hot .pin{fill:var(--forest);stroke:#F4EFE4;stroke-width:1;transition:fill .15s}
-  .map .hot .lbl{fill:var(--forest);font-size:4.4px;font-weight:700;font-family:var(--sysfont);text-anchor:middle}
+  .map .hot .pin{fill:var(--forest);stroke:var(--bg);stroke-width:1;transition:fill .15s}
+  .map .hot .lbl{fill:var(--forest-2);font-size:4.4px;font-weight:700;font-family:var(--sysfont);text-anchor:middle}
   .map .hot .cnt{fill:#fff;font-size:3.4px;font-weight:700;text-anchor:middle;pointer-events:none}
   .map .hot.on .pin{fill:var(--gold)}
   .map .hot.on .lbl{fill:var(--gold-d)}
@@ -194,6 +221,7 @@
           <span class="toggle"><span id="ds-label">Data saver</span><button id="ds-btn" type="button" aria-pressed="false">Off</button></span>
         </div>
         <div class="packstrip" id="packstrip" hidden></div>
+        <div class="searchrow"><input id="q" type="search" autocomplete="off" placeholder="Search…" aria-label="Search today's stories"></div>
         <div id="today-body"><div class="placeholder">…</div></div>
       </div>
     </section>
@@ -303,7 +331,14 @@
       share:{en:'Share',fr:'Partager',ar:'مشاركة',sw:'Shiriki',pt:'Partilhar'},
       copied:{en:'Link copied ✓',fr:'Lien copié ✓',ar:'✓ تم نسخ الرابط',sw:'Kiungo kimenakiliwa ✓',pt:'Link copiado ✓'},
       about_link:{en:'About AfriPulse Times',fr:'À propos d’AfriPulse Times',ar:'عن AfriPulse Times',sw:'Kuhusu AfriPulse Times',pt:'Sobre o AfriPulse Times'},
-      about_p:{en:'Our mission, editors and standards',fr:'Notre mission, nos éditeurs, nos normes',ar:'مهمتنا ومحررونا ومعاييرنا',sw:'Dhamira yetu, wahariri na viwango',pt:'A nossa missão, editores e normas'}
+      about_p:{en:'Our mission, editors and standards',fr:'Notre mission, nos éditeurs, nos normes',ar:'مهمتنا ومحررونا ومعاييرنا',sw:'Dhamira yetu, wahariri na viwango',pt:'A nossa missão, editores e normas'},
+      s_theme:{en:'Appearance',fr:'Apparence',ar:'المظهر',sw:'Mwonekano',pt:'Aparência'},
+      th_auto:{en:'Auto',fr:'Auto',ar:'تلقائي',sw:'Otomatiki',pt:'Auto'},
+      th_light:{en:'Light',fr:'Clair',ar:'فاتح',sw:'Mwangaza',pt:'Claro'},
+      th_dark:{en:'Dark',fr:'Sombre',ar:'داكن',sw:'Giza',pt:'Escuro'},
+      search_ph:{en:'Search today’s stories…',fr:'Rechercher dans les articles du jour…',ar:'ابحث في أخبار اليوم…',sw:'Tafuta habari za leo…',pt:'Pesquisar nas notícias de hoje…'},
+      search_n:{en:'%n stories match',fr:'%n articles correspondent',ar:'%n خبر مطابق',sw:'habari %n zinalingana',pt:'%n notícias correspondem'},
+      search_none:{en:'Nothing matches that search in today’s edition.',fr:'Aucun résultat pour cette recherche dans l’édition du jour.',ar:'لا نتائج لهذا البحث في إصدار اليوم.',sw:'Hakuna kinacholingana na utafutaji huo katika toleo la leo.',pt:'Nada corresponde a essa pesquisa na edição de hoje.'}
     };
 
     // ── Vertical + region labels (mirrors the newsroom, all 5 languages) ──
@@ -457,6 +492,17 @@
       renderPackStrip();
       if(!ARTICLES.length){ body.innerHTML = FETCHED ? emptyState(tr('empty_b'),tr('empty_p')) : '<div class="placeholder">…</div>'; return; }
       var loc=ARTICLES.map(localize);
+      // Search: filter the cached pack client-side — works fully offline.
+      if(SEARCHQ){
+        var ql=SEARCHQ.toLowerCase();
+        var hits=loc.filter(function(a){
+          return (a.headline+' '+(a.dek||'')+' '+((a.body||[]).join(' '))).toLowerCase().indexOf(ql)>-1;
+        });
+        body.innerHTML = hits.length
+          ? '<div style="color:var(--muted);font-size:12.5px;margin:2px 0 8px">'+esc(tr('search_n',{n:hits.length}))+'</div>'+hits.map(storyCard).join('')
+          : emptyState(tr('empty_b'),tr('search_none'));
+        return;
+      }
       var html='';
       VERTICAL_KEYS.forEach(function(v){
         var items=loc.filter(function(a){ return (a.vertical||'front')===v; });
@@ -509,6 +555,7 @@
     function paintLabels(){
       document.querySelectorAll('[data-nav]').forEach(function(el){ el.textContent=tr(el.getAttribute('data-nav')); });
       ['pulse','listen','saved','me'].forEach(function(k){ var el=document.getElementById('t-'+k); if(el) el.textContent=tr(k); });
+      var q=document.getElementById('q'); if(q) q.placeholder=tr('search_ph');
     }
     function paintDate(){ var el=document.getElementById('today-date'); if(!el) return;
       try{ el.textContent=new Date().toLocaleDateString(locale(),{weekday:'long',day:'numeric',month:'long'}); }catch(e){ el.textContent=new Date().toDateString(); } }
@@ -575,6 +622,15 @@
     function getSize(){ try{ var s=localStorage.getItem('afripulse_textsize'); if(SIZES[s]) return s; }catch(e){} return 'm'; }
     function applySize(k){ try{ document.documentElement.style.setProperty('--readsize', SIZES[k]||SIZES.m); }catch(e){} }
 
+    // ── Appearance (auto follows the phone; light/dark force it) ──
+    function getTheme(){ try{ var t=localStorage.getItem('afripulse_theme'); if(t==='dark'||t==='light') return t; }catch(e){} return 'auto'; }
+    function applyTheme(k){
+      try{
+        if(k==='dark'||k==='light'){ localStorage.setItem('afripulse_theme',k); document.documentElement.setAttribute('data-theme',k); }
+        else { localStorage.removeItem('afripulse_theme'); document.documentElement.removeAttribute('data-theme'); }
+      }catch(e){}
+    }
+
     // ── Saved screen ──
     function renderSaved(){
       var body=document.getElementById('saved-body'); if(!body) return;
@@ -595,6 +651,10 @@
       // Reading size
       h+='<div class="setrow"><div class="lab">'+esc(tr('s_textsize'))+'</div><div class="seg" id="seg-size">'+
         [['s','sz_s'],['m','sz_m'],['l','sz_l']].map(function(p){ return '<button data-s="'+p[0]+'"'+(p[0]===sz?' class="on"':'')+'>'+esc(tr(p[1]))+'</button>'; }).join('')+'</div></div>';
+      // Appearance
+      var th=getTheme();
+      h+='<div class="setrow"><div class="lab">'+esc(tr('s_theme'))+'</div><div class="seg" id="seg-theme">'+
+        [['auto','th_auto'],['light','th_light'],['dark','th_dark']].map(function(p){ return '<button data-t="'+p[0]+'"'+(p[0]===th?' class="on"':'')+'>'+esc(tr(p[1]))+'</button>'; }).join('')+'</div></div>';
       // Data saver (mirror of the Today toggle)
       h+='<div class="setrow"><div class="lab">'+esc(tr('ds'))+'</div><div class="seg" id="seg-ds">'+
         '<button data-d="0"'+(!DATASAVER?' class="on"':'')+'>'+esc(tr('off'))+'</button>'+
@@ -619,6 +679,9 @@
       var segS=document.getElementById('seg-size');
       if(segS) segS.addEventListener('click', function(e){ var b=e.target.closest('button'); if(!b) return; var k=b.getAttribute('data-s');
         try{ localStorage.setItem('afripulse_textsize',k); }catch(err){} applySize(k); renderMe(); });
+      var segT=document.getElementById('seg-theme');
+      if(segT) segT.addEventListener('click', function(e){ var b=e.target.closest('button'); if(!b) return;
+        applyTheme(b.getAttribute('data-t')); renderMe(); });
       var segD=document.getElementById('seg-ds');
       if(segD) segD.addEventListener('click', function(e){ var b=e.target.closest('button'); if(!b) return; var want=b.getAttribute('data-d')==='1';
         if(want!==DATASAVER){ toggleDS(); } renderMe(); });
@@ -721,7 +784,7 @@
     // ── Router ──
     var SCREENS={'':'today','pulse':'pulse','listen':'listen','saved':'saved','me':'me'};
     function showScreen(name){ document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('on'); }); var s=document.getElementById('s-'+name); if(s) s.classList.add('on'); }
-    function setTab(name){ document.querySelectorAll('.tab').forEach(function(t){ t.classList.toggle('on', t.getAttribute('data-tab')===name); }); }
+    function setTab(name){ document.querySelectorAll('.tab').forEach(function(t){ var on=t.getAttribute('data-tab')===name; t.classList.toggle('on', on); if(on) t.setAttribute('aria-current','page'); else t.removeAttribute('aria-current'); }); }
     function route(){
       var h=(location.hash||'#/').replace(/^#\/?/,'');
       var parts=h.split('/'); var head=parts[0];
@@ -749,6 +812,9 @@
     applySize(getSize());
     paintLabels(); paintDate(); paintConn(); paintDS(); paintGreet();
     var _ds=document.getElementById('ds-btn'); if(_ds) _ds.addEventListener('click', toggleDS);
+    var SEARCHQ='';
+    var _q=document.getElementById('q');
+    if(_q) _q.addEventListener('input', function(){ SEARCHQ=this.value.trim(); renderToday(); });
     if(!location.hash) location.replace('#/');
     route();            // paint from cache instantly (ARTICLES may already be loaded)
     fetchEdition();     // then refresh from Supabase
