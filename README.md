@@ -27,6 +27,9 @@ streak, home region, last visit) stays in the browser's `localStorage`.
 | Today | Cover story with photo, section chips, exchange rates, "Near you" for the reader's home region, favourite sections first, NEW badges since the last visit, read ticks, freshness line |
 | Finding stories | Instant offline search of the edition, archive search across every headline, "Load earlier stories", browse by nation with flags, regional map |
 | Reading | Photos with credits, progress bar, "Up next", edition meter and finish line, swipe between stories, read-aloud at three speeds, wire source credit with a link to the original, a note when a story is not yet translated |
+| One story, many sources | Near-identical reports from different outlets merge into one card that credits and links every outlet |
+| Context | Tap-to-explain glossary for ECOWAS, AU, AfCFTA and other acronyms (English edition); stories placed in their region by the country named |
+| Desktop & paper | Keyboard: J/K, S, /, Esc · print stylesheet that keeps the article and its sources |
 | Any link opens | Stories outside the latest edition are fetched on demand; saved stories open from their saved copy |
 | Habit | Daily reading streak, national-day banners for all 54 nations, quiet refresh when the reader returns, morning-brief email sign-up |
 | Sharing | One-tap WhatsApp and copy-link, per-story preview images, a shareable front-page image, a "Your week" stats card |
