@@ -278,6 +278,11 @@
   .foot a:hover{color:var(--gold-d)}
   .fixline{font-size:13px;color:var(--muted);margin:10px 0 0}
   .fixline a{color:var(--gold-d);font-weight:600}
+  .focus{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 14px}
+  .focus span{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--gold-d)}
+  .focus button{appearance:none;cursor:pointer;border:1px solid var(--gold-d);background:transparent;color:var(--ink);
+    font-size:13px;font-weight:700;padding:6px 12px;border-radius:999px}
+  .focus button b{color:var(--gold-d);margin-inline-start:3px}
   .newline{font-size:13.5px;color:var(--gold-d);font-weight:600;margin:0 0 10px}
   .card.read h3,.card.read p{opacity:.6}
   .card .rd{color:var(--muted);font-weight:600}
@@ -640,6 +645,7 @@
       fix_q:{en:'Spotted an error?',fr:'Vous avez repéré une erreur ?',ar:'هل لاحظت خطأ؟',sw:'Umeona kosa?',pt:'Encontrou um erro?'},
       fix_a:{en:'Tell the editors',fr:'Prévenez la rédaction',ar:'أخبر المحررين',sw:'Waambie wahariri',pt:'Avise a redação'},
       world:{en:'World',fr:'Monde',ar:'العالم',sw:'Dunia',pt:'Mundo'},
+      in_focus:{en:'In focus',fr:'À suivre',ar:'في دائرة الضوء',sw:'Yanayoangaziwa',pt:'Em foco'},
       ed_done:{en:'🏁 Edition complete — you’ve read all %t stories today.',fr:'🏁 Édition terminée — vous avez lu les %t articles du jour.',ar:'🏁 اكتمل الإصدار — قرأت كل أخبار اليوم الـ%t.',sw:'🏁 Toleo limekamilika — umesoma habari zote %t za leo.',pt:'🏁 Edição completa — leu todas as %t notícias de hoje.'},
       stop_read:{en:'■ Stop reading',fr:'■ Arrêter la lecture',ar:'■ إيقاف القراءة',sw:'■ Simamisha kusoma',pt:'■ Parar a leitura'}
     };
@@ -1117,6 +1123,38 @@
         '<a href="/feed.xml">RSS</a>'+
         '<a href="/desk">'+esc(tr('ft_desk'))+'</a></nav>';
     }
+    // ── In focus: subjects several stories share (COP31, AFCON, a name in the news) ──
+    // Counted from headlines. An acronym or code (COP31, NPFL) qualifies on its
+    // own; a capitalised word only if somewhere it follows a lower-case word
+    // ("governor, Tinubu tells…"), which is what separates a name from a noun
+    // that a Title-Cased headline happened to capitalise ("Bayelsa Boat Mishap").
+    // Countries are left out: the nations row already covers them.
+    var FOCUS_STOP={the:1,and:1,for:1,with:1,from:1,after:1,over:1,amid:1,says:1,said:1,new:1,how:1,why:1,what:1,who:1,first:1,president:1,
+      minister:1,government:1,police:1,court:1,world:1,global:1,news:1,daily:1,update:1,live:1,editorial:1,opinion:1,analysis:1,breaking:1,
+      monday:1,tuesday:1,wednesday:1,thursday:1,friday:1,saturday:1,sunday:1,january:1,february:1,march:1,april:1,june:1,july:1,august:1,
+      september:1,october:1,november:1,december:1,north:1,south:1,east:1,west:1,central:1,southern:1,northern:1,eastern:1,western:1};
+    function focusTopics(list){
+      var count={}, proper={}, label={};
+      list.forEach(function(a){
+        var words=String(a.headline||'').split(/[^A-Za-z0-9\u00c0-\u024f’'-]+/).filter(Boolean);
+        var seen={};
+        words.forEach(function(w,i){
+          w=w.replace(/[’']s$/,'');
+          var key=w.toLowerCase();
+          if(key.length<3 || FOCUS_STOP[key] || seen[key]) return;
+          var acronym=/^[A-Z0-9]{3,}$/.test(w) && /[A-Z]/.test(w);
+          var capital=/^[A-Z\u00c0-\u00de][a-z\u00df-\u024f]{3,}/.test(w);
+          if(!acronym && !capital) return;
+          if(countriesIn(key).length) return;
+          seen[key]=1; count[key]=(count[key]||0)+1;
+          if(!label[key] || acronym) label[key]=w;
+          if(acronym || (capital && i>0 && /^[a-z\u00df-\u024f]/.test(words[i-1]))) proper[key]=1;
+        });
+      });
+      return Object.keys(count).filter(function(k){ return count[k]>=3 && proper[k]; })
+        .sort(function(x,y){ return count[y]-count[x] || (x<y?-1:1); }).slice(0,4)
+        .map(function(k){ return { term:label[k], n:count[k] }; });
+    }
     // ── My Africa: the reader's home region(s), device-local ──
     function getHome(){
       try{ var a=JSON.parse(localStorage.getItem('afripulse_home')||'[]');
@@ -1223,16 +1261,26 @@
       var chips=rendered.length>1
         ? '<div class="secchips">'+rendered.map(function(v){ return '<button type="button" data-v="'+v+'">'+esc(v==='world'?tr('world'):VL(v))+'</button>'; }).join('')+'</div>'
         : '';
+      var topics=focusTopics(loc);
+      var focusHtml=topics.length?('<div class="focus"><span>'+esc(tr('in_focus'))+'</span>'+topics.map(function(tp){
+        return '<button type="button" data-q="'+esc(tp.term)+'">'+esc(tp.term)+' <b>'+tp.n+'</b></button>'; }).join('')+'</div>'):'';
       var nNew=loc.filter(isNewStory).length;
       var newLine=nNew?('<div class="newline">'+esc(tr('new_since',{n:nNew}))+'</div>'):'';
       // Earlier stories, loaded a page at a time from the archive.
       var olderHtml=OLDER.length?('<div class="h2" id="sec-earlier">'+esc(tr('earlier'))+'</div><div class="cards">'+OLDER.map(localize).map(storyCard).join('')+'</div>'):'';
       var moreBtn=(!OLDER_DONE && navigator.onLine!==false)
         ? '<button type="button" class="morebtn" id="more-btn"'+(OLDER_BUSY?' disabled':'')+'>'+esc(OLDER_BUSY?'…':tr('load_more'))+'</button>' : '';
-      body.innerHTML = newLine+chips+heroCard(hero)+fxStrip()+homeAsk+nearHtml+sections+olderHtml+moreBtn+(nlDone()?'':nlCard())+footLinks();
+      body.innerHTML = newLine+chips+focusHtml+heroCard(hero)+fxStrip()+homeAsk+nearHtml+sections+olderHtml+moreBtn+(nlDone()?'':nlCard())+footLinks();
       bindNl(body);
       var mb=document.getElementById('more-btn');
       if(mb) mb.addEventListener('click', loadOlder);
+      var fo=body.querySelector('.focus');
+      if(fo) fo.addEventListener('click', function(e){
+        var b=e.target.closest('button'); if(!b) return;
+        var qi=document.getElementById('q'); SEARCHQ=b.getAttribute('data-q');
+        if(qi) qi.value=SEARCHQ;
+        renderToday(); try{ window.scrollTo(0,0); }catch(err){}
+      });
       var ha=body.querySelector('.homeask');
       if(ha) ha.addEventListener('click', function(e){
         var b=e.target.closest('button'); if(!b) return;
