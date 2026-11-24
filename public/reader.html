@@ -222,7 +222,7 @@
     margin-inline-start:8px;vertical-align:1px}
   .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:84px;z-index:55;appearance:none;border:none;
     cursor:pointer;background:var(--forest);color:#F3EAD4;font-size:13.5px;font-weight:600;padding:10px 16px;
-    border-radius:999px;box-shadow:0 6px 20px rgba(0,0,0,.28);border:1px solid rgba(201,162,39,.5);white-space:nowrap}
+    border-radius:20px;box-shadow:0 6px 20px rgba(0,0,0,.28);border:1px solid rgba(201,162,39,.5);width:max-content;max-width:calc(100vw - 32px);text-align:center;line-height:1.35}
   .toast[hidden]{display:none}
   .homeask{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:13px 14px;margin:0 0 16px}
   .homeask .hq{font-size:14px;font-weight:600;color:var(--ink);margin-bottom:10px}
@@ -406,6 +406,26 @@
   .pulsebar button .b{color:var(--gold-d)}
   .pulsebar button.on{background:var(--forest);color:#F3EAD4;border-color:var(--forest)}
   .pulsebar button.on .b{color:#E9D07A}
+  .nsrc{color:var(--gold-d);font-weight:600}
+  .srcbox .also{margin-top:9px}
+  .srcbox .also a{color:var(--ink);text-decoration:underline}
+  .gl{all:unset;cursor:pointer;border-bottom:1.5px dotted var(--gold-d)}
+  .gl:focus-visible{outline:2px solid var(--gold-d);outline-offset:2px}
+  .keys{display:none;color:var(--muted);font-size:12px;text-align:center;margin:18px 0 0}
+  @media (min-width:960px) and (hover:hover){.keys{display:block}}
+  @media print{
+    .tabbar,.readbar,.tools,.packstrip,.backlink,.save-btn,.share-btn,.sharerow,.fixline,.related,.nextup,.instbar,.toast,
+    .nations,.secchips,.focus,.homeask,.morebtn,.nl,.keys,.foot,.natday,.quickread,.greet,.srcbox .btn{display:none!important}
+    body{background:#fff!important;color:#000!important}
+    .wrap,.screen{max-width:none!important;padding:0!important;margin:0!important}
+    .st-h{font-size:26pt!important;line-height:1.15!important}
+    .st-body p{font-size:11.5pt!important;line-height:1.5!important;color:#000!important;orphans:3;widows:3}
+    .gl{border:0!important}
+    .srcbox{border:0!important;border-top:1px solid #999!important;border-radius:0!important;padding:8pt 0 0!important;background:none!important}
+    .st-fig img{max-height:9cm;object-fit:contain}
+    a{color:#000!important;text-decoration:none!important}
+    .srcbox .also a::after{content:" (" attr(href) ")";font-size:8pt;word-break:break-all}
+  }
 </style>
   <!-- Visitor analytics (Vercel Web Analytics: no cookies, no personal data).
        Page views are sent by the router below, one per screen or story, because
@@ -654,6 +674,9 @@
       fix_q:{en:'Spotted an error?',fr:'Vous avez repéré une erreur ?',ar:'هل لاحظت خطأ؟',sw:'Umeona kosa?',pt:'Encontrou um erro?'},
       fix_a:{en:'Tell the editors',fr:'Prévenez la rédaction',ar:'أخبر المحررين',sw:'Waambie wahariri',pt:'Avise a redação'},
       world:{en:'World',fr:'Monde',ar:'العالم',sw:'Dunia',pt:'Mundo'},
+      n_sources:{en:'%n sources',fr:'%n sources',ar:'%n مصادر',sw:'vyanzo %n',pt:'%n fontes'},
+      also_by:{en:'Also reported by',fr:'Également rapporté par',ar:'ورد أيضاً في',sw:'Pia imeripotiwa na',pt:'Também noticiado por'},
+      keys_hint:{en:'Keys: J next · K previous · S save · / search · Esc back',fr:'Touches : J suivant · K précédent · S enregistrer · / chercher · Échap retour',ar:'المفاتيح: J التالي · K السابق · S حفظ · / بحث · Esc رجوع',sw:'Vitufe: J inayofuata · K iliyotangulia · S hifadhi · / tafuta · Esc rudi',pt:'Teclas: J seguinte · K anterior · S guardar · / pesquisar · Esc voltar'},
       in_focus:{en:'In focus',fr:'À suivre',ar:'في دائرة الضوء',sw:'Yanayoangaziwa',pt:'Em foco'},
       ed_done:{en:'🏁 Edition complete — you’ve read all %t stories today.',fr:'🏁 Édition terminée — vous avez lu les %t articles du jour.',ar:'🏁 اكتمل الإصدار — قرأت كل أخبار اليوم الـ%t.',sw:'🏁 Toleo limekamilika — umesoma habari zote %t za leo.',pt:'🏁 Edição completa — leu todas as %t notícias de hoje.'},
       stop_read:{en:'■ Stop reading',fr:'■ Arrêter la lecture',ar:'■ إيقاف القراءة',sw:'■ Simamisha kusoma',pt:'■ Parar a leitura'}
@@ -688,6 +711,13 @@
       'north-africa':{c:['egypt','morocco','algeria','tunisia','libya','sudan','mauritania','western sahara','maghreb','north africa'],cap:['cairo','rabat','algiers','tunis']},
       'central-africa':{c:['drc','democratic republic of congo','dr congo','congo','cameroon','chad','car','central african republic','gabon','equatorial guinea','sao tome','são tomé','central africa'],cap:['kinshasa','yaoundé','bangui']}
     };
+    // Every nation's home region, so a story is placed by the country it names.
+    var CC_REGION=(function(){
+      var m={}, g={'west-africa':'NG GH SN CI ML BF NE SL LR GN TG BJ GM CV GW','east-africa':'KE ET TZ UG RW BI SS SO DJ ER SC KM',
+        'southern-africa':'ZA ZW ZM BW MZ NA MW LS SZ AO MU MG','north-africa':'EG MA DZ TN LY SD MR','central-africa':'CD CG CM TD CF GA GQ ST'};
+      for(var r in g) g[r].split(' ').forEach(function(c){ m[c]=r; });
+      return m;
+    })();
     var _rre = {};
     function regionRe(slug){
       if(_rre[slug]) return _rre[slug];
@@ -703,8 +733,13 @@
       return parts.join(' · ').toLowerCase();
     }
     function regionSlugFor(a){
-      var txt=geoText(a);
-      for(var i=0;i<REGION_KEYS.length;i++){ if(regionRe(REGION_KEYS[i]).test(txt)) return REGION_KEYS[i]; }
+      // The headline and summary place a story; body text (which often mentions
+      // other regions in passing) only decides when they say nothing.
+      var cs=countriesIn((a.headline||'')+' · '+(a.dek||''));
+      for(var c=0;c<cs.length;c++){ var rg=CC_REGION[cs[c]]; if(rg) return rg; }
+      var tries=[geoText({headline:a.headline,dek:a.dek,kicker:a.kicker,tags:a.tags}), geoText(a)];
+      for(var t=0;t<tries.length;t++)
+        for(var i=0;i<REGION_KEYS.length;i++){ if(regionRe(REGION_KEYS[i]).test(tries[t])) return REGION_KEYS[i]; }
       return null;
     }
 
@@ -979,6 +1014,85 @@
         !/\b(africa|african|africans|sahel|sahara|saharan|maghreb)\b/i.test(a.headline+' '+a.dek));
       return a;
     }
+    // ── Glossary: the continent's alphabet soup, explained on tap ──
+    // English edition only: other languages have their own names for these bodies.
+    var GLOSS={ECOWAS:'Economic Community of West African States — 15-nation West African bloc',
+      AU:'African Union — the continental body of 55 member states, based in Addis Ababa',
+      SADC:'Southern African Development Community — 16-nation regional bloc',
+      EAC:'East African Community — regional bloc headquartered in Arusha',
+      AfCFTA:'African Continental Free Trade Area — the single continental market',
+      AfDB:'African Development Bank — the continent’s development lender, based in Abidjan',
+      COMESA:'Common Market for Eastern and Southern Africa',
+      IGAD:'Intergovernmental Authority on Development — Horn of Africa bloc',
+      ECCAS:'Economic Community of Central African States',
+      AES:'Alliance of Sahel States — Mali, Burkina Faso and Niger',
+      IMF:'International Monetary Fund',
+      OPEC:'Organization of the Petroleum Exporting Countries',
+      UNHCR:'The United Nations refugee agency',
+      MONUSCO:'The United Nations peacekeeping mission in DR Congo',
+      M23:'March 23 Movement — rebel group in eastern DR Congo',
+      RSF:'Rapid Support Forces — paramilitary force fighting Sudan’s army',
+      AFCON:'Africa Cup of Nations — the continental football championship',
+      CAF:'Confederation of African Football',
+      BRICS:'Bloc of emerging economies including South Africa, Egypt and Ethiopia',
+      ANC:'African National Congress — South African political party',
+      INEC:'Independent National Electoral Commission — Nigeria’s elections body',
+      EFCC:'Economic and Financial Crimes Commission — Nigeria’s anti-graft agency',
+      NNPC:'Nigerian National Petroleum Company — the state oil company',
+      CBN:'Central Bank of Nigeria',
+      SARB:'South African Reserve Bank',
+      Afreximbank:'African Export-Import Bank — trade finance lender based in Cairo'};
+    var GLOSS_RE=new RegExp('(^|[^A-Za-z0-9>-])('+Object.keys(GLOSS).join('|')+')(?![A-Za-z0-9-])','g');
+    // Takes already-escaped text; marks the first mention of each term per story.
+    function glossed(html, used){
+      return html.replace(GLOSS_RE, function(m,pre,term){
+        if(used[term]) return m; used[term]=1;
+        return pre+'<button type="button" class="gl" data-g="'+term+'">'+term+'</button>';
+      });
+    }
+    // ── One story, many sources ──
+    // Several outlets often file the same event. Near-identical headlines within
+    // two days collapse into one card that credits every outlet. Deliberately
+    // strict (four shared key words, 60% of the shorter headline) so that two
+    // different stories about the same subject never merge.
+    var DUP_STOP={after:1,over:1,amid:1,says:1,said:1,with:1,from:1,that:1,this:1,into:1,have:1,will:1,been:1,their:1,more:1,than:1,about:1,least:1};
+    function dupKeys(h){
+      var out={}, n=0;
+      normText(h).split(' ').forEach(function(w){
+        if(w.length>4 && w.charAt(w.length-1)==='s') w=w.slice(0,-1);
+        if((w.length<4 && !/\d/.test(w)) || DUP_STOP[w] || out[w]) return;
+        out[w]=1; n++;
+      });
+      return {k:out,n:n};
+    }
+    function sameStory(x,y){
+      if(!x.n || !y.n) return false;
+      var sh=0; for(var w in x.k) if(y.k[w]) sh++;
+      return sh>=4 && sh/Math.min(x.n,y.n)>=0.6;
+    }
+    function bodyLen(a){ return (a.body||[]).join(' ').length; }
+    function groupDupes(list){
+      var out=[], keys=[];
+      list.forEach(function(a){
+        var k=dupKeys(a.headline), t=new Date(a.published_at||0).getTime();
+        for(var i=0;i<out.length;i++){
+          var b=out[i];
+          if(Math.abs(new Date(b.published_at||0).getTime()-t)>48*3600000 || !sameStory(k,keys[i])) continue;
+          // Keep the African-sourced, fuller report; credit the other.
+          var win=b, lose=a;
+          if((b.world && !a.world) || (b.world===a.world && bodyLen(a)>bodyLen(b)*1.5)){ win=a; lose=b; }
+          var also=(b.also||[]).slice();
+          var lab=lose.sourceLabel||lose.via||'';
+          if(lab && lab!==(win.sourceLabel||win.via||'') && lose.sourceUrl && !also.some(function(o){ return o.label===lab; })) also.push({label:lab,url:lose.sourceUrl});
+          if(win===a){ a.also=also; if(!a.image && b.image){ a.image=b.image; a.imageCredit=b.imageCredit; } out[i]=a; keys[i]=k; }
+          else b.also=also;
+          if(!out[i].also.length) delete out[i].also;
+          return;
+        }
+        out.push(a); keys.push(k);
+      });
+      return out;
+    }
     // Swap to the current language when a server-generated translation exists.
     function localize(a){
       if(LANG==='en' || !a.translations) return a;
@@ -988,7 +1102,7 @@
         slug:a.slug, vertical:a.vertical, region:a.region, byline:a.byline, tags:a.tags,
         published_at:a.published_at, translations:a.translations, polished:a.polished,
         via:a.via, sourceUrl:a.sourceUrl, sourceLabel:a.sourceLabel, countries:a.countries, world:a.world, roundup:a.roundup,
-        image:a.image, imageCredit:a.imageCredit,
+        image:a.image, imageCredit:a.imageCredit, also:a.also,
         kicker:t.kicker||a.kicker, headline:splitByline(tidyHeadline(t.headline||a.headline)).headline,
         dek:lc.dek, body:lc.body
       };
@@ -1018,7 +1132,7 @@
         if(res.error){ renderCurrent(); return; }
         var had={}, hadAny=ARTICLES.length>0;
         ARTICLES.forEach(function(a){ had[a.slug]=1; });
-        ARTICLES=trimPack((res.data||[]).map(rowToLite));   // strip to text-only, cap ~50KB
+        ARTICLES=trimPack(groupDupes((res.data||[]).map(rowToLite)));   // strip to text-only, cap ~50KB
         savePack(ARTICLES);
         try{ localStorage.setItem('afripulse_synced', String(Date.now())); }catch(e){}
         paintDate();
@@ -1048,7 +1162,7 @@
         '<div class="kick">'+esc(VL(a.vertical))+(isNewStory(a)?newBadge():'')+'</div>'+
         '<h3 dir="auto">'+esc(a.headline)+'</h3>'+
         (a.dek?'<p dir="auto">'+esc(a.dek)+'</p>':'')+
-        '<div class="meta">'+meta+(rd?(' · <span class="rd">'+esc(tr('read_mark'))+'</span>'):'')+'</div></a>';
+        '<div class="meta">'+meta+((a.also&&a.also.length)?(' · <span class="nsrc">'+esc(tr('n_sources',{n:a.also.length+1}))+'</span>'):'')+(rd?(' · <span class="rd">'+esc(tr('read_mark'))+'</span>'):'')+'</div></a>';
     }
     // ── Morning brief by email (POST /api/subscribe → Supabase + Buttondown) ──
     var NL_DRAFT='', NL_BUSY=false;
@@ -1279,7 +1393,7 @@
       var olderHtml=OLDER.length?('<div class="h2" id="sec-earlier">'+esc(tr('earlier'))+'</div><div class="cards">'+OLDER.map(localize).map(storyCard).join('')+'</div>'):'';
       var moreBtn=(!OLDER_DONE && navigator.onLine!==false)
         ? '<button type="button" class="morebtn" id="more-btn"'+(OLDER_BUSY?' disabled':'')+'>'+esc(OLDER_BUSY?'…':tr('load_more'))+'</button>' : '';
-      body.innerHTML = newLine+chips+focusHtml+heroCard(hero)+fxStrip()+homeAsk+nearHtml+sections+olderHtml+moreBtn+(nlDone()?'':nlCard())+footLinks();
+      body.innerHTML = newLine+chips+focusHtml+heroCard(hero)+fxStrip()+homeAsk+nearHtml+sections+olderHtml+moreBtn+(nlDone()?'':nlCard())+footLinks()+'<p class="keys">'+esc(tr('keys_hint'))+'</p>';
       bindNl(body);
       var mb=document.getElementById('more-btn');
       if(mb) mb.addEventListener('click', loadOlder);
@@ -1311,7 +1425,7 @@
         '<div class="hk">'+esc(VL(a.vertical||'front'))+(isNewStory(a)?newBadge():'')+'</div>'+
         '<h2 dir="auto">'+esc(a.headline)+'</h2>'+
         (a.dek?'<p dir="auto">'+esc(a.dek)+'</p>':'')+
-        '<div class="meta">'+meta+'</div></a>';
+        '<div class="meta">'+meta+((a.also&&a.also.length)?(' · <span class="nsrc">'+esc(tr('n_sources',{n:a.also.length+1}))+'</span>'):'')+'</div></a>';
     }
     function relatedFor(base){
       // Same nation counts most, then same region, then same section.
@@ -1416,7 +1530,8 @@
       logRead(base);
       var region=a.region?RL(a.region):'';
       var meta=[a.byline?esc(a.byline):'', region?esc(region):'', esc(fmtLong(a.published_at))].filter(Boolean).join(' · ');
-      var bodyHtml=(a.body||[]).map(function(p){ return '<p dir="auto">'+esc(p)+'</p>'; }).join('');
+      var glUsed={}, glOn=(LANG==='en');
+      var bodyHtml=(a.body||[]).map(function(p){ return '<p dir="auto">'+(glOn?glossed(esc(p),glUsed):esc(p))+'</p>'; }).join('');
       // A story with no translation yet is English text inside a localized page:
       // say so, so screen readers and read-aloud use the right language.
       var untranslated=(LANG!=='en' && !(base.translations && base.translations[LANG]));
@@ -1425,7 +1540,9 @@
       // Wire stories: name the origin and send readers to the full report.
       var srcName=[a.via,a.sourceLabel].filter(function(x,i,arr){ return x && arr.indexOf(x)===i; }).join(' · ');
       var srcHtml=(a.sourceUrl||srcName)?('<div class="srcbox"><div class="sl">'+esc(tr('src_label'))+(srcName?(': <b>'+esc(srcName)+'</b>'):'')+'</div>'+
-        (a.sourceUrl?('<a class="btn" href="'+esc(a.sourceUrl)+'" target="_blank" rel="noopener nofollow">'+esc(tr('read_full'))+' ↗</a>'):'')+'</div>'):'';
+        (a.sourceUrl?('<a class="btn" href="'+esc(a.sourceUrl)+'" target="_blank" rel="noopener nofollow">'+esc(tr('read_full'))+' ↗</a>'):'')+
+        ((a.also&&a.also.length)?('<div class="sl also">'+esc(tr('also_by'))+': '+a.also.map(function(o){
+          return '<a href="'+esc(o.url)+'" target="_blank" rel="noopener nofollow">'+esc(o.label)+'</a>'; }).join(' · ')+'</div>'):'')+'</div>'):'';
       // Never a dead end: the next unread story + how far through today's edition.
       var nx=nextStoryFor(slug), ep=editionProgress();
       var rel=relatedFor(base).filter(function(r){ return !nx || r.slug!==nx.slug; }).map(storyCard).join('');
@@ -1465,6 +1582,11 @@
         noteHtml+
         (rel?('<div class="related"><div class="h2">'+esc(tr('related'))+'</div>'+rel+'</div>'):'')+
         nxHtml;
+      var stb=body.querySelector('.st-body');
+      if(stb) stb.addEventListener('click', function(e){
+        var g=e.target.closest('.gl'); if(!g) return;
+        var term=g.getAttribute('data-g'); if(GLOSS[term]) showToast(term+' — '+GLOSS[term]);
+      });
       var cb=document.getElementById('copy-btn');
       if(cb) cb.addEventListener('click', function(){
         var url=location.origin+'/s/'+encodeURIComponent(a.slug);
@@ -2187,6 +2309,42 @@
     }
     // Re-render the screen currently shown (used after data or language changes).
     function renderCurrent(){ route(); }
+    // ── Keyboard: J/K through stories, S to save, / to search, Esc back ──
+    document.addEventListener('keydown', function(e){
+      if(e.ctrlKey||e.metaKey||e.altKey||e.defaultPrevented) return;
+      var tg=e.target, tn=tg&&tg.tagName;
+      if(tn==='INPUT'||tn==='TEXTAREA'||tn==='SELECT'||(tg&&tg.isContentEditable)){
+        if(e.key==='Escape' && tg.id==='q') tg.blur();
+        return;
+      }
+      var wl=document.getElementById('welcome'); if(wl && !wl.hidden) return;
+      var h=(location.hash||'#/').replace(/^#\/?/,''), parts=h.split('/'), k=e.key.toLowerCase();
+      if(parts[0]==='story' && parts[1]){
+        var slug=decodeURIComponent(parts.slice(1).join('/'));
+        if(k==='escape'){ location.hash='#/'; return; }
+        if(k==='s'){ var sb=document.getElementById('save-btn'); if(sb) sb.click(); return; }
+        if(k==='j'||k==='k'){
+          var i=-1; for(var x=0;x<ARTICLES.length;x++) if(ARTICLES[x].slug===slug){ i=x; break; }
+          var n=ARTICLES[i+(k==='j'?1:-1)];
+          if(i>-1 && n) location.hash='#/story/'+encodeURIComponent(n.slug);
+        }
+        return;
+      }
+      if(k==='/'){
+        e.preventDefault();
+        if(h && parts[0]!=='today') location.hash='#/';
+        setTimeout(function(){ var q=document.getElementById('q'); if(q) q.focus(); }, 0);
+        return;
+      }
+      if((k==='j'||k==='k') && (!h || parts[0]==='today')){
+        var links=[].slice.call(document.querySelectorAll('#today-body a[href^="#/story/"]'));
+        if(!links.length) return;
+        var at=links.indexOf(document.activeElement);
+        var nx=links[Math.max(0, Math.min(links.length-1, at+(k==='j'?1:-1)))] || links[0];
+        if(at<0) nx=links[0];
+        nx.focus();
+      }
+    });
     window.addEventListener('hashchange', route);
     // ── Live Edition: refresh quietly when the reader returns to the app ──
     function showToast(text){
