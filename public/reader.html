@@ -450,7 +450,7 @@
       empty_b:{en:'No stories yet',fr:'Pas encore d’articles',ar:'لا توجد أخبار بعد',sw:'Bado hakuna habari',pt:'Ainda sem notícias'},
       empty_p:{en:'The newsroom is live and filing. Check back shortly.',fr:'La rédaction est en ligne et publie. Revenez bientôt.',ar:'غرفة الأخبار مباشرة وتنشر. عد قريبًا.',sw:'Chumba cha habari kiko hai. Rudi hivi karibuni.',pt:'A redação está a publicar. Volte em breve.'},
       missing_b:{en:'Story not available',fr:'Article indisponible',ar:'الخبر غير متاح',sw:'Habari haipatikani',pt:'Notícia indisponível'},
-      missing_p:{en:'It is not in today’s edition. Open Today to browse.',fr:'Il n’est pas dans l’édition du jour. Ouvrez Aujourd’hui.',ar:'ليست في إصدار اليوم. افتح اليوم للتصفح.',sw:'Haipo katika toleo la leo. Fungua Leo.',pt:'Não está na edição de hoje. Abra Hoje.'},
+      missing_p:{en:'This story is no longer available, or you are offline. Open Today to browse.',fr:'Cet article n’est plus disponible, ou vous êtes hors ligne. Ouvrez Aujourd’hui.',ar:'هذا الخبر لم يعد متاحًا، أو أنك غير متصل. افتح اليوم للتصفح.',sw:'Habari hii haipatikani tena, au uko nje ya mtandao. Fungua Leo.',pt:'Esta notícia já não está disponível, ou está offline. Abra Hoje.'},
       conn_starlink:{en:'Starlink',fr:'Starlink',ar:'ستارلينك',sw:'Starlink',pt:'Starlink'},
       conn_wifi:{en:'Community Wi-Fi',fr:'Wi-Fi communautaire',ar:'واي فاي مجتمعي',sw:'Wi-Fi ya jamii',pt:'Wi-Fi comunitário'},
       conn_mobile:{en:'Mobile data',fr:'Données mobiles',ar:'بيانات الجوال',sw:'Data ya simu',pt:'Dados móveis'},
@@ -1013,10 +1013,47 @@
       var arr=s[LANG]||s.en;
       return (Array.isArray(arr)&&arr.length)?arr.slice(0,5):null;
     }
-    function renderStory(slug){
+    // ── Any published story opens, not just the latest edition ──
+    // Shared links, search results and saved stories can point at a story that
+    // has left the latest 40. Look in the edition, then stories fetched this
+    // session, then the reader's saved copies; otherwise fetch it by slug.
+    var EXTRA={}, FETCHING={};
+    function findArticle(slug){
+      for(var i=0;i<ARTICLES.length;i++){ if(ARTICLES[i].slug===slug) return ARTICLES[i]; }
+      if(EXTRA[slug]) return EXTRA[slug];
+      var sv=loadSaved(); for(var j=0;j<sv.length;j++){ if(sv[j].slug===slug) return sv[j]; }
+      return null;
+    }
+    async function fetchStory(slug){
+      if(FETCHING[slug]) return;
+      FETCHING[slug]=1;
+      var found=null, settled=false;
+      try{
+        var sb=await sbClient();
+        if(sb){
+          var cols='slug,headline,dek,body,vertical,region,author_slug,published_at,translations,payload,status';
+          var res=await sb.from('articles').select(cols).eq('status','published').eq('slug',slug).limit(1);
+          if(!res.error){ settled=true; if(res.data && res.data[0]) found=rowToLite(res.data[0]); }
+        }
+      }catch(e){}
+      delete FETCHING[slug];
+      if(settled) EXTRA[slug]=found||false;     // false = confirmed absent; a network failure may be retried
+      var m=location.hash.match(/^#\/story\/(.+)$/);
+      if(m && decodeURIComponent(m[1])===slug) renderStory(slug, true);
+    }
+    function renderStory(slug, fetched){
       var body=document.getElementById('story-body'); if(!body) return;
-      var base=null; for(var i=0;i<ARTICLES.length;i++){ if(ARTICLES[i].slug===slug){ base=ARTICLES[i]; break; } }
-      if(!base){ body.innerHTML='<a class="backlink" href="#/">‹ '+esc(tr('back'))+'</a>'+emptyState(tr('missing_b'),tr('missing_p')); return; }
+      var base=findArticle(slug);
+      if(!base){
+        var back='<a class="backlink" href="#/">‹ '+esc(tr('back'))+'</a>';
+        if(!fetched && EXTRA[slug]!==false && navigator.onLine!==false){
+          body.innerHTML=back+'<div class="placeholder">…</div>';
+          fetchStory(slug);
+        }else{
+          body.innerHTML=back+emptyState(tr('missing_b'),tr('missing_p'));
+        }
+        return;
+      }
       var a=localize(base);
       logRead(base);
       var region=a.region?RL(a.region):'';
@@ -1149,9 +1186,10 @@
     function loadSaved(){ try{ var d=JSON.parse(localStorage.getItem(SAVE_KEY)); return Array.isArray(d)?d:[]; }catch(e){ return []; } }
     function writeSaved(list){ try{ localStorage.setItem(SAVE_KEY, JSON.stringify(list)); }catch(e){} }
     function isSaved(slug){ return loadSaved().some(function(s){ return s.slug===slug; }); }
-    function snapshot(a){ return {slug:a.slug,headline:a.headline,dek:a.dek,body:a.body,vertical:a.vertical,region:a.region,byline:a.byline,tags:a.tags||[],published_at:a.published_at,translations:a.translations||null,saved_at:Date.now()}; }
+    function snapshot(a){ return {slug:a.slug,headline:a.headline,dek:a.dek,body:a.body,vertical:a.vertical,region:a.region,byline:a.byline,tags:a.tags||[],published_at:a.published_at,translations:a.translations||null,
+      via:a.via||'',sourceUrl:a.sourceUrl||'',sourceLabel:a.sourceLabel||'',countries:a.countries||[],polished:!!a.polished,saved_at:Date.now()}; }
     function toggleSave(slug){
-      var base=null; for(var i=0;i<ARTICLES.length;i++){ if(ARTICLES[i].slug===slug){ base=ARTICLES[i]; break; } }
+      var base=findArticle(slug);
       var list=loadSaved(); var idx=-1; for(var j=0;j<list.length;j++){ if(list[j].slug===slug){ idx=j; break; } }
       if(idx>-1){ list.splice(idx,1); } else if(base){ list.unshift(snapshot(base)); }
       writeSaved(list); return idx===-1; // true = now saved
