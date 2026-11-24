@@ -32,6 +32,16 @@ export function escapeHtml(s){
 const WIRE_TAG = /^\s*\[([^\]\n]{2,40})\]\s*/;
 export function stripWireTag(s){ return String(s == null ? '' : s).replace(WIRE_TAG, ''); }
 const norm = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9\u00c0-\uffff]+/g, ' ').trim();
+// Not a summary: styling or markup leaked from a feed, a sponsor line, or the headline again.
+// `paragraph` skips the length rule: a short paragraph is still a paragraph.
+export function isJunkSummary(text, headline, paragraph){
+  const t = String(text || '').trim();
+  if (!paragraph && t.length < 12) return true;
+  if (/\/\*|\*\/|box-sizing|mso-|!important|\{[^{}]{0,200}:[^{}]{0,200}\}|<\/?[a-z][^>]*>/i.test(t)) return true;
+  if (/^(in partnership with|sponsored( content| by)?|advertisement|presented by)\b/i.test(t)) return true;
+  return !!headline && norm(t) === norm(headline);
+}
+const DEFAULT_DESC = 'Real-time, editor-verified news from all 54 African nations.';
 
 // Normalise a DB row to the fields the card needs (typed columns + payload).
 export function articleFromRow(row){
@@ -39,7 +49,7 @@ export function articleFromRow(row){
   return {
     slug: row.slug,
     headline: row.headline || p.headline || 'AfriPulse Times',
-    description: stripWireTag(p.standfirst || p.dek || row.dek) || 'Real-time, editor-verified news from all 54 African nations.',
+    description: usableSummary(row, p) || DEFAULT_DESC,
     // Older rows stored attribute-encoded image URLs ("&amp;"); undo that here.
     image: String(row.hero_image || p.hero_image || '').replace(/&(amp|#0*38|#x0*26);/gi, '&') || null,
     published_at: row.published_at || p.publishedAt || null,
@@ -52,10 +62,16 @@ export function articleFromRow(row){
   };
 }
 
+function usableSummary(row, p){
+  const d = stripWireTag(p.standfirst || p.dek || row.dek);
+  return d && !isJunkSummary(d, row.headline || p.headline) ? d : '';
+}
+
 function bodyParagraphs(row, p){
   const raw = Array.isArray(p.body) ? p.body : String(p.body || row.body || '').split(/\n{2,}/);
   const dek = norm(stripWireTag(p.standfirst || p.dek || row.dek));
-  return raw.map((x) => stripWireTag(x).trim()).filter((x) => x && norm(x) !== dek).slice(0, 60);
+  const head = row.headline || p.headline;
+  return raw.map((x) => stripWireTag(x).trim()).filter((x) => x && norm(x) !== dek && !isJunkSummary(x, head, true)).slice(0, 60);
 }
 
 // schema.org NewsArticle — what Google News and other aggregators read.
@@ -134,7 +150,7 @@ export function buildShareHtml(article, site){
     '.k{font:700 12px -apple-system,Segoe UI,Roboto,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#9A7B1A}' +
     '.d{font-size:18px;color:#4a463d}.m{font:13px -apple-system,Segoe UI,Roboto,sans-serif;color:#6b665a}a{color:#9A7B1A}</style>\n' +
     '</head>\n<body>\n<article>\n<div class="k">AfriPulse Times</div>\n<h1>' + title + '</h1>\n' +
-    '<p class="d">' + desc + '</p>\n' +
+    (article.description !== DEFAULT_DESC ? '<p class="d">' + desc + '</p>\n' : '') +
     (article.published_at ? '<p class="m"><time datetime="' + escapeHtml(article.published_at) + '">' +
       escapeHtml(String(article.published_at).slice(0, 10)) + '</time>' +
       (article.byline ? ' · ' + escapeHtml(article.byline) : '') + '</p>\n' : '') +
