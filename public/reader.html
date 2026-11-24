@@ -256,6 +256,9 @@
   .nl .nlm{min-height:18px;margin-top:8px}
   .nl .nlm.bad{color:#B4442C}
   .nl .nlm.ok{color:var(--forest-2);font-weight:600}
+  .morebtn{display:block;width:100%;appearance:none;cursor:pointer;border:1px solid var(--line);background:var(--card);
+    color:var(--gold-d);font-size:14.5px;font-weight:700;padding:13px;border-radius:12px;margin:18px 0 6px}
+  .morebtn:disabled{opacity:.6}
   .newline{font-size:13.5px;color:var(--gold-d);font-weight:600;margin:0 0 10px}
   .card.read h3,.card.read p{opacity:.6}
   .card .rd{color:var(--muted);font-weight:600}
@@ -587,6 +590,11 @@
       nl_ok:{en:'You’re subscribed — see you in the morning. ✓',fr:'Vous êtes abonné — à demain matin. ✓',ar:'تم اشتراكك — نراك في الصباح. ✓',sw:'Umejisajili — tuonane asubuhi. ✓',pt:'Subscrição feita — até amanhã de manhã. ✓'},
       nl_bad:{en:'Please enter a valid email address.',fr:'Veuillez saisir une adresse e-mail valide.',ar:'يرجى إدخال بريد إلكتروني صحيح.',sw:'Tafadhali weka barua pepe sahihi.',pt:'Introduza um endereço de email válido.'},
       nl_err:{en:'Could not subscribe just now. Please try again.',fr:'Abonnement impossible pour l’instant. Veuillez réessayer.',ar:'تعذّر الاشتراك الآن. حاول مرة أخرى.',sw:'Imeshindikana kujisajili sasa. Tafadhali jaribu tena.',pt:'Não foi possível subscrever agora. Tente novamente.'},
+      earlier:{en:'Earlier',fr:'Plus tôt',ar:'سابقًا',sw:'Awali',pt:'Anteriores'},
+      load_more:{en:'Load earlier stories',fr:'Charger des articles plus anciens',ar:'تحميل أخبار أقدم',sw:'Pakia habari za awali',pt:'Carregar notícias anteriores'},
+      arch_btn:{en:'Search the archive for “%s”',fr:'Chercher « %s » dans les archives',ar:'ابحث في الأرشيف عن «%s»',sw:'Tafuta “%s” kwenye kumbukumbu',pt:'Pesquisar “%s” no arquivo'},
+      arch_h:{en:'From the archive',fr:'Dans les archives',ar:'من الأرشيف',sw:'Kutoka kwenye kumbukumbu',pt:'Do arquivo'},
+      arch_none:{en:'Nothing in the archive matches.',fr:'Aucun résultat dans les archives.',ar:'لا نتائج في الأرشيف.',sw:'Hakuna kinacholingana kwenye kumbukumbu.',pt:'Nada no arquivo corresponde.'},
       ed_done:{en:'🏁 Edition complete — you’ve read all %t stories today.',fr:'🏁 Édition terminée — vous avez lu les %t articles du jour.',ar:'🏁 اكتمل الإصدار — قرأت كل أخبار اليوم الـ%t.',sw:'🏁 Toleo limekamilika — umesoma habari zote %t za leo.',pt:'🏁 Edição completa — leu todas as %t notícias de hoje.'},
       stop_read:{en:'■ Stop reading',fr:'■ Arrêter la lecture',ar:'■ إيقاف القراءة',sw:'■ Simamisha kusoma',pt:'■ Parar a leitura'}
     };
@@ -1023,12 +1031,25 @@
       // Search: filter the cached pack client-side — works fully offline.
       if(SEARCHQ){
         var ql=SEARCHQ.toLowerCase();
-        var hits=loc.filter(function(a){
+        var hits=loc.concat(OLDER.map(localize)).filter(function(a){
           return (a.headline+' '+(a.dek||'')+' '+((a.body||[]).join(' '))).toLowerCase().indexOf(ql)>-1;
         });
-        body.innerHTML = hits.length
+        // Beyond today's edition: one tap searches everything ever published.
+        var have={}; hits.forEach(function(a){ have[a.slug]=1; });
+        var arch='';
+        if(SEARCHQ.length>=3 && navigator.onLine!==false){
+          if(ARCH.q===SEARCHQ && ARCH.items){
+            var more=ARCH.items.map(localize).filter(function(a){ return !have[a.slug]; });
+            arch='<div class="h2" id="arch-h">'+esc(tr('arch_h'))+'</div>'+(more.length?('<div class="cards">'+more.map(storyCard).join('')+'</div>'):('<div class="hint">'+esc(tr('arch_none'))+'</div>'));
+          }else{
+            arch='<button type="button" class="morebtn" id="arch-go"'+(ARCH.busy?' disabled':'')+'>'+esc(ARCH.busy?'…':tr('arch_btn',{s:SEARCHQ}))+'</button>';
+          }
+        }
+        body.innerHTML = (hits.length
           ? '<div style="color:var(--muted);font-size:12.5px;margin:2px 0 8px">'+esc(tr('search_n',{n:hits.length}))+'</div>'+hits.map(storyCard).join('')
-          : emptyState(tr('empty_b'),tr('search_none'));
+          : emptyState(tr('empty_b'),tr('search_none')))+arch;
+        var ag=document.getElementById('arch-go');
+        if(ag) ag.addEventListener('click', function(){ searchArchive(SEARCHQ); });
         return;
       }
       // The cover: the lead front-page story (else the newest) as a hero.
@@ -1062,8 +1083,14 @@
         : '';
       var nNew=loc.filter(isNewStory).length;
       var newLine=nNew?('<div class="newline">'+esc(tr('new_since',{n:nNew}))+'</div>'):'';
-      body.innerHTML = newLine+chips+heroCard(hero)+homeAsk+nearHtml+sections+(nlDone()?'':nlCard());
+      // Earlier stories, loaded a page at a time from the archive.
+      var olderHtml=OLDER.length?('<div class="h2" id="sec-earlier">'+esc(tr('earlier'))+'</div><div class="cards">'+OLDER.map(localize).map(storyCard).join('')+'</div>'):'';
+      var moreBtn=(!OLDER_DONE && navigator.onLine!==false)
+        ? '<button type="button" class="morebtn" id="more-btn"'+(OLDER_BUSY?' disabled':'')+'>'+esc(OLDER_BUSY?'…':tr('load_more'))+'</button>' : '';
+      body.innerHTML = newLine+chips+heroCard(hero)+homeAsk+nearHtml+sections+olderHtml+moreBtn+(nlDone()?'':nlCard());
       bindNl(body);
+      var mb=document.getElementById('more-btn');
+      if(mb) mb.addEventListener('click', loadOlder);
       var ha=body.querySelector('.homeask');
       if(ha) ha.addEventListener('click', function(e){
         var b=e.target.closest('button'); if(!b) return;
@@ -1097,6 +1124,46 @@
       if(!s) return null;
       var arr=s[LANG]||s.en;
       return (Array.isArray(arr)&&arr.length)?arr.slice(0,5):null;
+    }
+    // ── The archive: earlier stories a page at a time, and search across everything ──
+    var OLDER=[], OLDER_DONE=false, OLDER_BUSY=false, ARCH={q:'',items:null,busy:false};
+    var ARCH_COLS='slug,headline,dek,body,vertical,region,author_slug,published_at,translations,payload,status';
+    function keepForOpening(list){ list.forEach(function(a){ EXTRA[a.slug]=a; }); }
+    async function loadOlder(){
+      if(OLDER_BUSY||OLDER_DONE) return;
+      var all=ARTICLES.concat(OLDER), cursor=null;
+      all.forEach(function(a){ if(a.published_at && (!cursor || a.published_at<cursor)) cursor=a.published_at; });
+      if(!cursor) return;
+      OLDER_BUSY=true; renderToday();
+      try{
+        var sb=await sbClient();
+        var res=sb?await sb.from('articles').select(ARCH_COLS).eq('status','published').lt('published_at',cursor)
+          .order('published_at',{ascending:false}).limit(20):null;
+        if(res && !res.error){
+          var seen={}; all.forEach(function(a){ seen[a.slug]=1; });
+          var got=(res.data||[]).map(rowToLite).filter(function(a){ return !seen[a.slug]; });
+          keepForOpening(got); OLDER=OLDER.concat(got);
+          if((res.data||[]).length<20) OLDER_DONE=true;
+        }
+      }catch(e){}
+      OLDER_BUSY=false; renderToday();
+    }
+    async function searchArchive(q){
+      if(ARCH.busy) return;
+      // % and _ are wildcards to the database; a reader's query is plain text.
+      var term=String(q||'').replace(/[%_\\]/g,' ').trim();
+      if(term.length<3) return;
+      ARCH={q:q,items:null,busy:true}; renderToday();
+      var items=[];
+      try{
+        var sb=await sbClient();
+        var res=sb?await sb.from('articles').select(ARCH_COLS).eq('status','published').ilike('headline','%'+term+'%')
+          .order('published_at',{ascending:false}).limit(20):null;
+        if(res && !res.error) items=(res.data||[]).map(rowToLite);
+      }catch(e){}
+      keepForOpening(items);
+      ARCH={q:q,items:items,busy:false};
+      if(SEARCHQ===q) renderToday();
     }
     // ── Any published story opens, not just the latest edition ──
     // Shared links, search results and saved stories can point at a story that
