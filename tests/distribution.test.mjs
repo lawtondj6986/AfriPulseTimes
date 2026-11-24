@@ -37,7 +37,8 @@ test('buildShareHtml carries per-story OG meta and the reader redirect', () => {
   assert.match(html, /<meta property="og:title" content="Kano counts the cost of the floods">/);
   assert.match(html, /<meta property="og:description" content="Thousands displaced as the river burst its banks\.">/);
   assert.match(html, /og:url" content="https:\/\/afripulsetimes\.com\/s\/kano-floods"/);
-  assert.match(html, /og:image" content="https:\/\/afripulsetimes\.com\/images\/og-card\.jpg"/);
+  assert.match(html, /og:image" content="https:\/\/afripulsetimes\.com\/og\/kano-floods\.png"/);
+  assert.match(html, /og:image:width" content="1200"/);
   assert.match(html, /article:published_time" content="2026-11-20T08:00:00Z"/);
   assert.match(html, /location\.replace\("\/#\/story\/kano-floods"\)/);
   assert.match(html, /http-equiv="refresh" content="0; url=\/#\/story\/kano-floods"/);
@@ -168,4 +169,32 @@ test('wire tags are stripped and the summary is never repeated as the body', () 
   const html = buildShareHtml(a, 'https://x.test');
   assert.ok(!html.includes('[DW]'), 'no raw tag anywhere on the page');
   assert.equal(feedItemFromRow({ slug: 'w', payload: { standfirst: '[RFI] Talks resume.' } }).description, 'Talks resume.');
+});
+
+// ── per-story share images ────────────────────────────────────
+import { ogElement, headlineSize, clipHeadline, sectionLabel } from '../api/og.js';
+
+test('stories without a photo get their own generated share image', () => {
+  assert.equal(pickImage({ slug: 'kano-floods', image: null }, 'https://s'), 'https://s/og/kano-floods.png');
+  assert.equal(pickImage({ slug: 'kano-floods', image: 'https://cdn.x/y.jpg' }, 'https://s'), 'https://cdn.x/y.jpg', 'a real photo still wins');
+  assert.equal(pickImage({ slug: 'Bad Slug!', image: null }, 'https://s'), 'https://s/images/og-card.jpg', 'unsafe slug falls back');
+});
+
+test('share card: headline sizing, clipping and section labels', () => {
+  assert.equal(headlineSize('Short headline'), 76);
+  assert.ok(headlineSize('x'.repeat(140)) < headlineSize('x'.repeat(60)), 'long headlines shrink');
+  const long = clipHeadline('word '.repeat(60));
+  assert.ok(long.length <= 150 && long.endsWith('…'));
+  assert.equal(clipHeadline('  Two   spaces  '), 'Two spaces');
+  assert.equal(sectionLabel('markets'), 'Business & Markets');
+  assert.equal(sectionLabel('unknown'), 'AfriPulse Times');
+  const text = JSON.stringify(ogElement({ headline: 'Kano floods', vertical: 'front', published_at: '2026-11-24T08:00:00Z' }));
+  assert.match(text, /Kano floods/); assert.match(text, /Front Page/); assert.match(text, /2026-11-24/);
+  assert.match(text, /afripulsetimes\.com/);
+});
+
+test('share image route is wired in vercel.json', async () => {
+  const { readFileSync } = await import('node:fs');
+  const vercel = JSON.parse(readFileSync(new URL('../vercel.json', import.meta.url), 'utf8'));
+  assert.ok(vercel.rewrites.some((r) => r.source === '/og/:slug' && r.destination === '/api/og?slug=:slug'));
 });
