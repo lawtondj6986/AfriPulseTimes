@@ -27,13 +27,19 @@ export function escapeHtml(s){
     { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
 }
 
+// Wire feeds prefix text with a raw "[DW] " style tag and often repeat the
+// summary as the only body paragraph. Strip the tag; never repeat a sentence.
+const WIRE_TAG = /^\s*\[([^\]\n]{2,40})\]\s*/;
+export function stripWireTag(s){ return String(s == null ? '' : s).replace(WIRE_TAG, ''); }
+const norm = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9\u00c0-\uffff]+/g, ' ').trim();
+
 // Normalise a DB row to the fields the card needs (typed columns + payload).
 export function articleFromRow(row){
   const p = (row && typeof row.payload === 'object' && row.payload) || {};
   return {
     slug: row.slug,
     headline: row.headline || p.headline || 'AfriPulse Times',
-    description: p.standfirst || p.dek || row.dek || 'Real-time, editor-verified news from all 54 African nations.',
+    description: stripWireTag(p.standfirst || p.dek || row.dek) || 'Real-time, editor-verified news from all 54 African nations.',
     image: row.hero_image || p.hero_image || null,
     published_at: row.published_at || p.publishedAt || null,
     body: bodyParagraphs(row, p),
@@ -47,7 +53,8 @@ export function articleFromRow(row){
 
 function bodyParagraphs(row, p){
   const raw = Array.isArray(p.body) ? p.body : String(p.body || row.body || '').split(/\n{2,}/);
-  return raw.map((x) => String(x || '').trim()).filter(Boolean).slice(0, 60);
+  const dek = norm(stripWireTag(p.standfirst || p.dek || row.dek));
+  return raw.map((x) => stripWireTag(x).trim()).filter((x) => x && norm(x) !== dek).slice(0, 60);
 }
 
 // schema.org NewsArticle — what Google News and other aggregators read.

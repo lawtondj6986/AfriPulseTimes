@@ -31,7 +31,7 @@ export function feedItemFromRow(row){
   return {
     slug: row.slug,
     title: row.headline || p.headline || 'AfriPulse Times',
-    description: p.standfirst || p.dek || row.dek || '',
+    description: String(p.standfirst || p.dek || row.dek || '').replace(/^\s*\[[^\]\n]{2,40}\]\s*/, ''),
     category: row.vertical || p.vertical || 'front',
     published_at: row.published_at || p.publishedAt || null
   };
