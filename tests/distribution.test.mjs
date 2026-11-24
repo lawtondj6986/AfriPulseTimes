@@ -262,3 +262,43 @@ test('no-JavaScript visitors are routed to the plain edition', async () => {
   assert.match(rd('../index.html'), /<noscript><meta http-equiv="refresh" content="0; url=\/today"><\/noscript>/);
   assert.match(rd('../public/reader.html'), /<noscript>[\s\S]*href="\/today"[\s\S]*<\/noscript>/);
 });
+
+// ── edition quality on the public pages ───────────────────────
+import { isJunkSummary } from '../api/story-share.js';
+
+test('junk summaries never reach a story page or the plain edition', () => {
+  const css = '/* Scoped resets */.tc-daily-wrapper * { box-sizing: border-box; }';
+  const a = articleFromRow({ slug: 'next-wave', headline: 'The Next Wave: instant payments', payload: { standfirst: css, body: [css, 'A real paragraph.', 'Short.'] } });
+  assert.equal(a.description, 'Real-time, editor-verified news from all 54 African nations.', 'falls back to the site description');
+  assert.equal(JSON.stringify(a.body), JSON.stringify(['A real paragraph.', 'Short.']), 'junk paragraph dropped; a short real one kept');
+  const html = buildShareHtml(a, 'https://x.test');
+  assert.ok(!html.includes('box-sizing'));
+  assert.ok(!/<p class="d">/.test(html), 'the generic description is not printed as if it were the standfirst');
+  assert.ok(isJunkSummary('In partnership with', 'H'));
+  assert.ok(isJunkSummary('Same headline here ok', 'Same headline here ok'));
+  assert.ok(!isJunkSummary('Rescuers search for 30 people still missing.', 'Indonesia fire'));
+});
+
+test('plain edition files wire stories with the current classifier and keeps world news in World', () => {
+  const wire = (slug, headline, standfirst, vertical, label) => frontItemFromRow({ slug, headline, vertical, payload: { source: 'rss', standfirst, sourceLabel: label || 'Al Jazeera' } });
+  // An African publisher's story is African even when it never names the country.
+  assert.equal(wire('by', 'Bayelsa Boat Mishap: Death toll rises, Tinubu approves N250mn', 'The president approved funds for families.', 'politics', 'Premium Times').section, 'politics');
+  assert.equal(wire('zb', 'Aradel, Zenith Bank, NASCON top stock pick this week', 'A stock investment guide.', 'markets', 'Premium Times').section, 'markets');
+  // An international outlet's story that says "Africa" or uses a demonym is not world news.
+  assert.notEqual(wire('af', 'Africa: COP31 cover deal collapses', 'Talks ended without agreement.', 'front', 'Al Jazeera').section, 'world');
+  assert.notEqual(wire('nn', 'Aid group deepens support for vulnerable Nigerians', 'Two charities received donations.', 'front', 'Reuters').section, 'world');
+  // stored as Markets by the old classifier ("frustrate" contains "rate"); not about Africa
+  assert.equal(wire('nz', 'New Zealand’s Mitchell, Phillips frustrate India as first Test ends in draw', 'New Zealand rescued a draw.', 'markets').section, 'world');
+  // stored as Culture ("counterpart" contains "art"); African → Politics
+  assert.equal(wire('ke', 'Kenya: Ruto, Tshisekedi Agree to Restore Full Diplomatic Relations', 'The presidents agreed to restore diplomatic relations.', 'culture').section, 'politics');
+  assert.equal(wire('ng', 'NPFL Roundup: Rivers, Barau record big wins in Lagos', 'Rivers United won.', 'politics').section, 'sports');
+  assert.equal(wire('es', 'Who is Alberto Feijoo, the conservative seeking to become Spain’s new PM?', 'He hopes to win the elections.', 'culture').section, 'world');
+  // original reporting keeps the section its editor gave it
+  assert.equal(frontItemFromRow({ slug: 'own', headline: 'Our tennis special', vertical: 'culture', payload: {} }).section, 'culture');
+  // junk summary dropped; long summary ends on a word with an ellipsis
+  assert.equal(wire('tc', 'TechCabal Daily: Lagos fintech roundup', 'In partnership with', 'tech').dek, '');
+  const long = wire('ml', 'Mali: campaign for detained trader', 'word '.repeat(80), 'front').dek;
+  assert.ok(long.length <= 221 && long.endsWith('…') && !/\s…$/.test(long));
+  const html = buildFrontHtml([wire('ke', 'Kenya signs accord with Uganda', 'The two governments signed.', 'culture'), wire('es', 'Spain votes in snap election', 'Polls opened.', 'front')], 'https://x.test');
+  assert.ok(html.indexOf('<h2>Politics</h2>') < html.indexOf('<h2>World</h2>'), 'World comes last');
+});

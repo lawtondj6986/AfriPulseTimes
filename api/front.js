@@ -10,28 +10,40 @@
 // Env: SUPABASE_URL + SUPABASE_ANON_KEY (or the VITE_* pair). Anon key only —
 // RLS exposes published articles and nothing else.
 
-import { escapeHtml, stripWireTag } from './story-share.js';
+import { escapeHtml, stripWireTag, isJunkSummary } from './story-share.js';
+import { guessVertical, isWorldStory } from './pull-wire.js';
 
 const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
 const ANON_KEY = process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY;
 const SITE_URL = (process.env.SITE_URL || 'https://afripulsetimes.com').replace(/\/$/, '');
 
-const ORDER = ['front', 'politics', 'mining', 'markets', 'tech', 'culture', 'sports', 'opinions', 'podcasts'];
+const ORDER = ['front', 'politics', 'mining', 'markets', 'tech', 'culture', 'sports', 'opinions', 'podcasts', 'world'];
 const LABELS = {
   front: 'Front Page', politics: 'Politics', mining: 'Mining & Energy', markets: 'Business & Markets',
-  tech: 'Tech & Innovation', culture: 'Culture', sports: 'Sports', opinions: 'Opinions', podcasts: 'Podcasts'
+  tech: 'Tech & Innovation', culture: 'Culture', sports: 'Sports', opinions: 'Opinions', podcasts: 'Podcasts',
+  world: 'World'
 };
 
 // ── pure helpers (exported for tests) ─────────────────────────
 export function frontItemFromRow(row){
   const p = (row && typeof row.payload === 'object' && row.payload) || {};
+  const headline = row.headline || p.headline || '';
+  let dek = stripWireTag(p.standfirst || p.dek || row.dek || '');
+  if (dek && isJunkSummary(dek, headline)) dek = '';
+  if (dek.length > 220) dek = dek.slice(0, 220).replace(/\s+\S*$/, '') + '…';
   let section = row.vertical || p.vertical || 'front';
+  if (p.source === 'rss'){
+    // File wire stories with the current classifier (stored sections may predate it),
+    // and keep international-outlet stories with no African connection in World.
+    section = guessVertical(headline, dek);
+    if (isWorldStory(p.sourceLabel || p.byline, headline + ' · ' + dek, row.region || p.region)) section = 'world';
+  }
   if (section === 'voices') section = 'opinions';
   if (!LABELS[section]) section = 'front';
   return {
     slug: row.slug,
-    headline: row.headline || p.headline || '',
-    dek: stripWireTag(p.standfirst || p.dek || row.dek || '').slice(0, 220),
+    headline,
+    dek,
     section,
     published_at: row.published_at || null
   };
@@ -94,7 +106,7 @@ export function buildFrontHtml(items, site, now){
 // ── I/O ───────────────────────────────────────────────────────
 async function fetchRows(){
   const url = SUPABASE_URL + '/rest/v1/articles?status=eq.published' +
-    '&select=' + encodeURIComponent('slug,headline,dek,vertical,payload,published_at') +
+    '&select=' + encodeURIComponent('slug,headline,dek,vertical,region,payload,published_at') +
     '&order=published_at.desc&limit=40';
   const res = await fetch(url, { headers: { apikey: ANON_KEY, Authorization: 'Bearer ' + ANON_KEY } });
   if (!res.ok) return [];

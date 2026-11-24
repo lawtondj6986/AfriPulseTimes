@@ -639,6 +639,7 @@
       l_next:{en:'Next',fr:'Suivant',ar:'التالي',sw:'Inayofuata',pt:'Seguinte'},
       fix_q:{en:'Spotted an error?',fr:'Vous avez repéré une erreur ?',ar:'هل لاحظت خطأ؟',sw:'Umeona kosa?',pt:'Encontrou um erro?'},
       fix_a:{en:'Tell the editors',fr:'Prévenez la rédaction',ar:'أخبر المحررين',sw:'Waambie wahariri',pt:'Avise a redação'},
+      world:{en:'World',fr:'Monde',ar:'العالم',sw:'Dunia',pt:'Mundo'},
       ed_done:{en:'🏁 Edition complete — you’ve read all %t stories today.',fr:'🏁 Édition terminée — vous avez lu les %t articles du jour.',ar:'🏁 اكتمل الإصدار — قرأت كل أخبار اليوم الـ%t.',sw:'🏁 Toleo limekamilika — umesoma habari zote %t za leo.',pt:'🏁 Edição completa — leu todas as %t notícias de hoje.'},
       stop_read:{en:'■ Stop reading',fr:'■ Arrêter la lecture',ar:'■ إيقاف القراءة',sw:'■ Simamisha kusoma',pt:'■ Parar a leitura'}
     };
@@ -889,9 +890,20 @@
     function wireTag(s){ var m=WIRE_TAG.exec(String(s||'')); return m?m[1].trim():''; }
     function stripTag(s){ return String(s||'').replace(WIRE_TAG,''); }
     function normText(s){ return String(s||'').toLowerCase().replace(/[^a-z0-9\u00c0-\uffff]+/g,' ').trim(); }
-    function cleanCopy(dek, body){
-      var d=stripTag(dek), nd=normText(d);
-      var b=(body||[]).map(stripTag).filter(function(x){ return x && normText(x)!==nd; });
+    // Not a summary: styling or markup leaked from a feed, a sponsor line, or the headline again.
+    function junkText(t, headline, paragraph){
+      t=String(t||'').trim();
+      if(!paragraph && t.length<12) return true;
+      if(/\/\*|\*\/|box-sizing|mso-|!important|\{[^{}]{0,200}:[^{}]{0,200}\}|<\/?[a-z][^>]*>/i.test(t)) return true;
+      if(/^(in partnership with|sponsored( content| by)?|advertisement|presented by)\b/i.test(t)) return true;
+      return !!headline && normText(t)===normText(headline);
+    }
+    function cleanCopy(dek, body, headline){
+      var d=stripTag(dek); if(d && junkText(d, headline)) d='';
+      var nd=normText(d);
+      var b=(body||[]).map(stripTag).filter(function(x){ return x && normText(x)!==nd && !junkText(x, headline, true); });
+      // A summary cut off mid-word by the feed ends with an ellipsis, not a stump.
+      if(d.length>=180 && /[a-z0-9,]$/i.test(d)) d=d.replace(/\s+\S*$/,'')+'…';
       return { dek:d, body:b };
     }
     function rowToLite(r){
@@ -919,22 +931,28 @@
         if(/^https?:\/\//.test(p.sourceUrl||'')) a.sourceUrl=p.sourceUrl;
         a.sourceLabel=p.sourceLabel||'';
       }
-      var cc=cleanCopy(a.dek,a.body); a.dek=cc.dek; a.body=cc.body;
+      var cc=cleanCopy(a.dek,a.body,a.headline); a.dek=cc.dek; a.body=cc.body;
       if(a.vertical==='voices') a.vertical='opinions';
       if(!a.region) a.region=regionSlugFor(a);
       // Headline and summary decide the nations; body text adds too many passing mentions.
       a.countries=countriesIn(a.headline+' · '+a.dek+' · '+(a.tags||[]).join(' ')).slice(0,4);
+      // World news is narrow: a story from an international outlet with no African
+      // connection. An African publisher's story is African by default, even when
+      // it never names the country. It belongs in the paper, but not on the cover.
+      a.world=(p.source==='rss' && !a.region && !a.countries.length &&
+        /\b(al ?jazeera|bbc|reuters|associated press|ap news|afp|dw|deutsche welle|france ?24|rfi|the guardian|cnn|voa|voice of america|new york times|bloomberg|sky news|euronews)\b/i.test(p.sourceLabel||p.byline||'') &&
+        !/\b(africa|african|africans|sahel|sahara|saharan|maghreb)\b/i.test(a.headline+' '+a.dek));
       return a;
     }
     // Swap to the current language when a server-generated translation exists.
     function localize(a){
       if(LANG==='en' || !a.translations) return a;
       var t=a.translations[LANG]; if(!t) return a;
-      var lc=cleanCopy(t.standfirst||t.dek||a.dek, (Array.isArray(t.body)&&t.body.length)?t.body:a.body);
+      var lc=cleanCopy(t.standfirst||t.dek||a.dek, (Array.isArray(t.body)&&t.body.length)?t.body:a.body, t.headline||a.headline);
       return {
         slug:a.slug, vertical:a.vertical, region:a.region, byline:a.byline, tags:a.tags,
         published_at:a.published_at, translations:a.translations, polished:a.polished,
-        via:a.via, sourceUrl:a.sourceUrl, sourceLabel:a.sourceLabel, countries:a.countries,
+        via:a.via, sourceUrl:a.sourceUrl, sourceLabel:a.sourceLabel, countries:a.countries, world:a.world,
         image:a.image, imageCredit:a.imageCredit,
         kicker:t.kicker||a.kicker, headline:t.headline||a.headline,
         dek:lc.dek, body:lc.body
@@ -1150,7 +1168,8 @@
       }
       // The cover: the lead front-page story (else the newest) as a hero.
       var hero=null;
-      for(var hi=0; hi<loc.length; hi++){ if((loc[hi].vertical||'front')==='front'){ hero=loc[hi]; break; } }
+      for(var hi=0; hi<loc.length; hi++){ if(!loc[hi].world && (loc[hi].vertical||'front')==='front'){ hero=loc[hi]; break; } }
+      if(!hero) for(var hj=0; hj<loc.length; hj++){ if(!loc[hj].world){ hero=loc[hj]; break; } }
       if(!hero) hero=loc[0];
       // My Africa: stories from the reader's home region(s), right under the cover.
       var home=getHome(), near=[], nearSet={};
@@ -1169,14 +1188,19 @@
       var sections='', rendered=[];
       var favs=getFavs();
       favs.concat(VERTICAL_KEYS.filter(function(v){ return favs.indexOf(v)<0; })).forEach(function(v){
-        var items=loc.filter(function(a){ return (a.vertical||'front')===v && a.slug!==hero.slug && !nearSet[a.slug]; });
+        var items=loc.filter(function(a){ return !a.world && (a.vertical||'front')===v && a.slug!==hero.slug && !nearSet[a.slug]; });
         if(!items.length) return;
         rendered.push(v);
         sections+='<div class="h2" id="sec-'+v+'">'+esc(VL(v))+'</div><div class="cards">'+
           items.map(storyCard).join('')+'</div>';
       });
+      var worldItems=loc.filter(function(a){ return a.world && a.slug!==hero.slug; });
+      if(worldItems.length){
+        rendered.push('world');
+        sections+='<div class="h2" id="sec-world">'+esc(tr('world'))+'</div><div class="cards">'+worldItems.map(storyCard).join('')+'</div>';
+      }
       var chips=rendered.length>1
-        ? '<div class="secchips">'+rendered.map(function(v){ return '<button type="button" data-v="'+v+'">'+esc(VL(v))+'</button>'; }).join('')+'</div>'
+        ? '<div class="secchips">'+rendered.map(function(v){ return '<button type="button" data-v="'+v+'">'+esc(v==='world'?tr('world'):VL(v))+'</button>'; }).join('')+'</div>'
         : '';
       var nNew=loc.filter(isNewStory).length;
       var newLine=nNew?('<div class="newline">'+esc(tr('new_since',{n:nNew}))+'</div>'):'';
@@ -1673,15 +1697,18 @@
     var SPEAK={ playing:false, paused:false, idx:-1, tok:0, items:null };
     function speakSupported(){ return typeof window.speechSynthesis!=='undefined' && typeof window.SpeechSynthesisUtterance!=='undefined'; }
     function pickVoice(l){ l=l||LANG; try{ var vs=window.speechSynthesis.getVoices()||[]; for(var i=0;i<vs.length;i++){ if(vs[i].lang && vs[i].lang.toLowerCase().indexOf(l)===0) return vs[i]; } }catch(e){} return null; }
+    // The edition with African stories ahead of world news, order otherwise kept.
+    function africaFirst(){ return ARTICLES.filter(function(a){ return !a.world; }).concat(ARTICLES.filter(function(a){ return a.world; })); }
     // The briefing leads with the cover, then the reader's home region and
     // favourite sections, then the rest of the edition: seven stories at most.
     function briefItems(){
       if(!ARTICLES.length) return [];
       var cover=null;
-      for(var i=0;i<ARTICLES.length;i++){ if((ARTICLES[i].vertical||'front')==='front'){ cover=ARTICLES[i]; break; } }
-      if(!cover) cover=ARTICLES[0];
+      var pool=africaFirst();
+      for(var i=0;i<pool.length;i++){ if(!pool[i].world && (pool[i].vertical||'front')==='front'){ cover=pool[i]; break; } }
+      if(!cover) cover=pool[0];
       var home=getHome(), favs=getFavs(), picked=[cover], seen={}; seen[cover.slug]=1;
-      function take(test){ ARTICLES.forEach(function(a){ if(picked.length<7 && !seen[a.slug] && test(a)){ seen[a.slug]=1; picked.push(a); } }); }
+      function take(test){ pool.forEach(function(a){ if(picked.length<7 && !seen[a.slug] && test(a)){ seen[a.slug]=1; picked.push(a); } }); }
       if(home.length) take(function(a){ return home.indexOf(a.region)>-1; });
       if(favs.length) take(function(a){ return favs.indexOf(a.vertical)>-1; });
       take(function(){ return true; });
@@ -1888,7 +1915,7 @@
       x.textAlign=rtl?'left':'right'; x.fillText(dateStr, rtl?M:W-M, eyY+40);
       x.textAlign=rtl?'right':'left';
       // headlines
-      var items=ARTICLES.slice(0,5).map(localize);
+      var items=africaFirst().slice(0,5).map(localize);
       var y=330, tx=rtl?(W-M):M, maxW=W-2*M-56;
       items.forEach(function(a){
         x.fillStyle='#C9A227'; x.font='400 26px -apple-system, sans-serif';

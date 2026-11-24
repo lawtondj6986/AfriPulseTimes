@@ -8,7 +8,7 @@
  *
  * Bump VERSION to ship a new shell (old caches are purged on activate).
  */
-const VERSION = 'ap-v8';
+const VERSION = 'ap-v9';
 const SHELL   = VERSION + '-shell';
 const RUNTIME = VERSION + '-runtime';
 // The public app shell is now the LITE reader (tiny, data-light). The newsroom
