@@ -24,12 +24,19 @@ streak, home region, last visit) stays in the browser's `localStorage`.
 | Area | Feature |
 |---|---|
 | First open | Welcome screen with language choice, each language in its own name |
-| Today | Cover story, section chips, "Near you" for the reader's home region, NEW badges since the last visit, read ticks, search |
-| Reading | Progress bar, "Up next", edition meter and finish line, swipe between stories, read-aloud, wire source credit with a link to the original |
-| Habit | Daily reading streak, national-day banners for all 54 nations, quiet refresh when the reader returns |
-| Sharing | Per-story links with previews, a shareable front-page image, a "Your week" stats card |
-| Device | Installable PWA with a polite install prompt, offline edition pack, data saver, dark mode, text size |
+| Today | Cover story with photo, section chips, exchange rates, "Near you" for the reader's home region, favourite sections first, NEW badges since the last visit, read ticks, freshness line |
+| Finding stories | Instant offline search of the edition, archive search across every headline, "Load earlier stories", browse by nation with flags, regional map |
+| Reading | Photos with credits, progress bar, "Up next", edition meter and finish line, swipe between stories, read-aloud at three speeds, wire source credit with a link to the original, a note when a story is not yet translated |
+| Any link opens | Stories outside the latest edition are fetched on demand; saved stories open from their saved copy |
+| Habit | Daily reading streak, national-day banners for all 54 nations, quiet refresh when the reader returns, morning-brief email sign-up |
+| Sharing | One-tap WhatsApp and copy-link, per-story preview images, a shareable front-page image, a "Your week" stats card |
+| Device | Installable PWA with a polite install prompt, offline edition pack, data saver (no photos requested), dark mode, text size |
+| Trust | Privacy, terms and about links; a "Your data" control that clears reading history; cookie-less page-view analytics |
 | Screens | Phone layout by default; broadsheet layout with top navigation from 960px |
+| Access | Keyboard and screen-reader support, reduced-motion support, correct direction for mixed English/Arabic text |
+
+The reader is budgeted at 60KB Brotli-compressed (a suite test enforces it);
+it is currently about 40KB.
 
 ## Tech stack
 
