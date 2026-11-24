@@ -88,6 +88,16 @@
     border-inline-start:3px solid var(--gold-d);border-radius:8px;padding:8px 12px;
     margin:0 0 12px;font-size:13.5px;line-height:1.45;color:var(--ink)}
   .natday div{margin:2px 0}
+  .instbar[hidden]{display:none}
+  .instbar{background:var(--card);border:1px solid var(--line);border-radius:12px;
+    padding:11px 13px;margin:0 0 12px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .instbar .it{flex:1 1 200px;min-width:0}
+  .instbar .it b{display:block;font-size:14px;color:var(--ink)}
+  .instbar .it span{display:block;font-size:12.5px;color:var(--muted);margin-top:2px}
+  .instbar .ia{display:flex;gap:8px;align-items:center}
+  .instbar button{appearance:none;cursor:pointer;border-radius:9px;padding:8px 14px;font-size:13.5px;font-weight:600}
+  .instbar .go{border:none;background:linear-gradient(135deg,#E9D07A,var(--gold-d));color:#241c04}
+  .instbar .no{border:1px solid var(--line);background:transparent;color:var(--muted)}
   .welcome{position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;
     background:linear-gradient(160deg,#12351F,#0E2818 55%,#081810);color:#F3EAD4;text-align:center;
     padding:24px;transition:opacity .45s ease}
@@ -288,6 +298,7 @@
         </div>
         <div class="greet" id="greet" hidden></div>
         <div class="natday" id="natday" hidden></div>
+        <div class="instbar" id="instbar" hidden></div>
         <div class="bar">
           <span class="chip" id="conn-chip"><span class="dot"></span><span id="conn-label">…</span></span>
           <span class="toggle"><span id="ds-label">Data saver</span><button id="ds-btn" type="button" aria-pressed="false">Off</button></span>
@@ -432,7 +443,12 @@
       wk_eyebrow:{en:'MY WEEK WITH AFRIPULSE',fr:'MA SEMAINE AVEC AFRIPULSE',ar:'أسبوعي مع أفريبولس',sw:'WIKI YANGU NA AFRIPULSE',pt:'A MINHA SEMANA COM AFRIPULSE'},
       wk_card_label:{en:'stories read this week',fr:'articles lus cette semaine',ar:'خبرًا مقروءًا هذا الأسبوع',sw:'habari zilizosomwa wiki hii',pt:'notícias lidas esta semana'},
       next_up:{en:'Up next',fr:'À lire ensuite',ar:'اقرأ بعد ذلك',sw:'Inayofuata',pt:'A seguir'},
-      edition_prog:{en:'You’ve read %r of %t stories in today’s edition',fr:'Vous avez lu %r des %t articles de l’édition du jour',ar:'قرأت %r من %t خبرًا في إصدار اليوم',sw:'Umesoma habari %r kati ya %t katika toleo la leo',pt:'Leu %r de %t notícias da edição de hoje'}
+      edition_prog:{en:'You’ve read %r of %t stories in today’s edition',fr:'Vous avez lu %r des %t articles de l’édition du jour',ar:'قرأت %r من %t خبرًا في إصدار اليوم',sw:'Umesoma habari %r kati ya %t katika toleo la leo',pt:'Leu %r de %t notícias da edição de hoje'},
+      inst_t:{en:'📲 Keep AfriPulse in your pocket',fr:'📲 Gardez AfriPulse dans votre poche',ar:'📲 احتفظ بأفريبولس في جيبك',sw:'📲 Weka AfriPulse mfukoni mwako',pt:'📲 Leve o AfriPulse no bolso'},
+      inst_p:{en:'Today’s edition on your home screen — even offline.',fr:'L’édition du jour sur votre écran d’accueil — même hors ligne.',ar:'إصدار اليوم على شاشتك الرئيسية — حتى دون اتصال.',sw:'Toleo la leo kwenye skrini yako ya mwanzo — hata nje ya mtandao.',pt:'A edição de hoje no seu ecrã inicial — mesmo offline.'},
+      inst_btn:{en:'Install',fr:'Installer',ar:'تثبيت',sw:'Sakinisha',pt:'Instalar'},
+      inst_ios:{en:'Tap Share, then “Add to Home Screen”.',fr:'Touchez Partager, puis « Sur l’écran d’accueil ».',ar:'اضغط «مشاركة» ثم «إضافة إلى الشاشة الرئيسية».',sw:'Gusa Shiriki, kisha “Ongeza kwenye Skrini ya Mwanzo”.',pt:'Toque em Partilhar e depois em “Adicionar ao ecrã principal”.'},
+      inst_later:{en:'Not now',fr:'Plus tard',ar:'لاحقًا',sw:'Baadaye',pt:'Agora não'}
     };
 
     // ── Vertical + region labels (mirrors the newsroom, all 5 languages) ──
@@ -525,6 +541,59 @@
       el.innerHTML=rows.map(function(r){ return '<div>'+esc(natLine(r,d))+'</div>'; }).join('');
       el.hidden=false;
     }
+
+    // ── Pocket Edition: a polite install flow for the PWA ──
+    var INSTALL_EVT=null;
+    function isStandalone(){
+      try{ if(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches) return true; }catch(e){}
+      return navigator.standalone===true;
+    }
+    function isIOS(){ return /iphone|ipad|ipod/i.test(navigator.userAgent||''); }
+    function instState(){
+      try{
+        if(localStorage.getItem('afripulse_installed')==='1') return 'done';
+        var s=+localStorage.getItem('afripulse_inst_snooze')||0;
+        if(Date.now()<s) return 'snoozed';
+      }catch(e){}
+      return 'open';
+    }
+    function paintInstall(){
+      var el=document.getElementById('instbar'); if(!el) return;
+      if(isStandalone()){ try{ localStorage.setItem('afripulse_installed','1'); }catch(e){} }
+      var mode = instState()!=='open' ? null : INSTALL_EVT ? 'native' : isIOS() ? 'ios' : null;
+      if(!mode){ el.hidden=true; el.innerHTML=''; return; }
+      el.innerHTML='<div class="it"><b>'+esc(tr('inst_t'))+'</b><span>'+
+        esc(mode==='ios'?tr('inst_ios'):tr('inst_p'))+'</span></div>'+
+        '<div class="ia">'+(mode==='native'?('<button class="go" id="inst-go">'+esc(tr('inst_btn'))+'</button>'):'')+
+        '<button class="no" id="inst-no">'+esc(tr('inst_later'))+'</button></div>';
+      el.hidden=false;
+      var go=document.getElementById('inst-go');
+      if(go) go.addEventListener('click', function(){
+        var ev=INSTALL_EVT; INSTALL_EVT=null;
+        if(!ev){ paintInstall(); return; }
+        try{
+          ev.prompt();
+          (ev.userChoice||Promise.resolve({})).then(function(ch){
+            if(ch&&ch.outcome==='accepted'){ try{ localStorage.setItem('afripulse_installed','1'); }catch(e){} }
+            else{ try{ localStorage.setItem('afripulse_inst_snooze', String(Date.now()+14*86400000)); }catch(e){} }
+            paintInstall();
+          },function(){ paintInstall(); });
+        }catch(e){ paintInstall(); }
+      });
+      var no=document.getElementById('inst-no');
+      if(no) no.addEventListener('click', function(){
+        try{ localStorage.setItem('afripulse_inst_snooze', String(Date.now()+14*86400000)); }catch(e){}
+        paintInstall();
+      });
+    }
+    window.addEventListener('beforeinstallprompt', function(e){
+      try{ e.preventDefault(); }catch(err){}
+      INSTALL_EVT=e; paintInstall();
+    });
+    window.addEventListener('appinstalled', function(){
+      try{ localStorage.setItem('afripulse_installed','1'); }catch(e){}
+      INSTALL_EVT=null; paintInstall();
+    });
 
     // ── Reading streak (device-local, a small reason to come back daily) ──
     function dayKey(d){ return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate(); }
@@ -743,7 +812,7 @@
       var n=bumpStreak();
       if(n>=2) txt+=' '+tr('streak',{n:n});
       el.textContent=txt; el.hidden=false;
-      paintNatDay(); }
+      paintNatDay(); paintInstall(); }
     // ── Connection chip (Network Information API when the phone exposes it) ──
     function detectConn(){
       if(navigator.onLine===false) return {c:'off',label:tr('offline')};
