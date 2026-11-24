@@ -198,3 +198,17 @@ test('share image route is wired in vercel.json', async () => {
   const vercel = JSON.parse(readFileSync(new URL('../vercel.json', import.meta.url), 'utf8'));
   assert.ok(vercel.rewrites.some((r) => r.source === '/og/:slug' && r.destination === '/api/og?slug=:slug'));
 });
+
+// ── image URLs from feeds ─────────────────────────────────────
+import { extractImage } from '../api/pull-wire.js';
+
+test('feed image URLs are stored and served without HTML entity encoding', () => {
+  const got = extractImage({ content: '<p><img src="http://i0.wp.com/x/y.png?fit=700%2C412&amp;ssl=1"></p>' });
+  assert.equal(got, 'https://i0.wp.com/x/y.png?fit=700%2C412&ssl=1');
+  // rows ingested before the fix are repaired on the way out
+  const a = articleFromRow({ slug: 's', headline: 'H', hero_image: 'https://i0.wp.com/x/y.png?fit=1&amp;ssl=1' });
+  assert.equal(a.image, 'https://i0.wp.com/x/y.png?fit=1&ssl=1');
+  const html = buildShareHtml(a, 'https://x.test');
+  assert.match(html, /og:image" content="https:\/\/i0\.wp\.com\/x\/y\.png\?fit=1&amp;ssl=1"/, 'escaped exactly once in markup');
+  assert.equal(articleFromRow({ slug: 's', headline: 'H' }).image, null);
+});
