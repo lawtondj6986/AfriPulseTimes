@@ -448,7 +448,9 @@
       inst_p:{en:'Today’s edition on your home screen — even offline.',fr:'L’édition du jour sur votre écran d’accueil — même hors ligne.',ar:'إصدار اليوم على شاشتك الرئيسية — حتى دون اتصال.',sw:'Toleo la leo kwenye skrini yako ya mwanzo — hata nje ya mtandao.',pt:'A edição de hoje no seu ecrã inicial — mesmo offline.'},
       inst_btn:{en:'Install',fr:'Installer',ar:'تثبيت',sw:'Sakinisha',pt:'Instalar'},
       inst_ios:{en:'Tap Share, then “Add to Home Screen”.',fr:'Touchez Partager, puis « Sur l’écran d’accueil ».',ar:'اضغط «مشاركة» ثم «إضافة إلى الشاشة الرئيسية».',sw:'Gusa Shiriki, kisha “Ongeza kwenye Skrini ya Mwanzo”.',pt:'Toque em Partilhar e depois em “Adicionar ao ecrã principal”.'},
-      inst_later:{en:'Not now',fr:'Plus tard',ar:'لاحقًا',sw:'Baadaye',pt:'Agora não'}
+      inst_later:{en:'Not now',fr:'Plus tard',ar:'لاحقًا',sw:'Baadaye',pt:'Agora não'},
+      read_aloud:{en:'🔊 Read this to me',fr:'🔊 Lire à voix haute',ar:'🔊 اقرأ لي هذا',sw:'🔊 Nisomee hii',pt:'🔊 Ler em voz alta'},
+      stop_read:{en:'■ Stop reading',fr:'■ Arrêter la lecture',ar:'■ إيقاف القراءة',sw:'■ Simamisha kusoma',pt:'■ Parar a leitura'}
     };
 
     // ── Vertical + region labels (mirrors the newsroom, all 5 languages) ──
@@ -771,12 +773,18 @@
         '<div class="st-meta">'+meta+'</div>'+
         '<button class="save-btn'+(sv?' on':'')+'" id="save-btn">'+esc(sv?tr('saved_on'):('☆ '+tr('save')))+'</button>'+
         '<button class="share-btn" id="share-btn">↗ '+esc(tr('share'))+'</button>'+
+        (speakSupported()?('<button class="share-btn" id="read-btn">'+esc(tr('read_aloud'))+'</button>'):'')+
         qrHtml+
         (a.dek?'<div class="st-dek">'+esc(a.dek)+'</div>':'')+
         '<div class="st-body">'+bodyHtml+'</div>'+
         noteHtml+
         (rel?('<div class="related"><div class="h2">'+esc(tr('related'))+'</div>'+rel+'</div>'):'')+
         nxHtml;
+      var rb=document.getElementById('read-btn');
+      if(rb) rb.addEventListener('click', function(){
+        if(STORY_SPEAK.slug===a.slug){ stopStorySpeak(); return; }
+        speakStory(a, quickReadFor(base));
+      });
       var sb=document.getElementById('save-btn');
       if(sb) sb.addEventListener('click', function(){ var now=toggleSave(a.slug);
         sb.className='save-btn'+(now?' on':''); sb.textContent=now?tr('saved_on'):('☆ '+tr('save')); });
@@ -952,6 +960,38 @@
       if(cc) cc.addEventListener('click', function(){ try{ localStorage.removeItem(PACK_KEY); }catch(err){} ARTICLES=[]; FETCHED=false; renderMe(); fetchEdition(); });
       var ws=document.getElementById('wk-share');
       if(ws) ws.addEventListener('click', shareWeekCard);
+    }
+
+    // ── Read-aloud on the story page (same Web Speech engine as Listen) ──
+    var STORY_SPEAK={ slug:null };
+    function stopStorySpeak(){
+      if(!STORY_SPEAK.slug) return;
+      STORY_SPEAK.slug=null;
+      try{ window.speechSynthesis.cancel(); }catch(e){}
+      var b=document.getElementById('read-btn');
+      if(b) b.textContent=tr('read_aloud');
+    }
+    function speakStory(a, qr){
+      try{ window.speechSynthesis.cancel(); }catch(e){}
+      SPEAK.playing=false; SPEAK.paused=false; SPEAK.idx=-1;
+      STORY_SPEAK.slug=a.slug;
+      var parts=[a.headline];
+      if(a.dek) parts.push(a.dek);
+      if(qr&&qr.length) parts=parts.concat(qr);
+      else parts=parts.concat((a.body||[]).slice(0,10));
+      var lang={en:'en-GB',fr:'fr-FR',ar:'ar-EG',sw:'sw-KE',pt:'pt-PT'}[LANG]||'en-GB';
+      var v=pickVoice();
+      function go(i){
+        if(STORY_SPEAK.slug!==a.slug) return;          // stopped or a new story started
+        if(i>=parts.length){ stopStorySpeak(); return; }
+        var u=new SpeechSynthesisUtterance(String(parts[i]));
+        u.lang=lang; if(v) u.voice=v; u.rate=.98;
+        u.onend=function(){ go(i+1); };
+        try{ window.speechSynthesis.speak(u); }catch(e){}
+      }
+      go(0);
+      var b=document.getElementById('read-btn');
+      if(b) b.textContent=tr('stop_read');
     }
 
     // ── Listen / Morning Pulse (Web Speech; no network, no cost) ──
@@ -1291,6 +1331,8 @@
       var parts=h.split('/'); var head=parts[0];
       // Stop any spoken briefing when navigating away from Listen.
       if(head!=='listen' && SPEAK.playing) stopSpeak();
+      // Leaving a story (or opening another) silences its read-aloud.
+      if(STORY_SPEAK.slug) stopStorySpeak();
       if(head==='story' && parts[1]){ showScreen('story'); setTab(null); renderStory(decodeURIComponent(parts.slice(1).join('/'))); try{window.scrollTo(0,0);}catch(e){} paintReadbar(); return; }
       var tab=SCREENS.hasOwnProperty(head)?SCREENS[head]:'today';
       showScreen(tab); setTab(tab);
