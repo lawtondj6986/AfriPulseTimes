@@ -84,6 +84,10 @@
   html[dir="rtl"] .top .date{margin-left:0;margin-right:auto}
   .greet{font-family:Georgia,serif;font-size:15px;color:var(--forest-2);margin:-4px 0 10px}
   .greet b{color:var(--gold-d);font-weight:700}
+  .natday{background:linear-gradient(90deg,rgba(201,162,39,.16),rgba(201,162,39,0));
+    border-inline-start:3px solid var(--gold-d);border-radius:8px;padding:8px 12px;
+    margin:0 0 12px;font-size:13.5px;line-height:1.45;color:var(--ink)}
+  .natday div{margin:2px 0}
 
   .bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:16px}
   .chip{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;
@@ -234,6 +238,7 @@
           <div class="date" id="today-date"></div>
         </div>
         <div class="greet" id="greet" hidden></div>
+        <div class="natday" id="natday" hidden></div>
         <div class="bar">
           <span class="chip" id="conn-chip"><span class="dot"></span><span id="conn-label">…</span></span>
           <span class="toggle"><span id="ds-label">Data saver</span><button id="ds-btn" type="button" aria-pressed="false">Off</button></span>
@@ -362,7 +367,12 @@
       ai_note:{en:'Brief prepared with AI assistance from the original wire report · verified by an AfriPulse editor',fr:'Résumé préparé avec l’aide de l’IA à partir de la dépêche originale · vérifié par un éditeur AfriPulse',ar:'أُعدّ الموجز بمساعدة الذكاء الاصطناعي من البرقية الأصلية · تحقق منه محرر AfriPulse',sw:'Muhtasari umeandaliwa kwa msaada wa AI kutoka taarifa asilia · umethibitishwa na mhariri wa AfriPulse',pt:'Resumo preparado com apoio de IA a partir do despacho original · verificado por um editor AfriPulse'},
       fp_btn:{en:'📸 Share today’s front page',fr:'📸 Partager la une du jour',ar:'📸 شارك صفحة اليوم الأولى',sw:'📸 Shiriki ukurasa wa mbele wa leo',pt:'📸 Partilhar a capa de hoje'},
       fp_eyebrow:{en:'TODAY’S FRONT PAGE',fr:'LA UNE DU JOUR',ar:'الصفحة الأولى اليوم',sw:'UKURASA WA MBELE WA LEO',pt:'A CAPA DE HOJE'},
-      fp_tag:{en:'Real-time · 54 nations · reads offline',fr:'En temps réel · 54 nations · lisible hors ligne',ar:'لحظة بلحظة · 54 دولة · يُقرأ دون اتصال',sw:'Wakati halisi · mataifa 54 · husomeka nje ya mtandao',pt:'Em tempo real · 54 nações · lê offline'}
+      fp_tag:{en:'Real-time · 54 nations · reads offline',fr:'En temps réel · 54 nations · lisible hors ligne',ar:'لحظة بلحظة · 54 دولة · يُقرأ دون اتصال',sw:'Wakati halisi · mataifa 54 · husomeka nje ya mtandao',pt:'Em tempo real · 54 nações · lê offline'},
+      nat_ind:{en:'Happy Independence Day! %c marks %n years of independence today.',fr:'Bonne fête de l’indépendance ! %c célèbre aujourd’hui %n ans d’indépendance.',ar:'عيد استقلال سعيد! تحتفل %c اليوم بمرور %n عامًا على الاستقلال.',sw:'Heri ya Siku ya Uhuru! %c inaadhimisha leo miaka %n ya uhuru.',pt:'Feliz Dia da Independência! %c celebra hoje %n anos de independência.'},
+      nat_day:{en:'Today is %c’s National Day.',fr:'Aujourd’hui, c’est la fête nationale : %c.',ar:'اليوم هو العيد الوطني: %c.',sw:'Leo ni Siku ya Taifa: %c.',pt:'Hoje é o Dia Nacional: %c.'},
+      nat_free:{en:'%c marks Freedom Day today.',fr:'%c célèbre aujourd’hui le Jour de la Liberté.',ar:'تحتفل %c اليوم بيوم الحرية.',sw:'%c inaadhimisha leo Siku ya Uhuru wa Raia.',pt:'%c assinala hoje o Dia da Liberdade.'},
+      nat_rev:{en:'%c marks Revolution Day today.',fr:'%c célèbre aujourd’hui la fête de la Révolution.',ar:'تحتفل %c اليوم بذكرى الثورة.',sw:'%c inaadhimisha leo Siku ya Mapinduzi.',pt:'%c assinala hoje o Dia da Revolução.'},
+      streak:{en:'🔥 %n-day reading streak — welcome back.',fr:'🔥 %n jours de lecture d’affilée — ravis de vous revoir.',ar:'🔥 %n أيام قراءة متتالية — أهلًا بعودتك.',sw:'🔥 Mfululizo wa siku %n za kusoma — karibu tena.',pt:'🔥 %n dias seguidos de leitura — bem-vindo de volta.'}
     };
 
     // ── Vertical + region labels (mirrors the newsroom, all 5 languages) ──
@@ -412,6 +422,62 @@
       var txt=geoText(a);
       for(var i=0;i<REGION_KEYS.length;i++){ if(regionRe(REGION_KEYS[i]).test(txt)) return REGION_KEYS[i]; }
       return null;
+    }
+
+    // ── Heritage Days: every nation's independence / national day ──
+    // [month, day, ISO-3166 code, year, type] · type: i=independence,
+    // n=national day, f=Freedom Day (South Africa), r=Revolution Day (Egypt).
+    // Country names localize for free via Intl.DisplayNames; flags are built
+    // from the ISO code, so the whole calendar costs ~0.6KB.
+    var NATDAYS=[
+      [1,1,'SD',1956,'i'],[1,1,'CM',1960,'i'],
+      [2,18,'GM',1965,'i'],
+      [3,6,'GH',1957,'i'],[3,12,'MU',1968,'i'],[3,20,'TN',1956,'i'],[3,21,'NA',1990,'i'],
+      [4,4,'SN',1960,'i'],[4,18,'ZW',1980,'i'],[4,27,'SL',1961,'i'],[4,27,'TG',1960,'i'],[4,27,'ZA',1994,'f'],
+      [5,24,'ER',1993,'i'],[5,28,'ET',1991,'n'],
+      [6,25,'MZ',1975,'i'],[6,26,'MG',1960,'i'],[6,27,'DJ',1977,'i'],[6,29,'SC',1976,'i'],[6,30,'CD',1960,'i'],
+      [7,1,'SO',1960,'i'],[7,1,'RW',1962,'i'],[7,1,'BI',1962,'i'],[7,5,'DZ',1962,'i'],[7,5,'CV',1975,'i'],
+      [7,6,'MW',1964,'i'],[7,6,'KM',1975,'i'],[7,9,'SS',2011,'i'],[7,12,'ST',1975,'i'],[7,23,'EG',1952,'r'],[7,26,'LR',1847,'i'],
+      [8,1,'BJ',1960,'i'],[8,3,'NE',1960,'i'],[8,5,'BF',1960,'i'],[8,7,'CI',1960,'i'],[8,11,'TD',1960,'i'],
+      [8,13,'CF',1960,'i'],[8,15,'CG',1960,'i'],[8,17,'GA',1960,'i'],
+      [9,6,'SZ',1968,'i'],[9,22,'ML',1960,'i'],[9,24,'GW',1973,'i'],[9,30,'BW',1966,'i'],
+      [10,1,'NG',1960,'i'],[10,2,'GN',1958,'i'],[10,4,'LS',1966,'i'],[10,9,'UG',1962,'i'],[10,12,'GQ',1968,'i'],[10,24,'ZM',1964,'i'],
+      [11,11,'AO',1975,'i'],[11,18,'MA',1956,'i'],[11,28,'MR',1960,'i'],
+      [12,9,'TZ',1961,'i'],[12,12,'KE',1963,'i'],[12,24,'LY',1951,'i']
+    ];
+    function flagEmoji(cc){ return String.fromCodePoint(127397+cc.charCodeAt(0),127397+cc.charCodeAt(1)); }
+    function countryName(cc){
+      try{ var n=new Intl.DisplayNames([locale()],{type:'region'}).of(cc); if(n&&n!==cc) return n; }catch(e){}
+      return cc;
+    }
+    function natDaysFor(d){ var m=d.getMonth()+1,day=d.getDate(); return NATDAYS.filter(function(r){ return r[0]===m&&r[1]===day; }); }
+    function natLine(r,d){
+      var name=countryName(r[2]), flag=flagEmoji(r[2]), t=r[4];
+      if(t==='f') return flag+' '+tr('nat_free',{c:name});
+      if(t==='r') return flag+' '+tr('nat_rev',{c:name});
+      if(t==='n') return flag+' '+tr('nat_day',{c:name});
+      return flag+' '+tr('nat_ind',{c:name,n:d.getFullYear()-r[3]});
+    }
+    function paintNatDay(){
+      var el=document.getElementById('natday'); if(!el) return;
+      var d=new Date(), rows=natDaysFor(d);
+      if(!rows.length){ el.hidden=true; el.innerHTML=''; return; }
+      el.innerHTML=rows.map(function(r){ return '<div>'+esc(natLine(r,d))+'</div>'; }).join('');
+      el.hidden=false;
+    }
+
+    // ── Reading streak (device-local, a small reason to come back daily) ──
+    function dayKey(d){ return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate(); }
+    function bumpStreak(){
+      var n=1;
+      try{
+        var raw=JSON.parse(localStorage.getItem('afripulse_streak')||'null');
+        var now=new Date(), today=dayKey(now), yday=dayKey(new Date(now.getTime()-86400000));
+        if(raw&&raw.d===today) n=raw.n||1;
+        else if(raw&&raw.d===yday) n=(raw.n||1)+1;
+        localStorage.setItem('afripulse_streak', JSON.stringify({d:today,n:n}));
+      }catch(e){}
+      return n;
     }
 
     // ── Language (shared with the newsroom via the same localStorage key) ──
@@ -606,7 +672,11 @@
     function paintGreet(){ var el=document.getElementById('greet'); if(!el) return;
       var h=new Date().getHours();
       var key = h<12 ? 'greet_morning' : h<18 ? 'greet_afternoon' : 'greet_evening';
-      el.textContent=tr(key); el.hidden=false; }
+      var txt=tr(key);
+      var n=bumpStreak();
+      if(n>=2) txt+=' '+tr('streak',{n:n});
+      el.textContent=txt; el.hidden=false;
+      paintNatDay(); }
     // ── Connection chip (Network Information API when the phone exposes it) ──
     function detectConn(){
       if(navigator.onLine===false) return {c:'off',label:tr('offline')};
