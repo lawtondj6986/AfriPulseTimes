@@ -92,6 +92,8 @@ export function pickImage(article, site){
   const img = article.image;
   if (img && /^https:\/\//.test(img)) return img;
   if (img && img.startsWith('/')) return (site || SITE_URL) + img;
+  // No photo: a generated card carrying this story's own headline (api/og.js).
+  if (article.slug && SLUG_RE.test(article.slug)) return (site || SITE_URL) + '/og/' + article.slug + '.png';
   return (site || SITE_URL) + '/images/og-card.jpg';
 }
 
@@ -115,6 +117,7 @@ export function buildShareHtml(article, site){
     '<meta property="og:description" content="' + desc + '">\n' +
     '<meta property="og:url" content="' + escapeHtml(url) + '">\n' +
     '<meta property="og:image" content="' + image + '">\n' +
+    (/\/og\/[a-z0-9-]+\.png$/.test(image) ? '<meta property="og:image:width" content="1200">\n<meta property="og:image:height" content="630">\n' : '') +
     (article.published_at ? '<meta property="article:published_time" content="' + escapeHtml(article.published_at) + '">\n' : '') +
     '<meta name="twitter:card" content="summary_large_image">\n' +
     '<meta name="twitter:title" content="' + title + '">\n' +

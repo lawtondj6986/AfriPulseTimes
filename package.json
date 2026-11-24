@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "AfriPulse Times — pan-African news site backend (Supabase + Vercel + Vite)",
+  "description": "AfriPulse Times \u2014 pan-African news site backend (Supabase + Vercel + Vite)",
   "scripts": {
     "gen:config": "node scripts/gen-supabase-config.mjs",
     "predev": "npm run gen:config",
@@ -16,10 +16,15 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.71.0",
     "@supabase/supabase-js": "^2.45.0",
+    "@vercel/og": "^0.6.8",
     "rss-parser": "^3.13.0",
     "stripe": "^17.7.0"
   },
   "devDependencies": {
     "vite": "^8.3.8"
+  },
+  "overrides": {
+    "satori": "^0.33.5",
+    "fflate": "^0.8.2"
   }
 }

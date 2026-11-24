@@ -14,7 +14,8 @@
     { "source": "/desk", "destination": "/afripulse-preview.html" },
     { "source": "/s/:slug", "destination": "/api/story-share?slug=:slug" },
     { "source": "/feed.xml", "destination": "/api/feed" },
-    { "source": "/sitemap-news.xml", "destination": "/api/sitemap" }
+    { "source": "/sitemap-news.xml", "destination": "/api/sitemap" },
+    { "source": "/og/:slug", "destination": "/api/og?slug=:slug" }
   ],
   "headers": [
     {
