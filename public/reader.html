@@ -273,6 +273,9 @@
   .fx .fxd{color:var(--muted);font-size:11.5px}
   .top .date .upd{display:block;font-size:11px;color:var(--muted);opacity:.85}
   .trnote{font-size:12.5px;color:var(--muted);font-style:italic;margin:-6px 0 14px}
+  .foot{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 18px;margin:26px 0 10px;padding-top:16px;border-top:1px solid var(--line)}
+  .foot a{font-size:12.5px;color:var(--muted);font-weight:600;text-decoration:none}
+  .foot a:hover{color:var(--gold-d)}
   .newline{font-size:13.5px;color:var(--gold-d);font-weight:600;margin:0 0 10px}
   .card.read h3,.card.read p{opacity:.6}
   .card .rd{color:var(--muted);font-weight:600}
@@ -615,6 +618,14 @@
       fx_asof:{en:'as of %s',fr:'au %s',ar:'حتى %s',sw:'kufikia %s',pt:'em %s'},
       upd:{en:'Updated %s',fr:'Mis à jour %s',ar:'آخر تحديث %s',sw:'Imesasishwa %s',pt:'Atualizado %s'},
       not_tr:{en:'Shown in its original English.',fr:'Pas encore traduit en français — affiché en anglais.',ar:'لم يُترجم إلى العربية بعد — يُعرض بالإنجليزية.',sw:'Bado haijatafsiriwa kwa Kiswahili — inaonyeshwa kwa Kiingereza.',pt:'Ainda não traduzido para português — apresentado em inglês.'},
+      ft_about:{en:'About',fr:'À propos',ar:'من نحن',sw:'Kuhusu',pt:'Sobre'},
+      ft_privacy:{en:'Privacy',fr:'Confidentialité',ar:'الخصوصية',sw:'Faragha',pt:'Privacidade'},
+      ft_terms:{en:'Terms',fr:'Conditions',ar:'الشروط',sw:'Masharti',pt:'Termos'},
+      ft_desk:{en:'Newsroom',fr:'Rédaction',ar:'غرفة الأخبار',sw:'Chumba cha habari',pt:'Redação'},
+      s_data:{en:'Your data',fr:'Vos données',ar:'بياناتك',sw:'Data yako',pt:'Os seus dados'},
+      s_data_p:{en:'Your reading history, streak and home region are stored only on this device and are never sent to us.',fr:'Votre historique de lecture, votre série et votre région sont enregistrés uniquement sur cet appareil et ne nous sont jamais envoyés.',ar:'سجل قراءتك وسلسلتك ومنطقتك محفوظة على هذا الجهاز فقط ولا تُرسل إلينا أبدًا.',sw:'Historia yako ya kusoma, mfululizo na eneo lako huhifadhiwa kwenye kifaa hiki pekee na hazitumwi kwetu kamwe.',pt:'O seu histórico de leitura, sequência e região ficam guardados apenas neste dispositivo e nunca nos são enviados.'},
+      s_clear_hist:{en:'Clear reading history',fr:'Effacer l’historique de lecture',ar:'مسح سجل القراءة',sw:'Futa historia ya kusoma',pt:'Limpar histórico de leitura'},
+      s_cleared:{en:'Reading history cleared ✓',fr:'Historique effacé ✓',ar:'✓ تم مسح السجل',sw:'Historia imefutwa ✓',pt:'Histórico limpo ✓'},
       ed_done:{en:'🏁 Edition complete — you’ve read all %t stories today.',fr:'🏁 Édition terminée — vous avez lu les %t articles du jour.',ar:'🏁 اكتمل الإصدار — قرأت كل أخبار اليوم الـ%t.',sw:'🏁 Toleo limekamilika — umesoma habari zote %t za leo.',pt:'🏁 Edição completa — leu todas as %t notícias de hoje.'},
       stop_read:{en:'■ Stop reading',fr:'■ Arrêter la lecture',ar:'■ إيقاف القراءة',sw:'■ Simamisha kusoma',pt:'■ Parar a leitura'}
     };
@@ -1046,6 +1057,15 @@
           return '<span class="fxi"><b>'+esc(x.n)+'</b> '+esc(x.v)+(x.c?(' <i class="'+d+'">'+esc(x.c)+'</i>'):'')+'</span>';
         }).join('')+(when?('<span class="fxd">'+esc(tr('fx_asof',{s:when}))+'</span>'):'')+'</div>';
     }
+    // Site links every newspaper owes its readers: who we are, and what we do with their data.
+    function footLinks(){
+      return '<nav class="foot" aria-label="AfriPulse Times">'+
+        '<a href="/afripulse-preview.html#/about">'+esc(tr('ft_about'))+'</a>'+
+        '<a href="/afripulse-preview.html#/privacy">'+esc(tr('ft_privacy'))+'</a>'+
+        '<a href="/afripulse-preview.html#/terms">'+esc(tr('ft_terms'))+'</a>'+
+        '<a href="/feed.xml">RSS</a>'+
+        '<a href="/desk">'+esc(tr('ft_desk'))+'</a></nav>';
+    }
     // ── My Africa: the reader's home region(s), device-local ──
     function getHome(){
       try{ var a=JSON.parse(localStorage.getItem('afripulse_home')||'[]');
@@ -1150,7 +1170,7 @@
       var olderHtml=OLDER.length?('<div class="h2" id="sec-earlier">'+esc(tr('earlier'))+'</div><div class="cards">'+OLDER.map(localize).map(storyCard).join('')+'</div>'):'';
       var moreBtn=(!OLDER_DONE && navigator.onLine!==false)
         ? '<button type="button" class="morebtn" id="more-btn"'+(OLDER_BUSY?' disabled':'')+'>'+esc(OLDER_BUSY?'…':tr('load_more'))+'</button>' : '';
-      body.innerHTML = newLine+chips+heroCard(hero)+fxStrip()+homeAsk+nearHtml+sections+olderHtml+moreBtn+(nlDone()?'':nlCard());
+      body.innerHTML = newLine+chips+heroCard(hero)+fxStrip()+homeAsk+nearHtml+sections+olderHtml+moreBtn+(nlDone()?'':nlCard())+footLinks();
       bindNl(body);
       var mb=document.getElementById('more-btn');
       if(mb) mb.addEventListener('click', loadOlder);
@@ -1520,6 +1540,10 @@
       h+='<div class="setrow"><div class="lab">'+esc(tr('s_storage'))+'</div>'+
         '<div class="hint">'+esc(tr('s_storage_p',{n:ARTICLES.length,kb:kb}))+'</div>'+
         '<div style="margin-top:11px"><button class="btn" id="clear-cache">'+esc(tr('s_clear'))+'</button></div></div>';
+      // Your data: what is kept on this device, and a way to erase it
+      h+='<div class="setrow"><div class="lab">'+esc(tr('s_data'))+'</div><div class="hint">'+esc(tr('s_data_p'))+
+        ' <a href="/afripulse-preview.html#/privacy" style="color:var(--gold-d);font-weight:600">'+esc(tr('ft_privacy'))+' ›</a></div>'+
+        '<div style="margin-top:11px"><button class="btn" id="clear-hist">'+esc(tr('s_clear_hist'))+'</button></div></div>';
       // Newsroom desk link
       h+='<a class="linkrow" href="/desk"><div><div class="lab" style="margin:0">'+esc(tr('s_desk'))+'</div><div class="hint">'+esc(tr('s_desk_p'))+'</div></div><span class="arw">›</span></a>';
       // About the newsroom
@@ -1543,6 +1567,13 @@
       var cc=document.getElementById('clear-cache');
       if(cc) cc.addEventListener('click', function(){ try{ localStorage.removeItem(PACK_KEY); }catch(err){} ARTICLES=[]; FETCHED=false; renderMe(); fetchEdition(); });
       bindNl(body);
+      var ch=document.getElementById('clear-hist');
+      if(ch) ch.addEventListener('click', function(){
+        try{ ['afripulse_reads','afripulse_streak','afripulse_seen'].forEach(function(k){ localStorage.removeItem(k); }); }catch(e){}
+        _readAll=null; PREV_SEEN=0; FRESH={};
+        renderMe();
+        var b=document.getElementById('clear-hist'); if(b){ b.textContent=tr('s_cleared'); b.disabled=true; }
+      });
       var mh=document.getElementById('me-home');
       if(mh) mh.addEventListener('click', function(e){
         var b=e.target.closest('button'); if(!b) return;
