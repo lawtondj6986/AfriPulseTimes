@@ -892,6 +892,19 @@
         new Promise(function(r){ setTimeout(function(){ r(null); },6000); }) ]); }catch(e){ SUPA=null; }
       return SUPA;
     }
+    // The `translations` column is optional in the database. If it is missing the
+    // whole query is refused, so ask once more without it (and remember), rather
+    // than show an empty paper. Translations inside `payload` still work.
+    var NO_TR=false;
+    function artSel(sb, cols, fn){
+      var lean=cols.replace(',translations','');
+      return fn(sb.from('articles').select(NO_TR?lean:cols)).then(function(res){
+        if(res && res.error && !NO_TR && /translations/.test(String(res.error.message||''))){
+          NO_TR=true; return fn(sb.from('articles').select(lean));
+        }
+        return res;
+      });
+    }
     var PACK_KEY='afripulse_reader_pack_v1';
     function loadPack(){ try{ var raw=localStorage.getItem(PACK_KEY); if(!raw) return null; var d=JSON.parse(raw); return (d&&Array.isArray(d.items))?d.items:null; }catch(e){ return null; } }
     function savePack(items){ try{ localStorage.setItem(PACK_KEY, JSON.stringify({saved:Date.now(),items:items})); return true; }catch(e){ return false; } }
@@ -1013,7 +1026,7 @@
       var sb=await sbClient();
       if(!sb){ SYNCING=false; FETCHED=true; renderCurrent(); return; }
       try{
-        var res=await sb.from('articles').select(cols).eq('status','published').order('published_at',{ascending:false}).limit(40);
+        var res=await artSel(sb, cols, function(q){ return q.eq('status','published').order('published_at',{ascending:false}).limit(40); });
         FETCHED=true; SYNCING=false;
         if(res.error){ renderCurrent(); return; }
         var had={}, hadAny=ARTICLES.length>0;
@@ -1343,8 +1356,8 @@
       OLDER_BUSY=true; renderToday();
       try{
         var sb=await sbClient();
-        var res=sb?await sb.from('articles').select(ARCH_COLS).eq('status','published').lt('published_at',cursor)
-          .order('published_at',{ascending:false}).limit(20):null;
+        var res=sb?await artSel(sb, ARCH_COLS, function(q){ return q.eq('status','published').lt('published_at',cursor)
+          .order('published_at',{ascending:false}).limit(20); }):null;
         if(res && !res.error){
           var seen={}; all.forEach(function(a){ seen[a.slug]=1; });
           var got=(res.data||[]).map(rowToLite).filter(function(a){ return !seen[a.slug]; });
@@ -1363,8 +1376,8 @@
       var items=[];
       try{
         var sb=await sbClient();
-        var res=sb?await sb.from('articles').select(ARCH_COLS).eq('status','published').ilike('headline','%'+term+'%')
-          .order('published_at',{ascending:false}).limit(20):null;
+        var res=sb?await artSel(sb, ARCH_COLS, function(q){ return q.eq('status','published').ilike('headline','%'+term+'%')
+          .order('published_at',{ascending:false}).limit(20); }):null;
         if(res && !res.error) items=(res.data||[]).map(rowToLite);
       }catch(e){}
       keepForOpening(items);
@@ -1390,7 +1403,7 @@
         var sb=await sbClient();
         if(sb){
           var cols='slug,headline,dek,body,vertical,region,author_slug,published_at,translations,payload,status';
-          var res=await sb.from('articles').select(cols).eq('status','published').eq('slug',slug).limit(1);
+          var res=await artSel(sb, cols, function(q){ return q.eq('status','published').eq('slug',slug).limit(1); });
           if(!res.error){ settled=true; if(res.data && res.data[0]) found=rowToLite(res.data[0]); }
         }
       }catch(e){}
