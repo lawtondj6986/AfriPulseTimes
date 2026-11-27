@@ -8,17 +8,13 @@
  *
  * Bump VERSION to ship a new shell (old caches are purged on activate).
  */
-const VERSION = 'ap-v10';
+const VERSION = 'ap-v1';
 const SHELL   = VERSION + '-shell';
 const RUNTIME = VERSION + '-runtime';
-// The public app shell is now the LITE reader (tiny, data-light). The newsroom
-// desk is a second, heavier shell served only when an editor visits it — it is
-// cached lazily on first visit, never precached, so readers never pay for it.
-const READER_SHELL = '/reader.html';
-const DESK_SHELL   = '/afripulse-preview.html';
+const APP_SHELL = '/afripulse-preview.html';
 
 const PRECACHE = [
-  READER_SHELL,
+  APP_SHELL,
   '/supabase-config.js',
   '/manifest.webmanifest',
   '/icons/icon-192.png',
@@ -59,23 +55,15 @@ self.addEventListener('fetch', function (e) {
   if (url.pathname.indexOf('/api/') === 0) return;
   if (url.hostname.indexOf('supabase') > -1 && url.pathname.indexOf('/auth/') > -1) return;
 
-  // 1) Navigations → the right SPA shell. Readers (/, /reader.html, and any
-  //    other path) get the lite reader; editors visiting /desk (or the raw
-  //    /afripulse-preview.html) get the newsroom. Serve the cached shell
-  //    instantly, refresh it in the background. Offline still opens the app.
+  // 1) Navigations → the SPA shell. Serve cached shell instantly (data-light),
+  //    refresh it in the background. Offline still opens the app.
   if (req.mode === 'navigate') {
-    const isDesk = url.pathname === '/desk' ||
-                   url.pathname.indexOf('/desk/') === 0 ||
-                   url.pathname.slice(-DESK_SHELL.length) === DESK_SHELL;
-    const shellUrl = isDesk ? DESK_SHELL : READER_SHELL;
     e.respondWith(
-      caches.match(shellUrl).then(function (cached) {
-        // Refresh the shell by fetching its canonical URL (never the incoming
-        // path), so a hash route or the / redirect can't poison the shell cache.
-        const network = fetch(shellUrl).then(function (res) {
-          if (res && res.status === 200) {
+      caches.match(APP_SHELL).then(function (cached) {
+        const network = fetch(req).then(function (res) {
+          if (url.pathname.slice(-APP_SHELL.length) === APP_SHELL) {
             const copy = res.clone();
-            caches.open(SHELL).then(function (c) { c.put(shellUrl, copy); });
+            caches.open(SHELL).then(function (c) { c.put(APP_SHELL, copy); });
           }
           return res;
         }).catch(function () { return cached; });
@@ -98,17 +86,8 @@ self.addEventListener('fetch', function (e) {
     return;
   }
 
-  // Cross-origin assets (story photos, mostly) are left to the browser's own
-  // HTTP cache. An opaque response stored in Cache Storage is charged at several
-  // megabytes against the origin's quota — forty photos a day would exhaust a
-  // low-end phone. The one exception is the Supabase client bundle, which the
-  // shell needs in order to start offline.
-  if (url.origin !== self.location.origin && url.hostname !== 'esm.sh') return;
-  // Analytics must always be live and is never worth caching.
-  if (url.pathname.indexOf('/_vercel/') === 0) return;
-
-  // 3) Everything else same-origin (app html, config, icons, images) and the
-  //    Supabase ESM bundle → cache-first, then network. Pays for each asset once.
+  // 3) Everything else (app html, config, icons, images, fonts, the Supabase
+  //    ESM bundle) → cache-first, then network. Pays for each asset once.
   e.respondWith(
     caches.match(req).then(function (cached) {
       if (cached) return cached;

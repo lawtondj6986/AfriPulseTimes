@@ -6,33 +6,6 @@ to run — the browser talks to Supabase directly (guarded by Row Level Security
 and a couple of Vercel functions handle the two jobs that must run with elevated
 privileges (RSS ingestion and newsletter signup).
 
-## Two front-end surfaces
-
-The site ships **two static HTML surfaces over the same Supabase data**:
-
-- **`/reader.html`** — the phone-first **lite reader** (`/` redirects here; it is
-  also the installed PWA app shell). ~56 KB, system fonts only, no web fonts or
-  remote images on first paint, offline-first, five languages. Built for entry
-  Android on prepaid / 2G-3G / shared-Starlink data. Tabs: Today, Pulse (SVG map),
-  Listen (on-device speech), Saved, Me.
-- **`/desk`** (rewrite → `/afripulse-preview.html`) — the full **newsroom + Command
-  Center** SPA for editors: publishing, review gate, broadcast, analytics. Also
-  hosts the public About page (`#/about`), media kit (`#/advertise`), legal pages,
-  and the reader account flows (`#/join`, `#/me`).
-
-Both read `articles` where `status = 'published'`; only editors (authenticated)
-write. The service worker (`public/sw.js`, `VERSION ap-v2`) routes navigations to
-the correct shell and precaches only the lite reader — see `docs/PWA.md`.
-
-## Authentication
-
-Supabase Auth with **two sign-in methods side by side**: email + password
-(instant, no email cost) and magic links (fallback, and the set-first-password
-path for accounts created before passwords existed). Password resets land on
-`#/account/password` via the `PASSWORD_RECOVERY` auth event. Editor rights come
-from `profiles.role` (`editor`/`admin`), never from the client. Auth emails are
-delivered through custom SMTP (Resend) from the brand domain.
-
 ## System diagram
 
 ```

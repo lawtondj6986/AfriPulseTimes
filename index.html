@@ -4,30 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AfriPulse Times</title>
-  <meta name="description" content="Real-time, editor-verified news from all 54 African nations — five languages, every phone, online or off.">
-  <link rel="canonical" href="https://afripulsetimes.com/">
-  <meta property="og:type" content="website">
-  <meta property="og:site_name" content="AfriPulse Times">
-  <meta property="og:title" content="AfriPulse Times — The Continent's Voice">
-  <meta property="og:description" content="Real-time, editor-verified news from all 54 African nations — five languages, every phone, online or off.">
-  <meta property="og:url" content="https://afripulsetimes.com/">
-  <meta property="og:image" content="https://afripulsetimes.com/images/og-card.jpg">
-  <meta property="og:image:width" content="1200">
-  <meta property="og:image:height" content="630">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="AfriPulse Times — The Continent's Voice">
-  <meta name="twitter:description" content="Real-time, editor-verified news from all 54 African nations — five languages, every phone, online or off.">
-  <meta name="twitter:image" content="https://afripulsetimes.com/images/og-card.jpg">
-  <!-- Phones land on the lite reader (public/reader.html). The newsroom desk
-       lives at /desk (public/afripulse-preview.html), unchanged. -->
-  <!-- Browsers that run scripts go straight to the reader (an immediate
-       replace, so no history entry). Once the service worker is installed it
-       serves the reader shell for / directly, so this only runs on a first visit. -->
-  <script>location.replace('/reader.html' + location.search + location.hash);</script>
-  <!-- No JavaScript (feature phones, Opera Mini, text browsers): go to the
-       plain-HTML edition instead of an app that cannot start. -->
-  <noscript><meta http-equiv="refresh" content="0; url=/today"></noscript>
-  <link rel="canonical" href="/reader.html">
+  <!-- The app lives in afripulse-preview.html (kept unchanged). Send / there. -->
+  <!-- Redirect three ways for maximum reliability across browsers (esp. mobile):
+       1) an immediate JS replace (no history entry), 2) a <meta> refresh
+       fallback for when JS is disabled/blocked, 3) a visible link as last resort. -->
+  <script>location.replace('/afripulse-preview.html' + location.search + location.hash);</script>
+  <meta http-equiv="refresh" content="0; url=/afripulse-preview.html">
+  <link rel="canonical" href="/afripulse-preview.html">
   <style>
     body{font-family:-apple-system,Segoe UI,Roboto,sans-serif;background:#0E2818;color:#F3EEE2;
       display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;text-align:center}
@@ -35,7 +18,6 @@
   </style>
 </head>
 <body>
-  <p>Loading AfriPulse Times&hellip;<br><a href="/reader.html">Tap here if it doesn't open.</a></p>
-  <noscript><p><a href="/today">Read today’s edition (plain version)</a></p></noscript>
+  <p>Loading AfriPulse Times&hellip;<br><a href="/afripulse-preview.html">Tap here if it doesn't open.</a></p>
 </body>
 </html>
