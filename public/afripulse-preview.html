@@ -11,12 +11,12 @@
 <meta property="og:site_name" content="AfriPulse Times">
 <meta property="og:title" content="AfriPulse Times — Pan-African News Across 54 Nations">
 <meta property="og:description" content="The continent's voice: politics, business, tech, energy, culture and sport across all 54 African nations — in EN, FR and AR.">
-<meta property="og:image" content="https://afripulsetimes.com/images/og-card.jpg">
-<meta property="og:url" content="https://afripulsetimes.com/desk">
+<meta property="og:image" content="https://afri-pulse-times.vercel.app/images/ai-rss-agents.jpg">
+<meta property="og:url" content="https://afri-pulse-times.vercel.app/afripulse-preview.html">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="AfriPulse Times — Pan-African News Across 54 Nations">
 <meta name="twitter:description" content="The continent's voice across 54 nations — in EN, FR and AR.">
-<meta name="twitter:image" content="https://afripulsetimes.com/images/og-card.jpg">
+<meta name="twitter:image" content="https://afri-pulse-times.vercel.app/images/ai-rss-agents.jpg">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"NewsMediaOrganization","name":"AfriPulse Times","url":"https://afri-pulse-times.vercel.app/","logo":"https://afri-pulse-times.vercel.app/images/ai-rss-agents.jpg","slogan":"The continent's voice across 54 nations","areaServed":"Africa","knowsLanguage":["en","fr","ar"]}</script>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%230D0D0D'/%3E%3Ctext x='32' y='47' font-family='Georgia,serif' font-size='44' font-weight='bold' fill='%23C8401A' text-anchor='middle'%3EA%3C/text%3E%3C/svg%3E">
 <!-- Progressive Web App: installable + offline-first (see /sw.js, /manifest.webmanifest) -->
@@ -28,8 +28,6 @@
 <meta name="mobile-web-app-capable" content="yes">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="preconnect" href="https://esm.sh" crossorigin>
-<link rel="alternate" type="application/rss+xml" title="AfriPulse Times" href="https://afripulsetimes.com/feed.xml">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Noto+Naskh+Arabic:wght@400;700&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -1556,26 +1554,6 @@ function setLang(code){
 // apostrophes so the single-quoted literals stay valid. Placeholders: %s (one
 // value), %c city, %v vertical, %r region — filled by rt(key,{s:..}).
 const RUI = {
-  // Password auth (join / sign-in / reset)
-  f_password:{en:'Password',fr:'Mot de passe',ar:'كلمة المرور',sw:'Nenosiri',pt:'Palavra-passe'},
-  opt_pw_blank:{en:'optional — leave blank to sign in by email link',fr:'facultatif — laissez vide pour un lien par e-mail',ar:'اختياري — اتركه فارغًا لتسجيل الدخول برابط البريد',sw:'hiari — acha wazi uingie kwa kiungo cha barua pepe',pt:'opcional — deixe em branco para entrar por link de e-mail'},
-  pw_short:{en:'Password must be at least 8 characters.',fr:'Le mot de passe doit contenir au moins 8 caractères.',ar:'يجب أن تتكون كلمة المرور من 8 أحرف على الأقل.',sw:'Nenosiri lazima liwe na angalau herufi 8.',pt:'A palavra-passe deve ter pelo menos 8 caracteres.'},
-  signin_h:{en:'Already a member? Sign in',fr:'Déjà membre ? Connectez-vous',ar:'عضو بالفعل؟ سجّل الدخول',sw:'Tayari ni mwanachama? Ingia',pt:'Já é membro? Inicie sessão'},
-  btn_signin:{en:'Sign in',fr:'Se connecter',ar:'تسجيل الدخول',sw:'Ingia',pt:'Entrar'},
-  btn_signing:{en:'Signing in…',fr:'Connexion…',ar:'جارٍ تسجيل الدخول…',sw:'Inaingia…',pt:'A entrar…'},
-  link_forgot:{en:'Forgot password?',fr:'Mot de passe oublié ?',ar:'نسيت كلمة المرور؟',sw:'Umesahau nenosiri?',pt:'Esqueceu a palavra-passe?'},
-  reset_sent:{en:'Reset link sent — check %s.',fr:'Lien de réinitialisation envoyé — vérifiez %s.',ar:'تم إرسال رابط إعادة التعيين — تحقق من %s.',sw:'Kiungo cha kuweka upya kimetumwa — angalia %s.',pt:'Link de redefinição enviado — verifique %s.'},
-  enter_email_first:{en:'Enter your email first.',fr:'Saisissez d’abord votre e-mail.',ar:'أدخل بريدك الإلكتروني أولاً.',sw:'Weka barua pepe yako kwanza.',pt:'Introduza primeiro o seu e-mail.'},
-  confirm_sent_h:{en:'Confirm your email',fr:'Confirmez votre e-mail',ar:'أكّد بريدك الإلكتروني',sw:'Thibitisha barua pepe yako',pt:'Confirme o seu e-mail'},
-  confirm_sent_sub:{en:'We sent a confirmation link to %s. Open it to activate your account, then sign in with your password.',fr:'Nous avons envoyé un lien de confirmation à %s. Ouvrez-le pour activer votre compte, puis connectez-vous avec votre mot de passe.',ar:'أرسلنا رابط تأكيد إلى %s. افتحه لتفعيل حسابك، ثم سجّل الدخول بكلمة المرور.',sw:'Tumetuma kiungo cha uthibitisho kwa %s. Kifungue kuamsha akaunti yako, kisha uingie kwa nenosiri lako.',pt:'Enviámos um link de confirmação para %s. Abra-o para ativar a sua conta e depois entre com a sua palavra-passe.'},
-  pw_set_h:{en:'Choose a new password',fr:'Choisissez un nouveau mot de passe',ar:'اختر كلمة مرور جديدة',sw:'Chagua nenosiri jipya',pt:'Escolha uma nova palavra-passe'},
-  pw_set_sub:{en:'Pick something at least 8 characters long. You’ll use it next time you sign in.',fr:'Choisissez au moins 8 caractères. Vous l’utiliserez à votre prochaine connexion.',ar:'اختر 8 أحرف على الأقل. ستستخدمها عند تسجيل الدخول القادم.',sw:'Chagua angalau herufi 8. Utaitumia utakapoingia tena.',pt:'Escolha pelo menos 8 caracteres. Vai usá-la na próxima vez que entrar.'},
-  f_newpw:{en:'New password',fr:'Nouveau mot de passe',ar:'كلمة المرور الجديدة',sw:'Nenosiri jipya',pt:'Nova palavra-passe'},
-  f_confirmpw:{en:'Confirm password',fr:'Confirmez le mot de passe',ar:'تأكيد كلمة المرور',sw:'Thibitisha nenosiri',pt:'Confirmar palavra-passe'},
-  btn_savepw:{en:'Save password',fr:'Enregistrer',ar:'حفظ كلمة المرور',sw:'Hifadhi nenosiri',pt:'Guardar palavra-passe'},
-  pw_mismatch:{en:'Passwords don’t match.',fr:'Les mots de passe ne correspondent pas.',ar:'كلمتا المرور غير متطابقتين.',sw:'Manenosiri hayalingani.',pt:'As palavras-passe não coincidem.'},
-  pw_saved:{en:'Password saved — you’re all set.',fr:'Mot de passe enregistré — tout est prêt.',ar:'تم حفظ كلمة المرور — كل شيء جاهز.',sw:'Nenosiri limehifadhiwa — uko tayari.',pt:'Palavra-passe guardada — está tudo pronto.'},
-  pw_need_signin:{en:'Open the reset link from your email to set a password.',fr:'Ouvrez le lien de réinitialisation reçu par e-mail pour définir un mot de passe.',ar:'افتح رابط إعادة التعيين من بريدك لتعيين كلمة مرور.',sw:'Fungua kiungo cha kuweka upya kutoka barua pepe yako ili kuweka nenosiri.',pt:'Abra o link de redefinição no seu e-mail para definir uma palavra-passe.'},
   // Live coverage map
   map_eyebrow:{en:'One pulse · 54 nations',fr:'Un seul pouls · 54 nations',ar:'نبض واحد · 54 دولة',sw:'Mpigo mmoja · mataifa 54',pt:'Um só pulso · 54 nações'},
   map_h:{en:'Live across the continent.',fr:'En direct sur tout le continent.',ar:'مباشرة عبر القارة.',sw:'Moja kwa moja katika bara zima.',pt:'Ao vivo por todo o continente.'},
@@ -2400,13 +2378,6 @@ async function initAuth(){
     loadProfile().then(function(){
       const hash=location.hash||'';
       const isCallback=hash.indexOf('access_token')>-1 || hash.indexOf('error_description')>-1 || (location.search||'').indexOf('code=')>-1;
-      if(event==='PASSWORD_RECOVERY'){
-        // Reset-link landing: send the user straight to the set-new-password form.
-        LOGIN_SENT_EMAIL='';
-        try{ localStorage.removeItem(RETURN_KEY); }catch(e){}
-        if(location.hash!=='#/account/password') location.hash='#/account/password';
-        route(); return;
-      }
       if(event==='SIGNED_IN' || isCallback){
         // Return the user to where they were headed; readers land on their profile.
         let dest='#/me';
@@ -2434,57 +2405,6 @@ async function sendMagicLink(email, returnHash, meta){
     if(error){ toast(error.message||'Could not send link.'); return false; }
     return true;
   }catch(e){ toast('Could not send link.'); return false; }
-}
-
-// ── AUTH (email + password, alongside magic links) ────────────
-// Passwords make sign-in instant and email-free; magic links remain as the
-// fallback and as the "set your first password" path for existing accounts.
-const PW_MIN=8;
-
-async function signInWithPassword(email, password, returnHash){
-  const sb=await ensureSupabase();
-  if(!sb){ toast('Auth unavailable · check Supabase config.'); return false; }
-  try{ localStorage.setItem(RETURN_KEY, returnHash||'#/me'); }catch(e){}
-  try{
-    const {error}=await sb.auth.signInWithPassword({ email:email, password:password });
-    if(error){ toast(error.message||'Sign-in failed.'); return false; }
-    return true;   // onAuthStateChange routes to the stored destination
-  }catch(e){ toast('Sign-in failed.'); return false; }
-}
-
-async function signUpWithPassword(email, password, meta, returnHash){
-  const sb=await ensureSupabase();
-  if(!sb){ toast('Auth unavailable · check Supabase config.'); return {ok:false}; }
-  try{ localStorage.setItem(RETURN_KEY, returnHash||'#/me'); }catch(e){}
-  const options={ emailRedirectTo: location.origin+location.pathname };
-  if(meta && typeof meta==='object') options.data=meta;
-  try{
-    const {data,error}=await sb.auth.signUp({ email:email, password:password, options:options });
-    if(error){ toast(error.message||'Sign-up failed.'); return {ok:false}; }
-    // With email confirmation on, no session yet — the user confirms by email.
-    return {ok:true, needsConfirm: !(data && data.session)};
-  }catch(e){ toast('Sign-up failed.'); return {ok:false}; }
-}
-
-async function sendPasswordReset(email){
-  const sb=await ensureSupabase();
-  if(!sb){ toast('Auth unavailable · check Supabase config.'); return false; }
-  try{ localStorage.setItem(RETURN_KEY, '#/account/password'); }catch(e){}
-  try{
-    const {error}=await sb.auth.resetPasswordForEmail(email, { redirectTo: location.origin+location.pathname });
-    if(error){ toast(error.message||'Could not send reset email.'); return false; }
-    return true;
-  }catch(e){ toast('Could not send reset email.'); return false; }
-}
-
-async function saveNewPassword(password){
-  const sb=await ensureSupabase();
-  if(!sb){ toast('Auth unavailable · check Supabase config.'); return false; }
-  try{
-    const {error}=await sb.auth.updateUser({ password:password });
-    if(error){ toast(error.message||'Could not save password.'); return false; }
-    return true;
-  }catch(e){ toast('Could not save password.'); return false; }
 }
 
 async function signOut(){
@@ -3262,8 +3182,6 @@ function renderFooter(){
         '<a href="#/newsletter">'+esc(t('daily_briefing'))+'</a>'+
         '<a href="#/advertise">Advertise</a>'+
         '<a href="#/upgrade">Membership</a>'+
-        '<a href="#/about">About</a>'+
-        '<a href="/reader.html">📱 Phone edition</a>'+
       '</div>'+
     '</div>'+
     '<div class="footer-bot">'+
@@ -3659,11 +3577,10 @@ function articleSummary(a){
   return (Array.isArray(arr) && arr.length) ? arr.slice(0,4) : null;
 }
 
-// Social share row for an article. Shares the /s/ page so messaging apps
-// unfurl this story's own OpenGraph card; /s/ then forwards to the story.
-// Copy-link is wired in bindView().
+// Social share row for an article. Uses the full hash URL so the link resolves
+// straight to the story. Copy-link is wired in bindView().
 function shareRow(a){
-  const url = location.origin + '/s/' + encodeURIComponent(a.slug);
+  const url = location.origin + location.pathname + '#/article/' + a.slug;
   const U = encodeURIComponent(url);
   const T = encodeURIComponent(a.headline || 'AfriPulse Times');
   return '<div class="art-share">'+
@@ -3701,82 +3618,19 @@ function viewLegal(kind){
   }else{
     title = t('legal_privacy');
     blocks =
-      '<h2>Overview</h2><p>AfriPulse Times is built so that you can read the news without giving us anything. This page says plainly what is stored, where, and why.</p>'+
-      '<h2>Stored only on your device</h2><p>The reader keeps your settings and reading history in your own browser so the app can work offline and feel personal: your language, text size, appearance and data-saver choices; your home region; the stories you have opened, your reading streak and the time of your last visit; and the stories you save. <strong>None of this is sent to us.</strong> You can erase your reading history at any time under <em>Me &rarr; Your data</em>, or by clearing your browser\'s site data.</p>'+
-      '<h2>What reaches us</h2><p><strong>Newsletter:</strong> if you subscribe, we store your email address and chosen language to send you the morning brief. <strong>Enquiries:</strong> if you contact us, we store the details you provide so we can reply. <strong>Accounts:</strong> staff and registered readers sign in with an email address. Nothing else is required to read the site.</p>'+
-      '<h2>Audience measurement</h2><p>We count page views in aggregate to understand which stories are read, using Vercel Web Analytics. It sets no cookies, does not follow you across other sites, and does not build a profile of you.</p>'+
-      '<h2>Content loaded from others</h2><p>Photographs are loaded directly from the original publisher\'s servers, which therefore receive a request from your device as any website would; we do not pass them the address of the page you are reading. With data saver on, no photographs are requested at all. Read-aloud uses the speech voices built into your device; some devices generate speech through their maker\'s online service.</p>'+
-      '<h2>How we use what reaches us</h2><p>Only to deliver the newsletter, answer enquiries, and operate the service. We do not sell personal data.</p>'+
-      '<h2>Storage</h2><p>Data that reaches us is held with our infrastructure providers (Supabase for the database, Buttondown for newsletter delivery, Vercel for hosting).</p>'+
-      '<h2>Your choices</h2><p>Unsubscribe from any newsletter email, or write to <a href="mailto:'+contact+'">'+contact+'</a> to see or delete the data we hold about you.</p>';
+      '<h2>Overview</h2><p>AfriPulse Times respects your privacy. This page explains what we collect and why.</p>'+
+      '<h2>What we collect</h2><p><strong>Newsletter &amp; enquiries:</strong> if you subscribe or contact us, we store the email address and details you provide, to send the newsletter or respond to you. <strong>Nothing else is required to read the site.</strong></p>'+
+      '<h2>How we use it</h2><p>Only to deliver the newsletter, answer investor/partner enquiries, and operate the service. We do not sell your personal data.</p>'+
+      '<h2>Storage</h2><p>Data is stored securely with our infrastructure providers (Supabase) and, for the newsletter, our email provider. You can ask us to delete your data at any time.</p>'+
+      '<h2>Your choices</h2><p>Unsubscribe from any newsletter email, or email <a href="mailto:'+contact+'">'+contact+'</a> to access or delete your data.</p>';
   }
   return renderHeader(null)+
     '<a class="art-back" href="#/" style="padding:14px 22px">← '+esc(t('back_to_site'))+'</a>'+
     '<div class="legal-page">'+
       '<h1>'+esc(title)+'</h1>'+
-      '<div class="updated">'+esc(t('legal_updated'))+' · '+(kind==='terms'?'July':'November')+' 2026</div>'+
+      '<div class="updated">'+esc(t('legal_updated'))+' · July 2026</div>'+
       blocks+
       '<div class="legal-note">'+esc(t('legal_note'))+'</div>'+
-    '</div>'+
-    renderFooter();
-}
-
-// ── VIEW: ABOUT / COMPANY ─────────────────────────────────────
-// The company-facing page: mission, how verification works, leadership and
-// governance. English business copy by the same precedent as the media kit
-// (no new t() keys, so localization coverage stays complete).
-function viewAbout(){
-  const officers=[
-    {r:'Chief Executive Officer', n:'Austin Goman', d:'Co-Founder · Attorney. Commercial strategy, partnerships and capital — the outward face of the company to investors, carriers and institutions.'},
-    {r:'Chief Innovation Officer', n:'Daniel Lawton', d:'Co-Founder. Product vision and the innovation pipeline: the phone-first reader, offline editions and the broadcast distribution layer.'},
-    {r:'Chief Technical Officer', n:'Lucasz Marut', d:'Engineering command: platform architecture, infrastructure, security and delivery across web, mobile and messaging.'}
-  ];
-  let offHTML='';
-  officers.forEach(function(o){
-    offHTML+='<div style="background:var(--card,#fff);border:1px solid var(--line,#E4DCCE);border-top:3px solid var(--accent,#C8401A);border-radius:10px;padding:18px 20px">'+
-      '<div style="font-family:monospace;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent,#C8401A)">'+esc(o.r)+'</div>'+
-      '<div style="font-family:\'Fraunces\',Georgia,serif;font-weight:700;font-size:21px;margin:6px 0 4px">'+esc(o.n)+'</div>'+
-      '<div style="font-size:13px;line-height:1.55;color:var(--muted,#7C766B)">'+esc(o.d)+'</div></div>';
-  });
-  return renderHeader(null)+
-    '<a class="art-back" href="#/" style="padding:14px 22px">← '+esc(t('back_to_site'))+'</a>'+
-    '<div class="legal-page">'+
-      '<h1>About AfriPulse Times</h1>'+
-      '<div class="updated">The continent’s voice · 54 nations · 5 languages</div>'+
-
-      '<h2>Our mission</h2>'+
-      '<p>A billion Africans are coming online to a media landscape built for someone else — '+
-      'foreign wires without local voice, national papers that stop at their borders, and social '+
-      'feeds without verification. AfriPulse Times exists to close that gap: <strong>one newsroom '+
-      'for the whole continent</strong>, publishing in English, French, Arabic, Swahili and '+
-      'Portuguese, engineered for the phones Africans actually own — low-end, prepaid and often '+
-      'offline.</p>'+
-
-      '<h2>How we verify the news</h2>'+
-      '<p>Nothing publishes on AfriPulse Times without a human decision. Wire stories flow into our '+
-      'newsroom automatically, but every single one passes through the <strong>Command Center</strong>, '+
-      'where a named editor reviews it before it reaches the front page — and that editor’s '+
-      'name is stamped on the approval, permanently. No anonymous publishing, no algorithmic '+
-      'front page, no exceptions. When we correct a story, we say so.</p>'+
-
-      '<h2>Built for every phone</h2>'+
-      '<p>Our phone edition loads in about 53 kilobytes — roughly one hundredth of a typical '+
-      'news page — installs like an app without an app store, and keeps reading when the signal '+
-      'drops. Approved stories broadcast automatically to WhatsApp, Telegram and SMS, because that '+
-      'is where the continent already reads.</p>'+
-
-      '<h2>Leadership</h2>'+
-      '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;margin:14px 0 8px">'+offHTML+'</div>'+
-
-      '<h2>Governance</h2>'+
-      '<p>AfriPulse Times is overseen by a seven-seat <strong>Board of Trustees</strong> chaired by '+
-      '<strong>Attorney Richard Lawton</strong>, with <strong>Attorney Deborah Mason</strong> and '+
-      '<strong>Attorney Austin Goman</strong> seated — three attorneys from formation. Independent '+
-      'and investor seats complete the board as the company grows.</p>'+
-
-      '<h2>Contact</h2>'+
-      '<p>Partnerships, press and general enquiries: <a href="mailto:hello@afripulsetimes.com">hello@afripulsetimes.com</a> '+
-      '· Advertising: see our <a href="#/advertise">media kit</a>.</p>'+
     '</div>'+
     renderFooter();
 }
@@ -4009,7 +3863,6 @@ function viewJoin(){
           '<div class="rp-grid">'+
             '<div class="rp-field"><label>'+esc(rt('f_fullname'))+'</label><input type="text" name="name" required maxlength="80" placeholder="'+esc(rt('ph_yourname'))+'"></div>'+
             '<div class="rp-field"><label>'+esc(rt('f_email'))+'</label><input type="email" name="email" required placeholder="you@example.com"></div>'+
-            '<div class="rp-field rp-full"><label>'+esc(rt('f_password'))+' <span class="rp-opt">'+esc(rt('opt_pw_blank'))+'</span></label><input type="password" name="password" autocomplete="new-password" placeholder="••••••••"></div>'+
             '<div class="rp-field"><label>'+esc(rt('f_country'))+' <span class="rp-tag">'+esc(rt('tag_regionfeed'))+'</span></label><select name="country" class="rp-sel">'+countryOptions('')+'</select></div>'+
             '<div class="rp-field"><label>'+esc(rt('f_preflang'))+'</label><select name="language" class="rp-sel">'+langOptions(CURRENT_LANG)+'</select></div>'+
             '<div class="rp-field rp-full"><label>'+esc(rt('f_follow'))+' <span class="rp-opt">'+esc(rt('opt_pickfew'))+'</span> <span class="rp-tag">'+esc(rt('tag_tunesfeed'))+'</span></label>'+interestPicker([])+'</div>'+
@@ -4017,43 +3870,6 @@ function viewJoin(){
           '</div>'+
           '<div class="rp-cta"><button type="submit" class="rp-btn">'+esc(rt('btn_createprofile'))+'</button>'+
             '<span class="rp-note">'+esc(rt('join_note_pre'))+' <a href="#/terms">'+esc(rt('word_terms'))+'</a> &amp; <a href="#/privacy">'+esc(rt('word_privacy'))+'</a>. '+esc(rt('join_note_post'))+'</span></div>'+
-        '</form>'+
-      '</div>'+
-      '<div class="rp-card" id="signin-card" style="margin-top:18px">'+
-        '<h2 class="rp-h" style="font-size:20px">'+esc(rt('signin_h'))+'</h2>'+
-        '<form id="signin-form" class="rp-form" autocomplete="on">'+
-          '<div class="rp-grid">'+
-            '<div class="rp-field"><label>'+esc(rt('f_email'))+'</label><input type="email" name="email" required placeholder="you@example.com" autocomplete="email"></div>'+
-            '<div class="rp-field"><label>'+esc(rt('f_password'))+'</label><input type="password" name="password" required autocomplete="current-password" placeholder="••••••••"></div>'+
-          '</div>'+
-          '<div class="rp-cta"><button type="submit" class="rp-btn">'+esc(rt('btn_signin'))+'</button>'+
-            '<span class="rp-note"><a href="#" id="signin-forgot">'+esc(rt('link_forgot'))+'</a></span></div>'+
-        '</form>'+
-      '</div>'+
-    '</div>'+
-    renderFooter();
-}
-
-function viewSetPassword(){
-  if(!AUTH_READY) return viewAuthChecking();
-  if(!isAuthed()){
-    return renderHeader(null)+'<div class="rp-wrap"><div class="rp-card">'+
-      '<h1 class="rp-h">'+esc(rt('pw_set_h'))+'</h1>'+
-      '<p class="rp-sub">'+esc(rt('pw_need_signin'))+'</p>'+
-      '<a class="rp-btn" href="#/join" style="display:inline-block;text-decoration:none">'+esc(rt('btn_signin'))+'</a>'+
-      '</div></div>'+renderFooter();
-  }
-  return renderHeader(null)+
-    '<div class="rp-wrap">'+
-      '<div class="rp-card">'+
-        '<h1 class="rp-h">'+esc(rt('pw_set_h'))+'</h1>'+
-        '<p class="rp-sub">'+esc(rt('pw_set_sub'))+'</p>'+
-        '<form id="setpw-form" class="rp-form" autocomplete="on">'+
-          '<div class="rp-grid">'+
-            '<div class="rp-field"><label>'+esc(rt('f_newpw'))+'</label><input type="password" name="pw1" required minlength="8" autocomplete="new-password" placeholder="••••••••"></div>'+
-            '<div class="rp-field"><label>'+esc(rt('f_confirmpw'))+'</label><input type="password" name="pw2" required minlength="8" autocomplete="new-password" placeholder="••••••••"></div>'+
-          '</div>'+
-          '<div class="rp-cta"><button type="submit" class="rp-btn">'+esc(rt('btn_savepw'))+'</button></div>'+
         '</form>'+
       '</div>'+
     '</div>'+
@@ -4189,22 +4005,8 @@ function bindReaderView(){
       const meta={ full_name:name, country:String(fd.get('country')||'')||undefined,
         language:String(fd.get('language')||'')||undefined, occupation:String(fd.get('occupation')||'')||undefined,
         interests:selectedInterests(joinForm) };
-      const pw=String(fd.get('password')||'');
-      if(pw && pw.length<PW_MIN){ toast(rt('pw_short')); return; }
       const btn=joinForm.querySelector('button[type=submit]');
       if(btn){ btn.disabled=true; btn.textContent=rt('btn_sending'); }
-      if(pw){
-        // Password path: create the account directly; email confirms it once.
-        const r=await signUpWithPassword(email,pw,meta,'#/me');
-        if(!r.ok){ if(btn){ btn.disabled=false; btn.textContent=rt('btn_createprofile'); } return; }
-        if(r.needsConfirm){
-          const card=document.getElementById('join-card');
-          if(card) card.innerHTML='<div class="rp-eyebrow">'+esc(rt('join_check_eyebrow'))+'</div>'+
-            '<h1 class="rp-h">'+esc(rt('confirm_sent_h'))+'</h1>'+
-            '<p class="rp-sub">'+rt('confirm_sent_sub',{s:'<strong>'+esc(email)+'</strong>'})+'</p>';
-        }
-        return;   // with confirmations off, onAuthStateChange routes to #/me
-      }
       const ok=await sendMagicLink(email,'#/me',meta);
       if(!ok){ if(btn){ btn.disabled=false; btn.textContent=rt('btn_createprofile'); } return; }
       const card=document.getElementById('join-card');
@@ -4212,50 +4014,6 @@ function bindReaderView(){
         '<h1 class="rp-h">'+esc(rt('join_almost',{s:name.split(' ')[0]}))+'</h1>'+
         '<p class="rp-sub">'+rt('join_sent_sub',{s:'<strong>'+esc(email)+'</strong>'})+'</p>'+
         '<p class="rp-note">'+esc(rt('join_sent_note_pre'))+' <a href="#/join">'+esc(rt('word_tryagain'))+'</a>.</p>';
-    });
-  }
-
-  // Returning-member sign-in (email + password) on the join page
-  const signinForm=document.getElementById('signin-form');
-  if(signinForm){
-    signinForm.addEventListener('submit',async function(e){
-      e.preventDefault();
-      const fd=new FormData(signinForm);
-      const email=String(fd.get('email')||'').trim();
-      const pw=String(fd.get('password')||'');
-      if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ toast(rt('toast_validemail')); return; }
-      if(!pw){ toast(rt('f_password')); return; }
-      const btn=signinForm.querySelector('button[type=submit]');
-      if(btn){ btn.disabled=true; btn.textContent=rt('btn_signing'); }
-      const ok=await signInWithPassword(email,pw,'#/me');
-      if(!ok && btn){ btn.disabled=false; btn.textContent=rt('btn_signin'); }
-    });
-    const forgot=document.getElementById('signin-forgot');
-    if(forgot) forgot.addEventListener('click',function(e){
-      e.preventDefault();
-      const emailEl=signinForm.querySelector('input[name=email]');
-      const email=emailEl?emailEl.value.trim():'';
-      if(!email){ toast(rt('enter_email_first')); return; }
-      sendPasswordReset(email).then(function(ok){
-        if(ok) toast(rt('reset_sent',{s:email}));
-      });
-    });
-  }
-
-  // Set-new-password form (recovery landing, #/account/password)
-  const setpwForm=document.getElementById('setpw-form');
-  if(setpwForm){
-    setpwForm.addEventListener('submit',async function(e){
-      e.preventDefault();
-      const fd=new FormData(setpwForm);
-      const p1=String(fd.get('pw1')||''), p2=String(fd.get('pw2')||'');
-      if(p1.length<PW_MIN){ toast(rt('pw_short')); return; }
-      if(p1!==p2){ toast(rt('pw_mismatch')); return; }
-      const btn=setpwForm.querySelector('button[type=submit]');
-      if(btn){ btn.disabled=true; }
-      const ok=await saveNewPassword(p1);
-      if(ok){ toast(rt('pw_saved')); location.hash = isEditor() ? '#/admin' : '#/me'; route(); }
-      else if(btn){ btn.disabled=false; }
     });
   }
 
@@ -4769,16 +4527,12 @@ function viewAdminLogin(returnHash){
     '</div>';
   }else{
     inner='<div class="adm-auth-brand">Afri<span>Pulse</span> Admin</div>'+
-      '<p class="adm-auth-lead">Sign in to the newsroom with your password, or have a one-time link emailed to you.</p>'+
+      '<p class="adm-auth-lead">Sign in to the newsroom. We\'ll email you a magic link — no password needed.</p>'+
       '<form class="adm-auth-form" id="login-form" data-return="'+esc(returnHash||'#/admin')+'">'+
         '<label class="adm-label" for="login-email">Email address</label>'+
         '<input class="adm-input" id="login-email" name="email" type="email" required autocomplete="email" placeholder="you@example.com">'+
-        '<label class="adm-label" for="login-password" style="margin-top:10px">Password</label>'+
-        '<input class="adm-input" id="login-password" name="password" type="password" autocomplete="current-password" placeholder="••••••••">'+
-        '<button class="adm-btn primary" id="login-send" type="submit" style="width:100%;margin-top:14px">Sign in</button>'+
-        '<button class="adm-btn" id="login-magic" type="button" style="width:100%;margin-top:8px">Email me a magic link instead</button>'+
-        '<p class="adm-auth-note" style="margin-top:10px"><a href="#" id="login-forgot" style="color:inherit">Forgot password?</a> We\'ll email you a reset link.</p>'+
-        '<p class="adm-auth-note">Only authorised editors can enter the newsroom.</p>'+
+        '<button class="adm-btn primary" id="login-send" type="submit" style="width:100%;margin-top:14px">Send magic link</button>'+
+        '<p class="adm-auth-note">Only authorised editors can sign in. The link expires shortly after it\'s sent.</p>'+
       '</form>';
   }
   return adminAuthTopbar()+'<div class="adm-auth"><div class="adm-auth-card">'+inner+'</div></div>';
@@ -5432,8 +5186,6 @@ function route(){
     else if(parts[0]==='privacy') html=viewLegal('privacy');
     else if(parts[0]==='terms') html=viewLegal('terms');
     else if(parts[0]==='advertise') html=viewAdvertise();
-    else if(parts[0]==='about') html=viewAbout();
-    else if(parts[0]==='account' && parts[1]==='password') html=viewSetPassword();
     else html=view404();
 
     app.innerHTML=html;
@@ -5753,44 +5505,22 @@ function bindView(){
   const polishBtn=document.getElementById('adm-polish-btn');
   if(polishBtn) polishBtn.addEventListener('click',runPolish);
 
-  // Auth: sign out + password / magic-link login form
+  // Auth: sign out + magic-link login form
   const signoutBtn=document.getElementById('signout-btn');
   if(signoutBtn) signoutBtn.addEventListener('click',signOut);
   const loginForm=document.getElementById('login-form');
   if(loginForm){
-    const loginEmail=function(){ const el=document.getElementById('login-email'); return el?el.value.trim():''; };
     loginForm.addEventListener('submit',function(e){
       e.preventDefault();
-      const email=loginEmail();
-      const pwEl=document.getElementById('login-password');
-      const pw=pwEl?pwEl.value:'';
+      const emailEl=document.getElementById('login-email');
+      const email=emailEl?emailEl.value.trim():'';
       if(!email){ toast('Enter your email.'); return; }
       const returnHash=loginForm.getAttribute('data-return')||'#/admin';
       const btn=document.getElementById('login-send');
-      if(!pw){ toast('Enter your password — or use the magic-link button below.'); return; }
-      if(btn){ btn.disabled=true; btn.textContent='Signing in…'; }
-      signInWithPassword(email,pw,returnHash).then(function(ok){
-        if(!ok && btn){ btn.disabled=false; btn.textContent='Sign in'; }
-      });
-    });
-    const magicBtn=document.getElementById('login-magic');
-    if(magicBtn) magicBtn.addEventListener('click',function(){
-      const email=loginEmail();
-      if(!email){ toast('Enter your email first.'); return; }
-      const returnHash=loginForm.getAttribute('data-return')||'#/admin';
-      magicBtn.disabled=true; magicBtn.textContent='Sending…';
+      if(btn){ btn.disabled=true; btn.textContent='Sending…'; }
       sendMagicLink(email,returnHash).then(function(ok){
         if(ok){ LOGIN_SENT_EMAIL=email; route(); }
-        else { magicBtn.disabled=false; magicBtn.textContent='Email me a magic link instead'; }
-      });
-    });
-    const forgot=document.getElementById('login-forgot');
-    if(forgot) forgot.addEventListener('click',function(e){
-      e.preventDefault();
-      const email=loginEmail();
-      if(!email){ toast('Enter your email first, then tap Forgot password.'); return; }
-      sendPasswordReset(email).then(function(ok){
-        if(ok) toast('Reset link sent — check '+email+'.');
+        else if(btn){ btn.disabled=false; btn.textContent='Send magic link'; }
       });
     });
   }

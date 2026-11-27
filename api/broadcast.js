@@ -29,9 +29,7 @@ const VLABEL = {
 
 // ── pure helpers (exported for tests) ─────────────────────────
 export function storyUrl(slug, site) {
-  // The /s/ share page: per-story OpenGraph preview in the messaging apps,
-  // then an instant redirect to the reader.
-  return (site || SITE_URL).replace(/\/$/, '') + '/s/' + encodeURIComponent(slug || '');
+  return (site || SITE_URL).replace(/\/$/, '') + '/afripulse-preview.html#/article/' + encodeURIComponent(slug || '');
 }
 
 export function clip(s, n) {

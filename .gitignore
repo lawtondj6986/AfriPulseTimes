@@ -15,4 +15,3 @@ dist/
 *.log
 npm-debug.log*
 .DS_Store
-tests/e2e/.shots/

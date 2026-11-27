@@ -16,7 +16,6 @@
 // function can insert), and optionally CRON_SECRET.
 
 import { createClient } from '@supabase/supabase-js';
-import { tidyHeadline } from './story-share.js';
 import Parser from 'rss-parser';
 
 const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
@@ -24,102 +23,15 @@ const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 const MAX_ITEMS_PER_FEED = 10;
 
-// Section classifier.
-//
-// Every term is matched as a whole word (plurals allowed), never as a fragment:
-// the old substring test filed a cricket report under Markets because
-// "frustrate" contains "rate", and a diplomatic accord under Culture because
-// "counterpart" contains "art". Each section has strong terms (2 points) and
-// weak ones (1); a hit in the headline counts double. A story needs 2 points
-// to leave the front page, so one weak word in the body decides nothing.
+// Vertical classifier (mirrors the keyword logic that used to live in the page).
 const VKW = {
-  sports: {
-    strong: ['football','footballer','soccer','afcon','fifa','world cup','premier league','la liga','serie a','bundesliga','champions league',
-      'npfl','psl','striker','goalkeeper','midfielder','defender','tennis','atp','wta','grand slam','wimbledon','cricket','test match','odi','t20',
-      'wicket','rugby','springboks','athletics','olympic','olympics','paralympic','marathon','sprinter','athlete','boxing','boxer','basketball','nba',
-      'formula 1','formula one','grand prix','golf','cycling','semi-final','semifinal','quarter-final','quarterfinal','super eagles','super falcons',
-      'bafana bafana','harambee stars','black stars','indomitable lions','flamingos','falconets','manchester united','man u','man utd','liverpool',
-      'arsenal','chelsea','barcelona','real madrid','transfer window','head coach','penalty shootout'],
-    weak: ['match','goal','squad','tournament','coach','league','medal','champion','championship','fixture','stadium','sport','sports','innings','draw']
-  },
-  mining: {
-    strong: ['mining','miner','gold','copper','cobalt','lithium','platinum','uranium','diamond','manganese','bauxite','iron ore','coal','crude','opec',
-      'refinery','lng','natural gas','gas pipeline','oil','oilfield','petroleum','petrol','diesel','electricity','power grid','load shedding','loadshedding',
-      'eskom','solar','renewable','hydropower','wind farm','nuclear','energy'],
-    weak: ['mine','fuel','gas','power','pipeline','megawatt','megawatts','mw','barrel']
-  },
-  markets: {
-    strong: ['stock market','stocks','stock','shares','bourse','jse','ngx','nse','inflation','gdp','interest rate','central bank','imf','world bank',
-      'currency','naira','rand','cedi','shilling','kwacha','birr','forex','exchange rate','exports','imports','tariff','afcfta','investor','investment',
-      'earnings','profit','revenue','ipo','eurobond','bond','debt','economy','economic','trade deal','bank','banking','recession','fiscal','monetary',
-      'devaluation','remittance','remittances','dividend','shareholder'],
-    weak: ['market','markets','trade','business','company','firm','price','prices','budget','tax','taxes','loan','loans','growth']
-  },
-  tech: {
-    strong: ['fintech','startup','start-up','artificial intelligence','ai','software','app','smartphone','internet','broadband','5g','4g','telecom',
-      'telecoms','safaricom','mtn','airtel','m-pesa','mobile money','crypto','cryptocurrency','bitcoin','blockchain','cybersecurity','cyberattack',
-      'data centre','data center','tech','technology','e-commerce','ecommerce','satellite','starlink','semiconductor','robotics','instant payment'],
-    weak: ['digital','platform','online','data','innovation','developer','developers','device','devices']
-  },
-  culture: {
-    strong: ['music','musician','album','afrobeats','amapiano','film','movie','nollywood','cinema','festival','concert','exhibition','artist','fashion',
-      'novel','author','literature','museum','heritage','cuisine','actor','actress','singer','rapper','grammy','grammys','oscar','oscars','poet','poetry',
-      'gallery','theatre','theater','choreographer','comedian','documentary'],
-    weak: ['culture','cultural','art','arts','book','dance','tour','award','awards','celebrity']
-  },
-  politics: {
-    strong: ['election','electoral','parliament','senate','senator','president','presidential','prime minister','minister','government','cabinet','coup',
-      'junta','diplomatic','diplomacy','diplomat','ceasefire','sanction','sanctions','referendum','opposition','lawmaker','lawmakers','governor',
-      'ambassador','constitution','supreme court','protest','protesters','military','army','troops','rebels','insurgents','insurgency','airstrike',
-      'drone','au summit','african union','ecowas','sadc','peace talks','peacekeepers','impeachment','legislature','ruling party','mp','mps'],
-    weak: ['policy','reform','bill','vote','security','police','court','summit','peace','war','conflict','attack','killed','arrested','campaign','law']
-  }
+  mining:['cobalt','gold','copper','lithium','platinum','oil','gas','energy','mining','mine','solar','renewable','lng','crude','uranium','battery'],
+  markets:['rand','naira','bourse','stock','jse','ngx','imf','inflation','gdp','currency','market','trade','afcfta','tariff','bank','rate','exchange','listing','earnings'],
+  tech:['ai ','artificial intelligence','tech','startup','fintech','app ','platform','data','cloud','digital','m-pesa','safaricom','crypto','blockchain','software'],
+  culture:['music','film','art','festival','burna','nollywood','culture','tour','afrobeats','album','movie'],
+  sports:['football','afcon','soccer','match','goal','striker','player','caf','athletics','olympic','world cup','squad','tournament','marathon','athlete','runner','sport','medal'],
+  politics:['election','senate','parliament','president','minister','vote','government','reform','policy','bill','protest','au summit','peace']
 };
-// Earlier sections win ties: a football story that mentions a "president" is still sport.
-const VORDER = ['sports', 'mining', 'tech', 'markets', 'culture', 'politics'];
-const termRe = (t) => new RegExp('(^|[^a-z0-9])' + t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '(s|es)?(?=$|[^a-z0-9])', 'i');
-// The matcher already accepts plurals, so a listed plural ("awards" beside
-// "award") would count the same word twice. Drop those at load time.
-const VRULES = VORDER.map((v) => {
-  const all = new Set(VKW[v].strong.concat(VKW[v].weak));
-  const single = (t) => !((t.endsWith('es') && all.has(t.slice(0, -2))) || (t.endsWith('s') && all.has(t.slice(0, -1))));
-  return {
-    v,
-    rules: VKW[v].strong.filter(single).map((t) => ({ re: termRe(t), w: 2 }))
-      .concat(VKW[v].weak.filter(single).map((t) => ({ re: termRe(t), w: 1 })))
-  };
-});
-
-export function guessVertical(title, desc, hint){
-  // Place names and phrases that contain a keyword but are not about it.
-  const quiet = (x) => String(x || '').toLowerCase().replace(/\b(west bank|river ?bank|food bank|blood bank|data bank|gold coast|golden|goldman)\b/g, ' ');
-  const head = quiet(title);
-  const body = quiet(desc);
-  // Signed comment is opinion whatever it is about.
-  if (/^\s*(editorial|opinion|analysis|comment)\s*[:\-–]/i.test(head) || /,\s*[Bb]y\s+[A-Z][\w'’.-]+(\s+[A-Z][\w'’.-]+){0,3}\s*$/.test(String(title || ''))) return 'opinions';
-  let best = null, bestScore = 0;
-  for (const { v, rules } of VRULES) {
-    let score = 0;
-    for (const r of rules) { if (r.re.test(head)) score += r.w * 2; else if (r.re.test(body)) score += r.w; }
-    if (hint === v) score += 1;
-    if (score > bestScore) { best = v; bestScore = score; }
-  }
-  return bestScore >= 2 ? best : (hint || 'front');
-}
-
-// Summaries that are not summaries: page styling or markup that leaked out of a
-// feed, a sponsor line, or the headline again.
-const norm = (x) => String(x || '').toLowerCase().replace(/[^a-z0-9À-￿]+/g, ' ').trim();
-// `paragraph` skips the length rule: a short paragraph is still a paragraph.
-export function isJunkText(text, headline, paragraph){
-  const t = String(text || '').trim();
-  if (!paragraph && t.length < 12) return true;
-  if (/\/\*|\*\/|box-sizing|mso-|!important|\{[^{}]{0,200}:[^{}]{0,200}\}|<\/?[a-z][^>]*>/i.test(t)) return true;
-  if (/^(in partnership with|sponsored( content| by)?|advertisement|presented by)\b/i.test(t)) return true;
-  if (headline && norm(t) === norm(headline)) return true;
-  return false;
-}
-
 const VDEF = {
   front:{emoji:'🌍',color:'#0e2818'}, politics:{emoji:'🏛️',color:'#1a3a1a'},
   mining:{emoji:'⛏️',color:'#3a1a0a'}, markets:{emoji:'📊',color:'#0a1a2a'},
@@ -133,6 +45,14 @@ const VLABEL = {
   sports:'Sports', opinions:'Opinions', podcasts:'Podcasts'
 };
 
+export function guessVertical(title, desc, hint){
+  const text = ((title||'') + ' ' + (desc||'')).toLowerCase();
+  const scores = {};
+  for(const v in VKW){ scores[v] = VKW[v].reduce((s,w)=> s + (text.indexOf(w) > -1 ? 1 : 0), 0); }
+  if(hint && scores[hint] !== undefined) scores[hint] += 0.5;
+  const best = Object.keys(scores).sort((a,b)=> scores[b] - scores[a])[0];
+  return scores[best] > 0 ? best : (hint || 'front');
+}
 
 // Geo classifier — infers a region + country (+ a capital dateline when named) from
 // the story text, so the coverage map and region archives can place wire stories.
@@ -163,18 +83,6 @@ export function guessGeo(text){
     for(const c of REGION_GEO[slug].countries){ if(wordRe(c).test(t)) return { region:slug, country:c, city:null }; }
   }
   return null;
-}
-// World news is a narrow category: a story from an international outlet that
-// has no African connection. A story from an African publisher is African by
-// default even when it never names the country (a Nigerian paper writes
-// "Bayelsa" or "Tinubu", not "Nigeria"), so only known global outlets qualify.
-const GLOBAL_OUTLETS = /\b(al ?jazeera|bbc|reuters|associated press|ap news|afp|dw|deutsche welle|france ?24|rfi|the guardian|cnn|voa|voice of america|new york times|bloomberg|sky news|euronews)\b/i;
-const AFRICAN_WORDS = /\b(africa|african|africans|sahel|sahara|saharan|maghreb|nigerian|kenyan|ghanaian|egyptian|ethiopian|ugandan|tanzanian|rwandan|zimbabwean|zambian|senegalese|moroccan|algerian|tunisian|libyan|sudanese|somali|malian|ivorian|cameroonian|angolan|mozambican|namibian|malawian|congolese|liberian|gambian|togolese|beninese|burundian|eritrean|mauritanian|gabonese|chadian|batswana|basotho)s?\b/i;
-export function isWorldStory(label, text, region){
-  if (region) return false;
-  if (!GLOBAL_OUTLETS.test(String(label || ''))) return false;
-  const t = String(text || '');
-  return !AFRICAN_WORDS.test(t) && !guessGeo(t);
 }
 function slugify(s){
   return (s||'').toLowerCase().trim().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,72) || 'story';
@@ -273,12 +181,7 @@ const IMG_EXT_RE = /\.(jpe?g|png|webp|gif|avif)(\?|#|$)/i;
 // Upgrade http→https so images aren't blocked as mixed content on our https site.
 // If a host doesn't serve https the <img> simply fails and the branded
 // placeholder shows instead — so this is always safe.
-// Image URLs lifted out of feed HTML arrive attribute-encoded ("&amp;"); store the real URL.
-function httpsify(u){
-  return (typeof u === 'string' ? u : '').trim()
-    .replace(/&(amp|#0*38|#x0*26);/gi, '&')
-    .replace(/^http:\/\//i, 'https://');
-}
+function httpsify(u){ return (typeof u === 'string' ? u : '').trim().replace(/^http:\/\//i, 'https://'); }
 function attrUrl(node, keys){
   const n = Array.isArray(node) ? node[0] : node;
   if(!n) return '';
@@ -329,7 +232,7 @@ export function buildRows(items, src, seen){
   for(const it of (items || [])){
     const link = clean(it.link || it.guid || '');
     if(!link || seen.has(link)) continue;            // dedupe by source URL
-    const title = tidyHeadline(cleanTitle(it.title, label));   // drop trailing " | Source", emoji, doubled prefix
+    const title = cleanTitle(it.title, label);       // drop trailing " | Source"
     if(title.length < 10) continue;
     seen.add(link);
 
@@ -342,8 +245,7 @@ export function buildRows(items, src, seen){
       const snip = stripBoilerplate(decodeEntities(clean(it.contentSnippet || it.summary || '')));
       if(snip) paras = [snip];
     }
-    paras = paras.filter((para) => !isJunkText(para, title, true));     // styling/sponsor lines, repeated headline
-    const standfirst = paras.length ? smartTrim(paras[0], 280) : '';
+    const standfirst = paras.length ? smartTrim(paras[0], 280) : title;
     const body = paras.length ? paras : ['Full story at source.'];
     const bodyText = body.join(' ');
 
@@ -396,54 +298,6 @@ async function isAuthorized(req, admin){
   }
   console.warn('[pull-wire] CRON_SECRET not set — endpoint is unprotected. Set it before production.');
   return true;
-}
-
-// Re-file stored wire stories whose section the current classifier disagrees
-// with, and blank summaries that are junk. Pure: returns the patch for one row,
-// or null when nothing changes. Exported for tests.
-export function correctionFor(row){
-  const p = (row && typeof row.payload === 'object' && row.payload) || {};
-  if (p.source !== 'rss') return null;
-  const title = row.headline || p.headline || '';
-  const bodyText = Array.isArray(p.body) ? p.body.join(' ') : String(p.body || '');
-  const vert = guessVertical(title, bodyText.slice(0, 600));
-  const dek = p.standfirst || row.dek || '';
-  const junk = !!dek && isJunkText(dek, title);
-  const tidy = tidyHeadline(title);
-  const retitle = !!tidy && tidy.length >= 10 && tidy !== title;
-  if (vert === (row.vertical || p.vertical) && !junk && !retitle) return null;
-  const def = VDEF[vert] || VDEF.front, vlabel = VLABEL[vert] || vert;
-  const label = p.sourceLabel || p.byline || '';
-  const oldLabel = VLABEL[p.vertical] || '';
-  const payload = Object.assign({}, p, {
-    vertical: vert, emoji: def.emoji, color: def.color,
-    kicker: vlabel + (label ? ' · ' + label : ''),
-    tags: Array.isArray(p.tags) ? p.tags.map((t) => (t === oldLabel ? vlabel : t)) : p.tags
-  });
-  const patch = { vertical: vert, payload };
-  if (junk) { payload.standfirst = ''; patch.dek = ''; }
-  if (retitle) { payload.headline = tidy; patch.headline = tidy; }
-  return patch;
-}
-
-const CORRECT_SCAN = 400;      // most recent wire stories examined per run
-const CORRECT_MAX = 150;       // updates per run, to bound the function's time
-
-async function correctStoredWire(admin){
-  const { data, error } = await admin.from('articles')
-    .select('id, headline, dek, vertical, payload')
-    .eq('source', 'rss').order('published_at', { ascending: false }).limit(CORRECT_SCAN);
-  if (error) { console.warn('[pull-wire] correction scan failed:', error.message); return { scanned: 0, corrected: 0 }; }
-  let corrected = 0;
-  for (const row of data || []) {
-    if (corrected >= CORRECT_MAX) break;
-    const patch = correctionFor(row);
-    if (!patch) continue;
-    const { error: upErr } = await admin.from('articles').update(patch).eq('id', row.id);
-    if (upErr) { console.warn('[pull-wire] correction failed for', row.id, upErr.message); continue; }
-    corrected++;
-  }
-  return { scanned: (data || []).length, corrected };
 }
 
 export default async function handler(req, res){
@@ -512,12 +366,8 @@ export default async function handler(req, res){
     }
   }
 
-  // 4. Keep the archive honest: re-file recent stories the classifier now files differently.
-  let corrections = { scanned: 0, corrected: 0 };
-  try { corrections = await correctStoredWire(admin); } catch (e) { console.warn('[pull-wire] correction pass error:', (e && e.message) || e); }
-
   const okCount = report.filter(r => r.ok).length;
   const ms = Date.now() - started;
-  console.log(`[pull-wire] done · inserted ${totalInserted} new · re-filed ${corrections.corrected}/${corrections.scanned} · ${okCount}/${sources.length} feed(s) ok · ${ms}ms`);
-  return res.status(200).json({ ok:true, inserted: totalInserted, refiled: corrections.corrected, feeds: report, ms });
+  console.log(`[pull-wire] done · inserted ${totalInserted} new · ${okCount}/${sources.length} feed(s) ok · ${ms}ms`);
+  return res.status(200).json({ ok:true, inserted: totalInserted, feeds: report, ms });
 }

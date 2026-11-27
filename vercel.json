@@ -10,27 +10,9 @@
     { "path": "/api/translate", "schedule": "30 6 * * *" },
     { "path": "/api/sms-digest", "schedule": "0 7 * * *" }
   ],
-  "rewrites": [
-    { "source": "/desk", "destination": "/afripulse-preview.html" },
-    { "source": "/s/:slug", "destination": "/api/story-share?slug=:slug" },
-    { "source": "/feed.xml", "destination": "/api/feed" },
-    { "source": "/sitemap-news.xml", "destination": "/api/sitemap" },
-    { "source": "/og/:slug", "destination": "/api/og?slug=:slug" },
-    { "source": "/today", "destination": "/api/front" }
-  ],
   "headers": [
     {
-      "source": "/(.*)",
-      "headers": [
-        { "key": "X-Content-Type-Options", "value": "nosniff" },
-        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
-        { "key": "X-Frame-Options", "value": "SAMEORIGIN" },
-        { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=(), payment=()" },
-        { "key": "Strict-Transport-Security", "value": "max-age=63072000; includeSubDomains" }
-      ]
-    },
-    {
-      "source": "/(reader.html|afripulse-preview.html|supabase-config.js|sw.js|manifest.webmanifest)",
+      "source": "/(afripulse-preview.html|supabase-config.js|sw.js|manifest.webmanifest)",
       "headers": [{ "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }]
     },
     {

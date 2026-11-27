@@ -1,65 +1,30 @@
 # AfriPulse Times
 
-**The continent's voice** — a pan-African news platform live at
-[afripulsetimes.com](https://afripulsetimes.com): real-time, editor-verified
-coverage of all 54 African nations in **five languages** (EN / FR / AR / SW / PT),
-engineered for the phones Africans actually own — low-end, prepaid, and often
-offline.
-
-Two static surfaces over one Supabase backend:
-
-- **`/` — the phone-first reader** (`public/reader.html`, ~60 KB): installable
-  offline PWA with the day's edition, a tappable Africa map, a spoken briefing,
-  saved stories, offline search, and light/dark "paper" themes.
-- **`/desk` — the newsroom** (`public/afripulse-preview.html`): the editor
-  Command Center (named-editor verification on every story), the public About
-  page, media kit, and reader accounts.
-
-## What the reader does
-
-Everything below runs in `public/reader.html`, in all five languages, with no
-backend beyond the published-articles query. Personal data (reading diary,
-streak, home region, last visit) stays in the browser's `localStorage`.
-
-| Area | Feature |
-|---|---|
-| First open | Welcome screen with language choice, each language in its own name |
-| Today | Cover story with photo, section chips, exchange rates, "Near you" for the reader's home region, favourite sections first, NEW badges since the last visit, read ticks, freshness line |
-| Finding stories | Instant offline search of the edition, archive search across every headline, "Load earlier stories", browse by nation with flags, regional map |
-| Reading | Photos with credits, progress bar, "Up next", edition meter and finish line, swipe between stories, read-aloud at three speeds, wire source credit with a link to the original, a note when a story is not yet translated |
-| Any link opens | Stories outside the latest edition are fetched on demand; saved stories open from their saved copy |
-| Habit | Daily reading streak, national-day banners for all 54 nations, quiet refresh when the reader returns, morning-brief email sign-up |
-| Sharing | One-tap WhatsApp and copy-link, per-story preview images, a shareable front-page image, a "Your week" stats card |
-| Device | Installable PWA with a polite install prompt, offline edition pack, data saver (no photos requested), dark mode, text size |
-| Trust | Privacy, terms and about links; a "Your data" control that clears reading history; cookie-less page-view analytics |
-| Screens | Phone layout by default; broadsheet layout with top navigation from 960px |
-| Access | Keyboard and screen-reader support, reduced-motion support, correct direction for mixed English/Arabic text |
-
-The reader is budgeted at 60KB Brotli-compressed (a suite test enforces it);
-it is currently about 40KB.
+A pan-African news site: a single-page front end backed by Supabase (Postgres +
+Auth), Vercel serverless functions, a cron-driven RSS aggregator, and Buttondown
+for the newsletter. EN / FR / AR, with a Sanity-style admin CMS behind
+magic-link auth.
 
 ## Tech stack
 
 | Layer | Technology |
 |---|---|
-| Front end | Two static single-file surfaces, hash routers, no framework |
-| Build / host | Vite + Vercel (`afripulsetimes.com`) |
-| Database / Auth | Supabase (Postgres, RLS; **password + magic-link** auth; Resend SMTP) |
+| Front end | Static single-file SPA (`public/afripulse-preview.html`), hash router, no framework |
+| Build / host | Vite + Vercel |
+| Database / Auth | Supabase (Postgres, Row Level Security, magic-link email auth) |
 | Serverless API | Vercel functions (`/api/*`, Node) |
-| RSS ingestion | `rss-parser` in `/api/pull-wire`, Vercel Cron |
-| Distribution | WhatsApp/Telegram/SMS broadcast on approve · per-story pages with full text and NewsArticle data (`/s/<slug>`) · RSS out (`/feed.xml`) · live news sitemap (`/sitemap-news.xml`) |
+| RSS ingestion | `rss-parser` in `/api/pull-wire`, Vercel Cron every 15 min |
 | Newsletter | Buttondown API (`/api/subscribe`) |
-| Tests | `npm test` — 100+ node:test suites over API helpers, SPA logic, SEO and auth wiring |
 
 ## How it fits together (short version)
 
-- Browsers talk to Supabase directly with the **public anon key**; Row Level
+- The browser talks to Supabase directly with the **public anon key**; Row Level
   Security limits anonymous users to reading *published* articles.
-- The **admin** (`/desk` → `#/admin`) is gated by Supabase auth (password or
-  magic link); signed-in editors with `profiles.role = editor` write articles.
-- **Serverless functions** with the **service-role key** (server-only) handle
-  ingestion, broadcast, newsletter and SMS; `/s/<slug>` and `/feed.xml` use the
-  anon key only.
+- The **admin** (`#/admin`) is gated by Supabase magic-link auth; signed-in
+  editors write articles (still through RLS).
+- Two **serverless functions** use the **service-role key** (server-only):
+  `/api/pull-wire` ingests RSS on a cron, `/api/subscribe` records newsletter
+  signups and forwards them to Buttondown.
 
 See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the full diagram and data
 flows.
@@ -96,15 +61,7 @@ preview without the API, use `npm run dev` (Vite, http://localhost:5173).
 
 ```bash
 npm test          # fast, dependency-free unit tests (Node's built-in runner)
-npm run e2e       # drives the reader in headless Chromium (tests/e2e/)
 ```
-
-The end-to-end scripts serve `public/` from a throwaway local server with a
-mocked Supabase client, then click through the reader the way a person would:
-first-open welcome, the cover and sections, reading flow, swipes, read-aloud,
-sharing, photos, the archive, home region, nations, the install prompt and
-more. Run one with `node tests/e2e/flow.mjs`. They need Chromium once:
-`npx playwright-core install chromium` (or set `CHROMIUM_PATH`).
 
 Covers the serverless functions (FX parsing, email notification, newsletter,
 RSS classification) and the SPA (inline JS parses; every translation key exists
